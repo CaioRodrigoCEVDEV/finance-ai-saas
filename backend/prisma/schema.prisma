@@ -7,29 +7,403 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Tenant {
-  id        String   @id @default(uuid())
-  name      String
-  slug      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  users     User[]
+enum TenantStatus {
+  ACTIVE
+  INACTIVE
+  BLOCKED
+}
 
+enum TenantPlan {
+  FREE
+  PRO
+  PREMIUM
+  FAMILY
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  BLOCKED
+}
+
+enum UserTenantRole {
+  OWNER
+  ADMIN
+  MEMBER
+  READONLY
+}
+
+enum AccountType {
+  CHECKING
+  SAVINGS
+  CASH
+  INVESTMENT
+  WALLET
+  OTHER
+}
+
+enum CreditCardBrand {
+  VISA
+  MASTERCARD
+  ELO
+  AMEX
+  HIPERCARD
+  OTHER
+}
+
+enum CategoryType {
+  INCOME
+  EXPENSE
+  TRANSFER
+  INVESTMENT
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+  TRANSFER
+  INVESTMENT
+}
+
+enum TransactionStatus {
+  PENDING
+  CONFIRMED
+  CANCELED
+}
+
+enum PaymentMethod {
+  PIX
+  DEBIT_CARD
+  CREDIT_CARD
+  CASH
+  BANK_SLIP
+  TRANSFER
+  OTHER
+}
+
+enum TransactionSource {
+  MANUAL
+  CSV
+  OFX
+  OPEN_FINANCE
+  API
+}
+
+enum GoalStatus {
+  ACTIVE
+  COMPLETED
+  CANCELED
+}
+
+enum OpenFinanceProvider {
+  PLUGGY
+  BELVO
+  OTHER
+}
+
+enum OpenFinanceConnectionStatus {
+  ACTIVE
+  ERROR
+  DISCONNECTED
+  EXPIRED
+}
+
+enum RuleMatchType {
+  CONTAINS
+  STARTS_WITH
+  ENDS_WITH
+  EQUALS
+  REGEX
+}
+
+model Tenant {
+  id                       String                  @id @default(uuid()) @db.Uuid
+  name                     String
+  document                 String?
+  email                    String?
+  phone                    String?
+  status                   TenantStatus           @default(ACTIVE)
+  plan                     TenantPlan             @default(FREE)
+  created_at               DateTime                @default(now())
+  updated_at               DateTime                @updatedAt
+  deleted_at               DateTime?
+  user_tenants             UserTenant[]
+  accounts                 Account[]
+  credit_cards             CreditCard[]
+  categories               Category[]
+  transactions             Transaction[]
+  budgets                  Budget[]
+  goals                    Goal[]
+  open_finance_connections OpenFinanceConnection[]
+  categorization_rules     CategorizationRule[]
+  audit_logs               AuditLog[]
+
+  @@index([status])
   @@map("tenants")
 }
 
 model User {
-  id           String    @id @default(uuid())
-  tenantId     String?
-  name         String
-  email        String    @unique
-  passwordHash String
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  tenant       Tenant?   @relation(fields: [tenantId], references: [id])
+  id                       String                  @id @default(uuid()) @db.Uuid
+  name                     String
+  email                    String                  @unique
+  password_hash            String
+  status                   UserStatus              @default(ACTIVE)
+  created_at               DateTime                @default(now())
+  updated_at               DateTime                @updatedAt
+  deleted_at               DateTime?
+  user_tenants             UserTenant[]
+  accounts                 Account[]
+  credit_cards             CreditCard[]
+  transactions             Transaction[]
+  goals                    Goal[]
+  open_finance_connections OpenFinanceConnection[]
+  audit_logs               AuditLog[]
 
-  // Estrutura inicial para multi-tenant. As demais tabelas de domínio
-  // podem seguir o mesmo padrão adicionando tenantId futuramente.
-  @@index([tenantId])
+  @@index([status])
   @@map("users")
+}
+
+model UserTenant {
+  id         String         @id @default(uuid()) @db.Uuid
+  user_id    String         @db.Uuid
+  tenant_id  String         @db.Uuid
+  role       UserTenantRole @default(MEMBER)
+  created_at DateTime       @default(now())
+  updated_at DateTime       @updatedAt
+  user       User           @relation(fields: [user_id], references: [id])
+  tenant     Tenant         @relation(fields: [tenant_id], references: [id])
+
+  @@unique([user_id, tenant_id])
+  @@index([tenant_id])
+  @@index([user_id])
+  @@map("user_tenants")
+}
+
+model Account {
+  id              String      @id @default(uuid()) @db.Uuid
+  tenant_id       String      @db.Uuid
+  user_id         String?     @db.Uuid
+  name            String
+  type            AccountType
+  bank_name       String?
+  initial_balance Decimal     @db.Decimal(18, 2)
+  current_balance Decimal     @db.Decimal(18, 2)
+  currency        String      @default("BRL")
+  color           String?
+  icon            String?
+  is_active       Boolean     @default(true)
+  created_at      DateTime    @default(now())
+  updated_at      DateTime    @updatedAt
+  deleted_at      DateTime?
+  tenant          Tenant      @relation(fields: [tenant_id], references: [id])
+  user            User?       @relation(fields: [user_id], references: [id])
+  credit_cards    CreditCard[]
+  transactions    Transaction[]
+
+  @@index([tenant_id])
+  @@index([tenant_id, is_active])
+  @@index([user_id])
+  @@map("accounts")
+}
+
+model CreditCard {
+  id              String           @id @default(uuid()) @db.Uuid
+  tenant_id       String           @db.Uuid
+  user_id         String?          @db.Uuid
+  account_id      String?          @db.Uuid
+  name            String
+  brand           CreditCardBrand?
+  limit_amount    Decimal          @db.Decimal(18, 2)
+  closing_day     Int
+  due_day         Int
+  color           String?
+  is_active       Boolean          @default(true)
+  created_at      DateTime         @default(now())
+  updated_at      DateTime         @updatedAt
+  deleted_at      DateTime?
+  tenant          Tenant           @relation(fields: [tenant_id], references: [id])
+  user            User?            @relation(fields: [user_id], references: [id])
+  account         Account?         @relation(fields: [account_id], references: [id])
+  transactions    Transaction[]
+
+  @@index([tenant_id])
+  @@index([tenant_id, is_active])
+  @@index([user_id])
+  @@index([account_id])
+  @@map("credit_cards")
+}
+
+model Category {
+  id                    String               @id @default(uuid()) @db.Uuid
+  tenant_id             String?              @db.Uuid
+  name                  String
+  type                  CategoryType
+  parent_id             String?              @db.Uuid
+  color                 String?
+  icon                  String?
+  is_default            Boolean              @default(false)
+  is_active             Boolean              @default(true)
+  created_at            DateTime             @default(now())
+  updated_at            DateTime             @updatedAt
+  deleted_at            DateTime?
+  tenant                Tenant?              @relation(fields: [tenant_id], references: [id])
+  parent                Category?            @relation("CategoryHierarchy", fields: [parent_id], references: [id])
+  children              Category[]           @relation("CategoryHierarchy")
+  transactions          Transaction[]
+  budgets               Budget[]
+  categorization_rules  CategorizationRule[]
+
+  @@index([tenant_id])
+  @@index([tenant_id, type])
+  @@index([parent_id])
+  @@map("categories")
+}
+
+model Transaction {
+  id                 String             @id @default(uuid()) @db.Uuid
+  tenant_id          String             @db.Uuid
+  user_id            String?            @db.Uuid
+  account_id         String?            @db.Uuid
+  credit_card_id     String?            @db.Uuid
+  category_id        String?            @db.Uuid
+  description        String
+  amount             Decimal            @db.Decimal(18, 2)
+  type               TransactionType
+  status             TransactionStatus  @default(PENDING)
+  transaction_date   DateTime
+  payment_method     PaymentMethod
+  notes              String?
+  source             TransactionSource  @default(MANUAL)
+  external_id        String?
+  is_recurring       Boolean            @default(false)
+  is_installment     Boolean            @default(false)
+  installment_number Int?
+  installment_total  Int?
+  created_at         DateTime           @default(now())
+  updated_at         DateTime           @updatedAt
+  deleted_at         DateTime?
+  tenant             Tenant             @relation(fields: [tenant_id], references: [id])
+  user               User?              @relation(fields: [user_id], references: [id])
+  account            Account?           @relation(fields: [account_id], references: [id])
+  credit_card        CreditCard?        @relation(fields: [credit_card_id], references: [id])
+  category           Category?          @relation(fields: [category_id], references: [id])
+
+  @@index([tenant_id])
+  @@index([tenant_id, transaction_date])
+  @@index([tenant_id, type])
+  @@index([tenant_id, status])
+  @@index([account_id])
+  @@index([credit_card_id])
+  @@index([category_id])
+  @@index([user_id])
+  @@index([external_id])
+  @@map("transactions")
+}
+
+model Budget {
+  id         String    @id @default(uuid()) @db.Uuid
+  tenant_id  String    @db.Uuid
+  category_id String   @db.Uuid
+  name       String
+  amount     Decimal   @db.Decimal(18, 2)
+  month      Int
+  year       Int
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+  tenant     Tenant    @relation(fields: [tenant_id], references: [id])
+  category   Category  @relation(fields: [category_id], references: [id])
+
+  @@unique([tenant_id, category_id, month, year])
+  @@index([tenant_id])
+  @@index([tenant_id, month, year])
+  @@index([category_id])
+  @@map("budgets")
+}
+
+model Goal {
+  id             String      @id @default(uuid()) @db.Uuid
+  tenant_id      String      @db.Uuid
+  user_id        String?     @db.Uuid
+  name           String
+  description    String?
+  target_amount  Decimal     @db.Decimal(18, 2)
+  current_amount Decimal     @default(0) @db.Decimal(18, 2)
+  deadline       DateTime?
+  status         GoalStatus  @default(ACTIVE)
+  created_at     DateTime    @default(now())
+  updated_at     DateTime    @updatedAt
+  deleted_at     DateTime?
+  tenant         Tenant      @relation(fields: [tenant_id], references: [id])
+  user           User?       @relation(fields: [user_id], references: [id])
+
+  @@index([tenant_id])
+  @@index([tenant_id, status])
+  @@index([user_id])
+  @@map("goals")
+}
+
+model OpenFinanceConnection {
+  id                  String                        @id @default(uuid()) @db.Uuid
+  tenant_id           String                        @db.Uuid
+  user_id             String                        @db.Uuid
+  provider            OpenFinanceProvider
+  provider_item_id    String?
+  institution_name    String?
+  status              OpenFinanceConnectionStatus   @default(ACTIVE)
+  consent_expires_at  DateTime?
+  last_sync_at        DateTime?
+  created_at          DateTime                      @default(now())
+  updated_at          DateTime                      @updatedAt
+  deleted_at          DateTime?
+  tenant              Tenant                        @relation(fields: [tenant_id], references: [id])
+  user                User                          @relation(fields: [user_id], references: [id])
+
+  @@index([tenant_id])
+  @@index([tenant_id, status])
+  @@index([user_id])
+  @@index([provider_item_id])
+  @@map("open_finance_connections")
+}
+
+model CategorizationRule {
+  id          String         @id @default(uuid()) @db.Uuid
+  tenant_id   String         @db.Uuid
+  category_id String         @db.Uuid
+  name        String
+  match_text  String
+  match_type  RuleMatchType
+  priority    Int            @default(1)
+  is_active   Boolean        @default(true)
+  created_at  DateTime       @default(now())
+  updated_at  DateTime       @updatedAt
+  deleted_at  DateTime?
+  tenant      Tenant         @relation(fields: [tenant_id], references: [id])
+  category    Category       @relation(fields: [category_id], references: [id])
+
+  @@index([tenant_id])
+  @@index([tenant_id, is_active, priority])
+  @@index([category_id])
+  @@map("categorization_rules")
+}
+
+model AuditLog {
+  id         String    @id @default(uuid()) @db.Uuid
+  tenant_id  String?   @db.Uuid
+  user_id    String?   @db.Uuid
+  action     String
+  entity     String
+  entity_id  String?
+  metadata   Json?
+  ip_address String?
+  user_agent String?
+  created_at DateTime  @default(now())
+  tenant     Tenant?   @relation(fields: [tenant_id], references: [id])
+  user       User?     @relation(fields: [user_id], references: [id])
+
+  @@index([tenant_id])
+  @@index([user_id])
+  @@index([entity, entity_id])
+  @@index([created_at])
+  @@map("audit_logs")
 }
