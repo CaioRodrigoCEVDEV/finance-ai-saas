@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: finance-ai-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: dbfinanceai
+      POSTGRES_USER: financeai
+      POSTGRES_PASSWORD: financeai123
+    ports:
+      - '5436:5432'
+    volumes:
+      - finance_ai_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  finance_ai_postgres_data:
