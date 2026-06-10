@@ -64,3 +64,52 @@ export function formatPaymentMethod(method) {
 
   return labels[method] || method || '--';
 }
+
+export function formatMonthLabel(monthKey) {
+  const [year, month] = String(monthKey).split('-');
+
+  if (!year || !month) {
+    return monthKey;
+  }
+
+  return new Intl.DateTimeFormat('pt-BR', {
+    month: 'short',
+    year: '2-digit'
+  }).format(new Date(Number(year), Number(month) - 1, 1));
+}
+
+export function formatBudgetStatus(status) {
+  const labels = {
+    SAFE: 'Dentro do orçamento',
+    WARNING: 'Quase no limite',
+    EXCEEDED: 'Excedido'
+  };
+
+  return labels[status] || status || '--';
+}
+
+export function formatAccountType(type) {
+  const labels = {
+    CHECKING: 'Conta corrente',
+    SAVINGS: 'Poupanca',
+    CASH: 'Dinheiro',
+    INVESTMENT: 'Investimento',
+    WALLET: 'Carteira',
+    OTHER: 'Outro'
+  };
+
+  return labels[type] || type || '--';
+}
+
+export function formatCreditCardBrand(brand) {
+  const labels = {
+    VISA: 'Visa',
+    MASTERCARD: 'Mastercard',
+    ELO: 'Elo',
+    AMEX: 'American Express',
+    HIPERCARD: 'Hipercard',
+    OTHER: 'Outro'
+  };
+
+  return labels[brand] || brand || '--';
+}

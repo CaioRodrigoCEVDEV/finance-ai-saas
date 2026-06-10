@@ -28,7 +28,7 @@ import {
   getRecentTransactions,
   getMonthlyFlow
 } from '../services/dashboardService';
-import { formatCurrencyBRL } from '../utils/formatters';
+import { formatCurrencyBRL, formatDateBR } from '../utils/formatters';
 
 const initialState = {
   overview: null,
@@ -233,7 +233,7 @@ function Dashboard() {
                         <div>
                           <p className="text-sm font-medium text-slate-900">{g.name}</p>
                           <p className="text-xs text-slate-500">
-                            Prazo: {g.deadline ? new Date(g.deadline).toLocaleDateString('pt-BR') : 'Sem prazo'}
+                            Prazo: {g.deadline ? formatDateBR(g.deadline) : 'Sem prazo'}
                           </p>
                         </div>
                         <div className="text-right">

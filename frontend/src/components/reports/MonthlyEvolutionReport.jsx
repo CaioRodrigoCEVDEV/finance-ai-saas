@@ -2,18 +2,10 @@ import Card from '../ui/Card';
 import EmptyState from '../ui/EmptyState';
 import LoadingSkeleton from '../ui/LoadingSkeleton';
 import { Calendar } from 'lucide-react';
+import { formatCurrencyBRL, formatMonthLabel } from '../../utils/formatters';
 
 function formatCurrency(value) {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL'
-  }).format(value || 0);
-}
-
-function formatMonthLabel(month) {
-  const [year, monthNum] = month.split('-');
-  const date = new Date(Number(year), Number(monthNum) - 1, 1);
-  return date.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' });
+  return formatCurrencyBRL(value);
 }
 
 function MonthlyEvolutionReport({ data, loading }) {

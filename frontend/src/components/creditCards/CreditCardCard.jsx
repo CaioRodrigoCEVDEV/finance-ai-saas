@@ -3,7 +3,7 @@ import { CalendarDays, CreditCard as CreditCardIcon, Pencil, Trash2 } from 'luci
 import Badge from '../ui/Badge';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
-import { formatCurrencyBRL, formatPercentage } from '../../utils/formatters';
+import { formatCurrencyBRL, formatDateBR, formatPercentage } from '../../utils/formatters';
 
 function getBrandLabel(brand) {
   const labels = {
@@ -62,7 +62,7 @@ function CreditCardCard({ creditCard, onEdit, onDelete, loading }) {
           </div>
           <div>
             <p className="text-xs uppercase tracking-[0.22em] text-white/60">Criado em</p>
-            <p className="mt-2 text-sm font-medium text-white">{new Date(creditCard.createdAt).toLocaleDateString('pt-BR')}</p>
+            <p className="mt-2 text-sm font-medium text-white">{formatDateBR(creditCard.createdAt)}</p>
           </div>
         </div>
 

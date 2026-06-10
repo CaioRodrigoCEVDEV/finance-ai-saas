@@ -13,6 +13,14 @@ O frontend usa autenticacao por cookie `httpOnly`, portanto as chamadas para a A
 VITE_API_URL=http://localhost:3333
 ```
 
+### Variáveis de ambiente
+
+```env
+VITE_API_URL=http://localhost:3333
+```
+
+A aplicação espera que o backend esteja rodando em `http://localhost:3333` e aceitando cookies `httpOnly` com `withCredentials: true`.
+
 ## Scripts
 
 - `npm run dev`: inicia o frontend na porta `5173`

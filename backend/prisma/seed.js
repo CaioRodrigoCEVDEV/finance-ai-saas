@@ -7,7 +7,7 @@ const prisma = new PrismaClient({
   errorFormat: 'minimal'
 });
 
-const SEED_NOTE = 'Seed inicial demo';
+const SEED_NOTE = 'Seed demo Finance AI';
 
 const CATEGORY_DEFINITIONS = [
   { name: 'Salário', type: 'INCOME' },
@@ -34,50 +34,47 @@ const CATEGORY_DEFINITIONS = [
   { name: 'Transferência entre contas', type: 'TRANSFER' }
 ];
 
-function buildDateInCurrentMonth(preferredDay) {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
-  const safeDay = Math.min(preferredDay, lastDayOfMonth, now.getDate());
+const RULE_DEFINITIONS = [
+  { name: 'IFOOD → Alimentação', matchText: 'IFOOD', matchType: 'CONTAINS', categoryName: 'Alimentação', priority: 10 },
+  { name: 'UBER → Transporte', matchText: 'UBER', matchType: 'CONTAINS', categoryName: 'Transporte', priority: 10 },
+  { name: '99 → Transporte', matchText: '99', matchType: 'CONTAINS', categoryName: 'Transporte', priority: 10 },
+  { name: 'NETFLIX → Assinaturas', matchText: 'NETFLIX', matchType: 'CONTAINS', categoryName: 'Assinaturas', priority: 10 },
+  { name: 'SPOTIFY → Assinaturas', matchText: 'SPOTIFY', matchType: 'CONTAINS', categoryName: 'Assinaturas', priority: 10 },
+  { name: 'MERCADO → Mercado', matchText: 'MERCADO', matchType: 'CONTAINS', categoryName: 'Mercado', priority: 10 },
+  { name: 'SUPERMERCADO → Mercado', matchText: 'SUPERMERCADO', matchType: 'CONTAINS', categoryName: 'Mercado', priority: 10 },
+  { name: 'FARMACIA → Saúde', matchText: 'FARMACIA', matchType: 'CONTAINS', categoryName: 'Saúde', priority: 10 },
+  { name: 'ACADEMIA → Saúde', matchText: 'ACADEMIA', matchType: 'CONTAINS', categoryName: 'Saúde', priority: 10 },
+  { name: 'SALARIO → Salário', matchText: 'SALARIO', matchType: 'CONTAINS', categoryName: 'Salário', priority: 10 }
+];
 
+function buildDate(year, month, day) {
+  const lastDay = new Date(year, month + 1, 0).getDate();
+  const safeDay = Math.min(day, lastDay);
   return new Date(Date.UTC(year, month, safeDay, 12, 0, 0));
 }
 
 function buildDayRange(date) {
   const start = new Date(date);
   start.setUTCHours(0, 0, 0, 0);
-
   const end = new Date(date);
   end.setUTCHours(23, 59, 59, 999);
-
   return { start, end };
 }
 
 async function upsertByLookup(delegate, where, create, update = create) {
   const existing = await delegate.findFirst({ where });
-
   if (existing) {
-    return delegate.update({
-      where: { id: existing.id },
-      data: update
-    });
+    return delegate.update({ where: { id: existing.id }, data: update });
   }
-
   return delegate.create({ data: create });
 }
 
 async function ensureGlobalCategories() {
   const categoriesByKey = {};
-
   for (const category of CATEGORY_DEFINITIONS) {
     const record = await upsertByLookup(
       prisma.category,
-      {
-        tenant_id: null,
-        name: category.name,
-        type: category.type
-      },
+      { tenant_id: null, name: category.name, type: category.type },
       {
         tenant_id: null,
         name: category.name,
@@ -86,16 +83,10 @@ async function ensureGlobalCategories() {
         is_active: true,
         deleted_at: null
       },
-      {
-        is_default: true,
-        is_active: true,
-        deleted_at: null
-      }
+      { is_default: true, is_active: true, deleted_at: null }
     );
-
     categoriesByKey[`${category.type}:${category.name}`] = record;
   }
-
   return categoriesByKey;
 }
 
@@ -112,12 +103,7 @@ async function main() {
       plan: 'PREMIUM',
       deleted_at: null
     },
-    {
-      name: 'Finance AI Demo',
-      status: 'ACTIVE',
-      plan: 'PREMIUM',
-      deleted_at: null
-    }
+    { name: 'Finance AI Demo', status: 'ACTIVE', plan: 'PREMIUM', deleted_at: null }
   );
 
   const user = await prisma.user.upsert({
@@ -138,269 +124,420 @@ async function main() {
   });
 
   await prisma.userTenant.upsert({
-    where: {
-      user_id_tenant_id: {
-        user_id: user.id,
-        tenant_id: tenant.id
-      }
-    },
-    create: {
-      user_id: user.id,
-      tenant_id: tenant.id,
-      role: 'OWNER'
-    },
-    update: {
-      role: 'OWNER'
-    }
+    where: { user_id_tenant_id: { user_id: user.id, tenant_id: tenant.id } },
+    create: { user_id: user.id, tenant_id: tenant.id, role: 'OWNER' },
+    update: { role: 'OWNER' }
   });
 
   const categories = await ensureGlobalCategories();
 
-  const checkingAccount = await upsertByLookup(
+  // Accounts
+  const nubankAccount = await upsertByLookup(
     prisma.account,
+    { tenant_id: tenant.id, name: 'Conta Corrente Nubank' },
     {
-      tenant_id: tenant.id,
-      name: 'Conta Corrente Nubank'
+      tenant_id: tenant.id, user_id: user.id, name: 'Conta Corrente Nubank',
+      type: 'CHECKING', bank_name: 'Nubank', initial_balance: '3200.00', current_balance: '3200.00',
+      currency: 'BRL', is_active: true, deleted_at: null
     },
+    { user_id: user.id, type: 'CHECKING', bank_name: 'Nubank', initial_balance: '3200.00', current_balance: '3200.00', currency: 'BRL', is_active: true, deleted_at: null }
+  );
+
+  const interAccount = await upsertByLookup(
+    prisma.account,
+    { tenant_id: tenant.id, name: 'Conta Inter' },
     {
-      tenant_id: tenant.id,
-      user_id: user.id,
-      name: 'Conta Corrente Nubank',
-      type: 'CHECKING',
-      bank_name: 'Nubank',
-      initial_balance: '2500.00',
-      current_balance: '2500.00',
-      currency: 'BRL',
-      is_active: true,
-      deleted_at: null
+      tenant_id: tenant.id, user_id: user.id, name: 'Conta Inter',
+      type: 'CHECKING', bank_name: 'Inter', initial_balance: '1500.00', current_balance: '1500.00',
+      currency: 'BRL', is_active: true, deleted_at: null
     },
-    {
-      user_id: user.id,
-      type: 'CHECKING',
-      bank_name: 'Nubank',
-      initial_balance: '2500.00',
-      current_balance: '2500.00',
-      currency: 'BRL',
-      is_active: true,
-      deleted_at: null
-    }
+    { user_id: user.id, type: 'CHECKING', bank_name: 'Inter', initial_balance: '1500.00', current_balance: '1500.00', currency: 'BRL', is_active: true, deleted_at: null }
   );
 
   const walletAccount = await upsertByLookup(
     prisma.account,
+    { tenant_id: tenant.id, name: 'Carteira' },
     {
-      tenant_id: tenant.id,
-      name: 'Carteira'
+      tenant_id: tenant.id, user_id: user.id, name: 'Carteira',
+      type: 'CASH', bank_name: null, initial_balance: '250.00', current_balance: '250.00',
+      currency: 'BRL', is_active: true, deleted_at: null
     },
-    {
-      tenant_id: tenant.id,
-      user_id: user.id,
-      name: 'Carteira',
-      type: 'CASH',
-      initial_balance: '300.00',
-      current_balance: '300.00',
-      currency: 'BRL',
-      is_active: true,
-      deleted_at: null
-    },
-    {
-      user_id: user.id,
-      type: 'CASH',
-      initial_balance: '300.00',
-      current_balance: '300.00',
-      currency: 'BRL',
-      is_active: true,
-      deleted_at: null
-    }
+    { user_id: user.id, type: 'CASH', initial_balance: '250.00', current_balance: '250.00', currency: 'BRL', is_active: true, deleted_at: null }
   );
 
-  const creditCard = await upsertByLookup(
+  const reserveAccount = await upsertByLookup(
+    prisma.account,
+    { tenant_id: tenant.id, name: 'Reserva CDB' },
+    {
+      tenant_id: tenant.id, user_id: user.id, name: 'Reserva CDB',
+      type: 'INVESTMENT', bank_name: 'Banco X', initial_balance: '5000.00', current_balance: '5000.00',
+      currency: 'BRL', is_active: true, deleted_at: null
+    },
+    { user_id: user.id, type: 'INVESTMENT', bank_name: 'Banco X', initial_balance: '5000.00', current_balance: '5000.00', currency: 'BRL', is_active: true, deleted_at: null }
+  );
+
+  // Credit Cards
+  const nubankCard = await upsertByLookup(
     prisma.creditCard,
+    { tenant_id: tenant.id, name: 'Cartão Nubank' },
     {
-      tenant_id: tenant.id,
-      name: 'Cartão Nubank'
+      tenant_id: tenant.id, user_id: user.id, account_id: nubankAccount.id,
+      name: 'Cartão Nubank', brand: 'MASTERCARD', limit_amount: '5000.00',
+      closing_day: 10, due_day: 17, is_active: true, deleted_at: null
     },
-    {
-      tenant_id: tenant.id,
-      user_id: user.id,
-      account_id: checkingAccount.id,
-      name: 'Cartão Nubank',
-      brand: 'MASTERCARD',
-      limit_amount: '5000.00',
-      closing_day: 10,
-      due_day: 17,
-      is_active: true,
-      deleted_at: null
-    },
-    {
-      user_id: user.id,
-      account_id: checkingAccount.id,
-      brand: 'MASTERCARD',
-      limit_amount: '5000.00',
-      closing_day: 10,
-      due_day: 17,
-      is_active: true,
-      deleted_at: null
-    }
+    { user_id: user.id, account_id: nubankAccount.id, brand: 'MASTERCARD', limit_amount: '5000.00', closing_day: 10, due_day: 17, is_active: true, deleted_at: null }
   );
 
-  const transactions = [
+  const interCard = await upsertByLookup(
+    prisma.creditCard,
+    { tenant_id: tenant.id, name: 'Cartão Inter' },
     {
-      external_id: 'seed-transaction-salario',
-      description: 'Salário',
-      amount: '5000.00',
-      type: 'INCOME',
-      categoryKey: 'INCOME:Salário',
-      transaction_date: buildDateInCurrentMonth(5),
-      payment_method: 'TRANSFER',
-      account_id: checkingAccount.id
+      tenant_id: tenant.id, user_id: user.id, account_id: interAccount.id,
+      name: 'Cartão Inter', brand: 'MASTERCARD', limit_amount: '3000.00',
+      closing_day: 8, due_day: 15, is_active: true, deleted_at: null
     },
-    {
-      external_id: 'seed-transaction-freelance-sistema',
-      description: 'Freelance sistema',
-      amount: '1200.00',
-      type: 'INCOME',
-      categoryKey: 'INCOME:Freelance',
-      transaction_date: buildDateInCurrentMonth(8),
-      payment_method: 'PIX',
-      account_id: checkingAccount.id
-    },
-    {
-      external_id: 'seed-transaction-mercado',
-      description: 'Mercado',
-      amount: '650.00',
-      type: 'EXPENSE',
-      categoryKey: 'EXPENSE:Mercado',
-      transaction_date: buildDateInCurrentMonth(9),
-      payment_method: 'DEBIT_CARD',
-      account_id: checkingAccount.id
-    },
-    {
-      external_id: 'seed-transaction-ifood',
-      description: 'Ifood',
-      amount: '89.90',
-      type: 'EXPENSE',
-      categoryKey: 'EXPENSE:Alimentação',
-      transaction_date: buildDateInCurrentMonth(11),
-      payment_method: 'CREDIT_CARD',
-      credit_card_id: creditCard.id
-    },
-    {
-      external_id: 'seed-transaction-uber',
-      description: 'Uber',
-      amount: '42.50',
-      type: 'EXPENSE',
-      categoryKey: 'EXPENSE:Transporte',
-      transaction_date: buildDateInCurrentMonth(12),
-      payment_method: 'CREDIT_CARD',
-      credit_card_id: creditCard.id
-    },
-    {
-      external_id: 'seed-transaction-netflix',
-      description: 'Netflix',
-      amount: '39.90',
-      type: 'EXPENSE',
-      categoryKey: 'EXPENSE:Assinaturas',
-      transaction_date: buildDateInCurrentMonth(13),
-      payment_method: 'CREDIT_CARD',
-      credit_card_id: creditCard.id
-    },
-    {
-      external_id: 'seed-transaction-energia',
-      description: 'Energia',
-      amount: '180.00',
-      type: 'EXPENSE',
-      categoryKey: 'EXPENSE:Moradia',
-      transaction_date: buildDateInCurrentMonth(14),
-      payment_method: 'PIX',
-      account_id: checkingAccount.id
-    },
-    {
-      external_id: 'seed-transaction-internet',
-      description: 'Internet',
-      amount: '120.00',
-      type: 'EXPENSE',
-      categoryKey: 'EXPENSE:Moradia',
-      transaction_date: buildDateInCurrentMonth(15),
-      payment_method: 'PIX',
-      account_id: checkingAccount.id
-    },
-    {
-      external_id: 'seed-transaction-farmacia',
-      description: 'Farmácia',
-      amount: '75.30',
-      type: 'EXPENSE',
-      categoryKey: 'EXPENSE:Saúde',
-      transaction_date: buildDateInCurrentMonth(16),
-      payment_method: 'CASH',
-      account_id: walletAccount.id
-    },
-    {
-      external_id: 'seed-transaction-academia',
-      description: 'Academia',
-      amount: '99.90',
-      type: 'EXPENSE',
-      categoryKey: 'EXPENSE:Saúde',
-      transaction_date: buildDateInCurrentMonth(18),
-      payment_method: 'CREDIT_CARD',
-      credit_card_id: creditCard.id
-    }
-  ];
+    { user_id: user.id, account_id: interAccount.id, brand: 'MASTERCARD', limit_amount: '3000.00', closing_day: 8, due_day: 15, is_active: true, deleted_at: null }
+  );
 
-  for (const transaction of transactions) {
-    const dayRange = buildDayRange(transaction.transaction_date);
+  const mpCard = await upsertByLookup(
+    prisma.creditCard,
+    { tenant_id: tenant.id, name: 'Cartão Mercado Pago' },
+    {
+      tenant_id: tenant.id, user_id: user.id, account_id: nubankAccount.id,
+      name: 'Cartão Mercado Pago', brand: 'VISA', limit_amount: '2000.00',
+      closing_day: 5, due_day: 12, is_active: true, deleted_at: null
+    },
+    { user_id: user.id, account_id: nubankAccount.id, brand: 'VISA', limit_amount: '2000.00', closing_day: 5, due_day: 12, is_active: true, deleted_at: null }
+  );
+
+  // Categorization Rules
+  for (const rule of RULE_DEFINITIONS) {
+    const categoryKey = `EXPENSE:${rule.categoryName}`;
+    const category = categories[categoryKey] || categories[`INCOME:${rule.categoryName}`];
+    if (!category) continue;
 
     await upsertByLookup(
-      prisma.transaction,
+      prisma.categorizationRule,
+      { tenant_id: tenant.id, name: rule.name },
       {
-        OR: [
-          { external_id: transaction.external_id },
-          {
-            tenant_id: tenant.id,
-            description: transaction.description,
-            amount: transaction.amount,
-            type: transaction.type,
-            notes: SEED_NOTE,
-            transaction_date: {
-              gte: dayRange.start,
-              lte: dayRange.end
-            }
-          }
-        ]
+        tenant_id: tenant.id,
+        category_id: category.id,
+        name: rule.name,
+        match_text: rule.matchText,
+        match_type: rule.matchType,
+        priority: rule.priority,
+        is_active: true,
+        deleted_at: null
       },
+      {
+        category_id: category.id,
+        match_text: rule.matchText,
+        match_type: rule.matchType,
+        priority: rule.priority,
+        is_active: true,
+        deleted_at: null
+      }
+    );
+  }
+
+  // Transactions for last 6 months
+  const now = new Date();
+  const months = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({ year: d.getFullYear(), month: d.getMonth() });
+  }
+
+  const incomeTemplates = [
+    { key: 'INCOME:Salário', description: 'Salário', amountMin: 5200, amountMax: 5500, paymentMethod: 'TRANSFER', accountId: nubankAccount.id, day: 5 },
+    { key: 'INCOME:Freelance', description: 'Freelance projeto', amountMin: 800, amountMax: 1500, paymentMethod: 'PIX', accountId: nubankAccount.id, day: 18, chance: 0.6 },
+    { key: 'INCOME:Rendimentos', description: 'Rendimentos CDB', amountMin: 25, amountMax: 80, paymentMethod: 'TRANSFER', accountId: reserveAccount.id, day: 28, chance: 0.8 }
+  ];
+
+  const expenseTemplates = [
+    { key: 'EXPENSE:Mercado', description: 'Mercado', amountMin: 450, amountMax: 750, paymentMethod: 'DEBIT_CARD', accountId: nubankAccount.id, day: 8 },
+    { key: 'EXPENSE:Alimentação', description: 'Ifood', amountMin: 60, amountMax: 120, paymentMethod: 'CREDIT_CARD', creditCardId: nubankCard.id, day: 11 },
+    { key: 'EXPENSE:Transporte', description: 'Uber', amountMin: 30, amountMax: 60, paymentMethod: 'CREDIT_CARD', creditCardId: nubankCard.id, day: 12 },
+    { key: 'EXPENSE:Assinaturas', description: 'Netflix', amountMin: 39.90, amountMax: 39.90, paymentMethod: 'CREDIT_CARD', creditCardId: nubankCard.id, day: 13 },
+    { key: 'EXPENSE:Assinaturas', description: 'Spotify', amountMin: 19.90, amountMax: 19.90, paymentMethod: 'CREDIT_CARD', creditCardId: mpCard.id, day: 14 },
+    { key: 'EXPENSE:Moradia', description: 'Energia', amountMin: 150, amountMax: 220, paymentMethod: 'PIX', accountId: nubankAccount.id, day: 15 },
+    { key: 'EXPENSE:Moradia', description: 'Internet', amountMin: 100, amountMax: 120, paymentMethod: 'PIX', accountId: nubankAccount.id, day: 16 },
+    { key: 'EXPENSE:Saúde', description: 'Farmácia', amountMin: 40, amountMax: 120, paymentMethod: 'CASH', accountId: walletAccount.id, day: 17 },
+    { key: 'EXPENSE:Saúde', description: 'Academia', amountMin: 99.90, amountMax: 109.90, paymentMethod: 'CREDIT_CARD', creditCardId: interCard.id, day: 20 },
+    { key: 'EXPENSE:Moradia', description: 'Aluguel', amountMin: 1200, amountMax: 1500, paymentMethod: 'TRANSFER', accountId: nubankAccount.id, day: 10 },
+    { key: 'EXPENSE:Lazer', description: 'Cinema e lazer', amountMin: 100, amountMax: 300, paymentMethod: 'CREDIT_CARD', creditCardId: nubankCard.id, day: 22, chance: 0.7 },
+    { key: 'EXPENSE:Pets', description: 'Petshop', amountMin: 80, amountMax: 150, paymentMethod: 'DEBIT_CARD', accountId: nubankAccount.id, day: 24, chance: 0.5 },
+    { key: 'EXPENSE:Impostos', description: 'Impostos mensais', amountMin: 200, amountMax: 400, paymentMethod: 'PIX', accountId: nubankAccount.id, day: 25, chance: 0.8 }
+  ];
+
+  const investmentTemplates = [
+    { key: 'INVESTMENT:Reserva de Emergência', description: 'Aporte Reserva CDB', amountMin: 300, amountMax: 600, paymentMethod: 'TRANSFER', accountId: reserveAccount.id, day: 6, chance: 0.9 },
+    { key: 'INVESTMENT:Renda Fixa', description: 'Renda Fixa Tesouro', amountMin: 200, amountMax: 500, paymentMethod: 'TRANSFER', accountId: reserveAccount.id, day: 7, chance: 0.7 }
+  ];
+
+  function randomAmount(min, max) {
+    return (Math.random() * (max - min) + min).toFixed(2);
+  }
+
+  let transactionCount = 0;
+  const createdTransactions = [];
+
+  for (const { year, month } of months) {
+    for (const template of incomeTemplates) {
+      if (template.chance && Math.random() > template.chance) continue;
+      const amount = randomAmount(template.amountMin, template.amountMax);
+      const externalId = `seed-${year}-${month + 1}-${template.description.toLowerCase().replace(/\s+/g, '-')}`;
+      const date = buildDate(year, month, template.day);
+      const dayRange = buildDayRange(date);
+
+      const t = await upsertByLookup(
+        prisma.transaction,
+        {
+          OR: [
+            { external_id: externalId },
+            {
+              tenant_id: tenant.id,
+              description: template.description,
+              amount,
+              type: 'INCOME',
+              notes: SEED_NOTE,
+              transaction_date: { gte: dayRange.start, lte: dayRange.end }
+            }
+          ]
+        },
+        {
+          tenant_id: tenant.id,
+          user_id: user.id,
+          account_id: template.accountId || null,
+          credit_card_id: template.creditCardId || null,
+          category_id: categories[template.key].id,
+          description: template.description,
+          amount,
+          type: 'INCOME',
+          status: 'CONFIRMED',
+          transaction_date: date,
+          payment_method: template.paymentMethod,
+          notes: SEED_NOTE,
+          source: 'MANUAL',
+          external_id: externalId,
+          is_recurring: false,
+          is_installment: false,
+          deleted_at: null
+        },
+        {
+          user_id: user.id,
+          account_id: template.accountId || null,
+          credit_card_id: template.creditCardId || null,
+          category_id: categories[template.key].id,
+          amount,
+          status: 'CONFIRMED',
+          transaction_date: date,
+          payment_method: template.paymentMethod,
+          notes: SEED_NOTE,
+          source: 'MANUAL',
+          external_id: externalId,
+          is_recurring: false,
+          is_installment: false,
+          deleted_at: null
+        }
+      );
+      createdTransactions.push(t);
+      transactionCount++;
+    }
+
+    for (const template of expenseTemplates) {
+      if (template.chance && Math.random() > template.chance) continue;
+      const amount = randomAmount(template.amountMin, template.amountMax);
+      const externalId = `seed-${year}-${month + 1}-${template.description.toLowerCase().replace(/\s+/g, '-')}`;
+      const date = buildDate(year, month, template.day);
+      const dayRange = buildDayRange(date);
+
+      const t = await upsertByLookup(
+        prisma.transaction,
+        {
+          OR: [
+            { external_id: externalId },
+            {
+              tenant_id: tenant.id,
+              description: template.description,
+              amount,
+              type: 'EXPENSE',
+              notes: SEED_NOTE,
+              transaction_date: { gte: dayRange.start, lte: dayRange.end }
+            }
+          ]
+        },
+        {
+          tenant_id: tenant.id,
+          user_id: user.id,
+          account_id: template.accountId || null,
+          credit_card_id: template.creditCardId || null,
+          category_id: categories[template.key].id,
+          description: template.description,
+          amount,
+          type: 'EXPENSE',
+          status: 'CONFIRMED',
+          transaction_date: date,
+          payment_method: template.paymentMethod,
+          notes: SEED_NOTE,
+          source: Math.random() > 0.7 ? 'CSV' : 'MANUAL',
+          external_id: externalId,
+          is_recurring: false,
+          is_installment: false,
+          deleted_at: null
+        },
+        {
+          user_id: user.id,
+          account_id: template.accountId || null,
+          credit_card_id: template.creditCardId || null,
+          category_id: categories[template.key].id,
+          amount,
+          status: 'CONFIRMED',
+          transaction_date: date,
+          payment_method: template.paymentMethod,
+          notes: SEED_NOTE,
+          source: Math.random() > 0.7 ? 'CSV' : 'MANUAL',
+          external_id: externalId,
+          is_recurring: false,
+          is_installment: false,
+          deleted_at: null
+        }
+      );
+      createdTransactions.push(t);
+      transactionCount++;
+    }
+
+    for (const template of investmentTemplates) {
+      if (template.chance && Math.random() > template.chance) continue;
+      const amount = randomAmount(template.amountMin, template.amountMax);
+      const externalId = `seed-${year}-${month + 1}-${template.description.toLowerCase().replace(/\s+/g, '-')}`;
+      const date = buildDate(year, month, template.day);
+      const dayRange = buildDayRange(date);
+
+      const t = await upsertByLookup(
+        prisma.transaction,
+        {
+          OR: [
+            { external_id: externalId },
+            {
+              tenant_id: tenant.id,
+              description: template.description,
+              amount,
+              type: 'INVESTMENT',
+              notes: SEED_NOTE,
+              transaction_date: { gte: dayRange.start, lte: dayRange.end }
+            }
+          ]
+        },
+        {
+          tenant_id: tenant.id,
+          user_id: user.id,
+          account_id: template.accountId || null,
+          credit_card_id: template.creditCardId || null,
+          category_id: categories[template.key].id,
+          description: template.description,
+          amount,
+          type: 'INVESTMENT',
+          status: 'CONFIRMED',
+          transaction_date: date,
+          payment_method: template.paymentMethod,
+          notes: SEED_NOTE,
+          source: 'MANUAL',
+          external_id: externalId,
+          is_recurring: false,
+          is_installment: false,
+          deleted_at: null
+        },
+        {
+          user_id: user.id,
+          account_id: template.accountId || null,
+          credit_card_id: template.creditCardId || null,
+          category_id: categories[template.key].id,
+          amount,
+          status: 'CONFIRMED',
+          transaction_date: date,
+          payment_method: template.paymentMethod,
+          notes: SEED_NOTE,
+          source: 'MANUAL',
+          external_id: externalId,
+          is_recurring: false,
+          is_installment: false,
+          deleted_at: null
+        }
+      );
+      createdTransactions.push(t);
+      transactionCount++;
+    }
+  }
+
+  // Budgets for current month
+  const currentMonth = now.getMonth() + 1;
+  const currentYear = now.getFullYear();
+
+  const budgetDefinitions = [
+    { name: 'Mercado', categoryKey: 'EXPENSE:Mercado', amount: '700.00', used: '650.00' },
+    { name: 'Alimentação', categoryKey: 'EXPENSE:Alimentação', amount: '500.00', used: '480.00' },
+    { name: 'Transporte', categoryKey: 'EXPENSE:Transporte', amount: '300.00', used: '350.00' },
+    { name: 'Assinaturas', categoryKey: 'EXPENSE:Assinaturas', amount: '100.00', used: '59.80' },
+    { name: 'Saúde', categoryKey: 'EXPENSE:Saúde', amount: '400.00', used: '380.00' },
+    { name: 'Lazer', categoryKey: 'EXPENSE:Lazer', amount: '300.00', used: '200.00' },
+    { name: 'Moradia', categoryKey: 'EXPENSE:Moradia', amount: '1800.00', used: '1500.00' }
+  ];
+
+  for (const budget of budgetDefinitions) {
+    const category = categories[budget.categoryKey];
+    if (!category) continue;
+
+    await upsertByLookup(
+      prisma.budget,
+      { tenant_id: tenant.id, category_id: category.id, month: currentMonth, year: currentYear },
+      {
+        tenant_id: tenant.id,
+        category_id: category.id,
+        name: `${budget.name} ${String(currentMonth).padStart(2, '0')}/${currentYear}`,
+        amount: budget.amount,
+        month: currentMonth,
+        year: currentYear,
+        deleted_at: null
+      },
+      {
+        name: `${budget.name} ${String(currentMonth).padStart(2, '0')}/${currentYear}`,
+        amount: budget.amount,
+        deleted_at: null
+      }
+    );
+  }
+
+  // Goals
+  const goalDefinitions = [
+    { name: 'Reserva de emergência', target: '15000.00', current: '4200.00', deadline: new Date(currentYear, 11, 31), status: 'ACTIVE' },
+    { name: 'Comprar notebook', target: '8000.00', current: '2500.00', deadline: new Date(currentYear, 8, 30), status: 'ACTIVE' },
+    { name: 'Viagem de férias', target: '12000.00', current: '3000.00', deadline: new Date(currentYear + 1, 1, 28), status: 'ACTIVE' },
+    { name: 'Quitar dívida', target: '5000.00', current: '3500.00', deadline: new Date(currentYear, 7, 31), status: 'ACTIVE' },
+    { name: 'Investir R$ 10.000', target: '10000.00', current: '10000.00', deadline: new Date(currentYear, 11, 31), status: 'COMPLETED' }
+  ];
+
+  for (const goal of goalDefinitions) {
+    await upsertByLookup(
+      prisma.goal,
+      { tenant_id: tenant.id, name: goal.name },
       {
         tenant_id: tenant.id,
         user_id: user.id,
-        account_id: transaction.account_id || null,
-        credit_card_id: transaction.credit_card_id || null,
-        category_id: categories[transaction.categoryKey].id,
-        description: transaction.description,
-        amount: transaction.amount,
-        type: transaction.type,
-        status: 'CONFIRMED',
-        transaction_date: transaction.transaction_date,
-        payment_method: transaction.payment_method,
-        notes: SEED_NOTE,
-        source: 'MANUAL',
-        external_id: transaction.external_id,
-        is_recurring: false,
-        is_installment: false,
+        name: goal.name,
+        description: null,
+        target_amount: goal.target,
+        current_amount: goal.current,
+        deadline: goal.deadline,
+        status: goal.status,
         deleted_at: null
       },
       {
         user_id: user.id,
-        account_id: transaction.account_id || null,
-        credit_card_id: transaction.credit_card_id || null,
-        category_id: categories[transaction.categoryKey].id,
-        amount: transaction.amount,
-        status: 'CONFIRMED',
-        transaction_date: transaction.transaction_date,
-        payment_method: transaction.payment_method,
-        notes: SEED_NOTE,
-        source: 'MANUAL',
-        external_id: transaction.external_id,
-        is_recurring: false,
-        is_installment: false,
+        target_amount: goal.target,
+        current_amount: goal.current,
+        deadline: goal.deadline,
+        status: goal.status,
         deleted_at: null
       }
     );
@@ -410,9 +547,11 @@ async function main() {
   console.log(`Tenant: ${tenant.name} (${tenant.email})`);
   console.log(`Usuario admin: ${user.email}`);
   console.log(`Categorias globais: ${CATEGORY_DEFINITIONS.length}`);
-  console.log('Contas demo: Conta Corrente Nubank, Carteira');
-  console.log('Cartao demo: Cartão Nubank');
-  console.log(`Transacoes demo: ${transactions.length}`);
+  console.log('Contas demo: Conta Corrente Nubank, Conta Inter, Carteira, Reserva CDB');
+  console.log('Cartoes demo: Cartão Nubank, Cartão Inter, Cartão Mercado Pago');
+  console.log(`Transacoes demo: ${transactionCount}`);
+  console.log(`Orçamentos demo: ${budgetDefinitions.length}`);
+  console.log(`Metas demo: ${goalDefinitions.length}`);
 }
 
 main()

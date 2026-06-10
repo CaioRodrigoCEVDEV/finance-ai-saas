@@ -2,12 +2,10 @@ import Card from '../ui/Card';
 import EmptyState from '../ui/EmptyState';
 import LoadingSkeleton from '../ui/LoadingSkeleton';
 import { FolderKanban } from 'lucide-react';
+import { formatCurrencyBRL, formatTransactionType } from '../../utils/formatters';
 
 function formatCurrency(value) {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL'
-  }).format(value || 0);
+  return formatCurrencyBRL(value);
 }
 
 function CategoryReport({ data, loading }) {
@@ -52,14 +50,14 @@ function CategoryReport({ data, loading }) {
               <tr key={`${item.categoryId}-${item.type}`} className="hover:bg-slate-50">
                 <td className="px-6 py-4 font-medium text-slate-900">{item.categoryName}</td>
                 <td className="px-6 py-4">
-                  <span className={
+                    <span className={
                     item.type === 'INCOME'
                       ? 'text-emerald-600'
                       : item.type === 'EXPENSE'
                         ? 'text-rose-600'
                         : 'text-blue-600'
                   }>
-                    {item.type}
+                    {formatTransactionType(item.type)}
                   </span>
                 </td>
                 <td className="px-6 py-4 font-medium text-slate-900">{formatCurrency(item.amount)}</td>

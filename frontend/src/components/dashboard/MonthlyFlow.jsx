@@ -1,17 +1,4 @@
-import { formatCurrencyBRL } from '../../utils/formatters';
-
-function formatMonthLabel(monthKey) {
-  const [year, month] = String(monthKey).split('-');
-
-  if (!year || !month) {
-    return monthKey;
-  }
-
-  return new Intl.DateTimeFormat('pt-BR', {
-    month: 'short',
-    year: '2-digit'
-  }).format(new Date(Number(year), Number(month) - 1, 1));
-}
+import { formatCurrencyBRL, formatMonthLabel } from '../../utils/formatters';
 
 function MonthlyFlow({ items }) {
   if (!items.length) {

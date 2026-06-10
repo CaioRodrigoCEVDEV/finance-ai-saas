@@ -31,6 +31,18 @@ FRONTEND_URL=http://localhost:5173
 PORT=3333
 ```
 
+### Variáveis de ambiente obrigatórias
+
+```env
+PORT=3333
+NODE_ENV=development
+DATABASE_URL="postgresql://USUARIO:SENHA@HOST:PORTA/NOME_DO_BANCO?schema=public"
+JWT_SECRET=change_me
+JWT_EXPIRES_IN=7d
+JWT_COOKIE_NAME=financeai_token
+FRONTEND_URL=http://localhost:5173
+```
+
 ## Scripts
 
 - `npm run dev`: inicia em desenvolvimento na porta `3333`
@@ -76,13 +88,30 @@ npx prisma db seed
 
 O seed cria e atualiza, de forma idempotente, os seguintes dados:
 
-- tenant `Finance AI Demo`
+- tenant `Finance AI Demo` com plano `PREMIUM`
 - usuário admin `admin@financeai.com` com senha `123456`
 - vínculo `UserTenant` com role `OWNER`
-- categorias globais padrão com `tenant_id = null`
-- contas demo `Conta Corrente Nubank` e `Carteira`
-- cartão de crédito `Cartão Nubank`
-- transações fictícias confirmadas no mês atual
+- 22 categorias globais padrão com `tenant_id = null`
+- 4 contas demo: `Conta Corrente Nubank`, `Conta Inter`, `Carteira`, `Reserva CDB`
+- 3 cartões de crédito: `Cartão Nubank`, `Cartão Inter`, `Cartão Mercado Pago`
+- 10 regras de categorizacao automatica (IFOOD, UBER, NETFLIX, SPOTIFY, etc.)
+- ~90 transações realistas confirmadas nos últimos 6 meses
+- 7 orçamentos para o mês atual (seguro, alerta e excedido)
+- 5 metas financeiras (ativa e concluída)
+
+Para rodar o seed:
+
+```bash
+npx prisma db seed
+```
+
+Fluxo recomendado para preparar o ambiente:
+
+```bash
+npx prisma migrate dev --name init_schema
+npx prisma generate
+npx prisma db seed
+```
 
 Fluxo recomendado para preparar o ambiente:
 

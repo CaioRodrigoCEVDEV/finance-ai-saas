@@ -4,12 +4,10 @@ import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import Select from '../../components/ui/Select';
+import { formatCurrencyBRL } from '../../utils/formatters';
 
 function formatCurrency(value) {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL'
-  }).format(value || 0);
+  return formatCurrencyBRL(value);
 }
 
 function ImportPreviewTable({

@@ -2,17 +2,15 @@ import Card from '../ui/Card';
 import EmptyState from '../ui/EmptyState';
 import LoadingSkeleton from '../ui/LoadingSkeleton';
 import { ArrowDown } from 'lucide-react';
+import { formatCurrencyBRL, formatDateBR } from '../../utils/formatters';
 
 function formatCurrency(value) {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL'
-  }).format(value || 0);
+  return formatCurrencyBRL(value);
 }
 
 function formatDate(value) {
   if (!value) return '-';
-  return new Date(value).toLocaleDateString('pt-BR');
+  return formatDateBR(value);
 }
 
 function TopExpensesReport({ data, loading }) {
