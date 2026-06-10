@@ -1,9 +1,16 @@
 import { useEffect, useState } from 'react';
+import { AlertCircle, FolderTree, Plus } from 'lucide-react';
 
 import CategoryCard from '../components/categories/CategoryCard';
 import CategoryForm from '../components/categories/CategoryForm';
 import CategoryTypeTabs from '../components/categories/CategoryTypeTabs';
-import MainLayout from '../layouts/MainLayout';
+import AppLayout from '../layouts/AppLayout';
+import Button from '../components/ui/Button';
+import Card from '../components/ui/Card';
+import EmptyState from '../components/ui/EmptyState';
+import LoadingSkeleton from '../components/ui/LoadingSkeleton';
+import Modal from '../components/ui/Modal';
+import PageHeader from '../components/ui/PageHeader';
 import {
   createCategory,
   deleteCategory,
@@ -129,60 +136,55 @@ function Categories() {
   }
 
   return (
-    <MainLayout>
-      <header className="relative overflow-hidden rounded-[36px] border border-slate-800 bg-slate-900/70 p-8 backdrop-blur-sm">
-        <div className="absolute inset-y-0 right-0 w-1/2 bg-[radial-gradient(circle_at_top,rgba(139,92,246,0.28),transparent_55%)]" />
-        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <span className="rounded-full border border-violet-400/30 bg-violet-500/10 px-3 py-1 text-xs font-medium uppercase tracking-[0.3em] text-violet-200">
-              Classificacao financeira
-            </span>
-            <h1 className="mt-4 text-4xl font-bold tracking-tight text-white md:text-5xl">Categorias</h1>
-            <p className="mt-3 max-w-2xl text-lg text-slate-300">
-              Organize receitas, despesas, transferencias e investimentos.
-            </p>
-          </div>
+    <AppLayout>
+      <div className="space-y-8 pb-8">
+        <PageHeader
+          title="Categorias"
+          description="Organize receitas, despesas, transferencias e investimentos em uma estrutura clara, com filtros modernos e regras atuais preservadas."
+          action={(
+            <Button onClick={handleCreateClick}>
+              <Plus className="h-4 w-4" />
+              Nova categoria
+            </Button>
+          )}
+        />
 
-          <button
-            type="button"
-            onClick={handleCreateClick}
-            className="rounded-2xl bg-violet-400 px-5 py-3 font-semibold text-slate-950 transition hover:bg-violet-300"
-          >
-            Nova categoria
-          </button>
-        </div>
-      </header>
-
-      <main className="py-10">
-        <div className="mb-8 rounded-[28px] border border-slate-800 bg-slate-900/60 p-5 backdrop-blur-sm">
+        <Card className="rounded-[28px] p-5">
           <CategoryTypeTabs activeType={activeType} onChange={setActiveType} />
-        </div>
+        </Card>
 
-        <div className="grid gap-8 xl:grid-cols-[1.15fr_0.85fr]">
-          <section className="space-y-6">
+        <div className="space-y-6">
             {loading ? (
-              <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-8 text-slate-300">
-                <p className="text-lg font-medium text-white">Carregando categorias...</p>
-                <p className="mt-2 text-sm text-slate-400">Buscando categorias padrao e personalizadas do tenant autenticado.</p>
+              <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                {[1, 2, 3, 4, 5, 6].map((item) => <LoadingSkeleton key={item} className="h-64 rounded-[28px]" />)}
               </div>
             ) : null}
 
             {!loading && error ? (
-              <div className="rounded-3xl border border-rose-500/30 bg-rose-500/10 p-6">
-                <p className="text-lg font-medium text-white">Falha ao processar categorias</p>
-                <p className="mt-2 text-sm text-rose-100">{error}</p>
-              </div>
+              <Card className="rounded-[28px] border-rose-200 bg-rose-50 p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
+                    <AlertCircle className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-lg font-medium text-slate-900">Falha ao processar categorias</p>
+                    <p className="mt-2 text-sm text-rose-700">{error}</p>
+                  </div>
+                </div>
+              </Card>
             ) : null}
 
             {!loading && !error && categories.length === 0 ? (
-              <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-8 text-center">
-                <p className="text-xl font-semibold text-white">Nenhuma categoria encontrada</p>
-                <p className="mt-2 text-sm text-slate-400">Ajuste o filtro ou crie uma nova categoria personalizada para este tenant.</p>
-              </div>
+              <EmptyState
+                icon={FolderTree}
+                title="Nenhuma categoria encontrada"
+                description="Ajuste o filtro atual ou crie uma categoria personalizada para este tenant sem alterar as categorias padrao existentes."
+                action={<Button onClick={handleCreateClick}>Criar categoria</Button>}
+              />
             ) : null}
 
             {!loading && categories.length > 0 ? (
-              <div className="grid gap-6">
+              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                 {categories.map((category) => (
                   <CategoryCard
                     key={category.id}
@@ -193,30 +195,19 @@ function Categories() {
                 ))}
               </div>
             ) : null}
-          </section>
-
-          <aside>
-            {formVisible ? (
-              <CategoryForm
-                category={selectedCategory}
-                categories={allActiveCategories}
-                loading={saving}
-                onCancel={handleCancelForm}
-                onSubmit={handleSubmit}
-              />
-            ) : (
-              <section className="rounded-[32px] border border-dashed border-slate-700 bg-slate-900/50 p-8 text-slate-300">
-                <p className="text-sm uppercase tracking-[0.28em] text-slate-500">Painel rapido</p>
-                <h2 className="mt-3 text-2xl font-semibold text-white">Combine categorias padrao com a estrutura do seu tenant</h2>
-                <p className="mt-3 text-sm leading-6 text-slate-400">
-                  Categorias globais ficam visiveis para todos os tenants autenticados, enquanto categorias personalizadas podem ser criadas, editadas e removidas apenas dentro do tenant atual.
-                </p>
-              </section>
-            )}
-          </aside>
         </div>
-      </main>
-    </MainLayout>
+
+        <Modal isOpen={formVisible} title={selectedCategory ? 'Editar categoria' : 'Nova categoria'} onClose={handleCancelForm}>
+          <CategoryForm
+            category={selectedCategory}
+            categories={allActiveCategories}
+            loading={saving}
+            onCancel={handleCancelForm}
+            onSubmit={handleSubmit}
+          />
+        </Modal>
+      </div>
+    </AppLayout>
   );
 }
 

@@ -1,8 +1,15 @@
 import { useEffect, useState } from 'react';
+import { AlertCircle, Plus, WalletCards } from 'lucide-react';
 
 import AccountCard from '../components/accounts/AccountCard';
 import AccountForm from '../components/accounts/AccountForm';
-import MainLayout from '../layouts/MainLayout';
+import AppLayout from '../layouts/AppLayout';
+import Button from '../components/ui/Button';
+import Card from '../components/ui/Card';
+import EmptyState from '../components/ui/EmptyState';
+import LoadingSkeleton from '../components/ui/LoadingSkeleton';
+import Modal from '../components/ui/Modal';
+import PageHeader from '../components/ui/PageHeader';
 import {
   createAccount,
   deleteAccount,
@@ -112,56 +119,51 @@ function Accounts() {
   }
 
   return (
-    <MainLayout>
-      <header className="relative overflow-hidden rounded-[36px] border border-slate-800 bg-slate-900/70 p-8 backdrop-blur-sm">
-        <div className="absolute inset-y-0 right-0 w-1/2 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.22),transparent_55%)]" />
-        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <span className="rounded-full border border-sky-400/30 bg-sky-500/10 px-3 py-1 text-xs font-medium uppercase tracking-[0.3em] text-sky-300">
-              Gestao financeira
-            </span>
-            <h1 className="mt-4 text-4xl font-bold tracking-tight text-white md:text-5xl">Contas financeiras</h1>
-            <p className="mt-3 max-w-2xl text-lg text-slate-300">
-              Organize saldo, instituicoes e status das contas do tenant atual em um unico painel.
-            </p>
-          </div>
+    <AppLayout>
+      <div className="space-y-8 pb-8">
+        <PageHeader
+          title="Contas financeiras"
+          description="Organize saldo, instituicoes e status das contas do tenant atual em um unico painel, com formulario em modal e visual consistente."
+          action={(
+            <Button onClick={handleCreateClick}>
+              <Plus className="h-4 w-4" />
+              Nova conta
+            </Button>
+          )}
+        />
 
-          <button
-            type="button"
-            onClick={handleCreateClick}
-            className="rounded-2xl bg-sky-500 px-5 py-3 font-semibold text-slate-950 transition hover:bg-sky-400"
-          >
-            Nova conta
-          </button>
-        </div>
-      </header>
-
-      <main className="py-10">
-        <div className="grid gap-8 xl:grid-cols-[1.15fr_0.85fr]">
-          <section className="space-y-6">
+        <div className="space-y-6">
             {loading ? (
-              <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-8 text-slate-300">
-                <p className="text-lg font-medium text-white">Carregando contas...</p>
-                <p className="mt-2 text-sm text-slate-400">Buscando contas ativas do tenant autenticado.</p>
+              <div className="grid gap-5 md:grid-cols-2">
+                {[1, 2, 3, 4].map((item) => <LoadingSkeleton key={item} className="h-64 rounded-[28px]" />)}
               </div>
             ) : null}
 
             {!loading && error ? (
-              <div className="rounded-3xl border border-rose-500/30 bg-rose-500/10 p-6">
-                <p className="text-lg font-medium text-white">Falha ao processar contas</p>
-                <p className="mt-2 text-sm text-rose-100">{error}</p>
-              </div>
+              <Card className="rounded-[28px] border-rose-200 bg-rose-50 p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
+                    <AlertCircle className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-lg font-medium text-slate-900">Falha ao processar contas</p>
+                    <p className="mt-2 text-sm text-rose-700">{error}</p>
+                  </div>
+                </div>
+              </Card>
             ) : null}
 
             {!loading && !error && accounts.length === 0 ? (
-              <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-8 text-center">
-                <p className="text-xl font-semibold text-white">Nenhuma conta cadastrada</p>
-                <p className="mt-2 text-sm text-slate-400">Crie a primeira conta financeira deste tenant para acompanhar os saldos.</p>
-              </div>
+              <EmptyState
+                icon={WalletCards}
+                title="Nenhuma conta cadastrada"
+                description="Crie a primeira conta financeira deste tenant para acompanhar os saldos com a nova interface premium."
+                action={<Button onClick={handleCreateClick}>Criar primeira conta</Button>}
+              />
             ) : null}
 
             {!loading && accounts.length > 0 ? (
-              <div className="grid gap-6">
+              <div className="grid gap-6 xl:grid-cols-2">
                 {accounts.map((account) => (
                   <AccountCard
                     key={account.id}
@@ -172,29 +174,13 @@ function Accounts() {
                 ))}
               </div>
             ) : null}
-          </section>
-
-          <aside>
-            {formVisible ? (
-              <AccountForm
-                account={selectedAccount}
-                loading={saving}
-                onCancel={handleCancelForm}
-                onSubmit={handleSubmit}
-              />
-            ) : (
-              <section className="rounded-[32px] border border-dashed border-slate-700 bg-slate-900/50 p-8 text-slate-300">
-                <p className="text-sm uppercase tracking-[0.28em] text-slate-500">Painel rapido</p>
-                <h2 className="mt-3 text-2xl font-semibold text-white">Crie e atualize contas sem sair da lista</h2>
-                <p className="mt-3 text-sm leading-6 text-slate-400">
-                  Use o botao <span className="font-medium text-slate-200">Nova conta</span> para cadastrar uma conta ou clique em editar em qualquer card para ajustar seus dados.
-                </p>
-              </section>
-            )}
-          </aside>
         </div>
-      </main>
-    </MainLayout>
+
+        <Modal isOpen={formVisible} title={selectedAccount ? 'Editar conta' : 'Nova conta'} onClose={handleCancelForm}>
+          <AccountForm account={selectedAccount} loading={saving} onCancel={handleCancelForm} onSubmit={handleSubmit} />
+        </Modal>
+      </div>
+    </AppLayout>
   );
 }
 

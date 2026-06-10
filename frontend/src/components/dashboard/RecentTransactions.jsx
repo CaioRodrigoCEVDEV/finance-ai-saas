@@ -1,8 +1,10 @@
+import Badge from '../ui/Badge';
+
 import { formatCurrencyBRL, formatDateBR } from '../../utils/formatters';
 
 function RecentTransactions({ transactions }) {
   if (!transactions.length) {
-    return <p className="text-sm text-slate-400">Nenhuma transacao recente encontrada.</p>;
+    return <p className="text-sm text-slate-500">Nenhuma transacao recente encontrada.</p>;
   }
 
   return (
@@ -13,26 +15,24 @@ function RecentTransactions({ transactions }) {
         const accountLabel = transaction.accountName || transaction.creditCardName || 'Sem conta';
 
         return (
-          <article
-            key={transaction.id}
-            className="flex flex-col gap-4 rounded-2xl border border-slate-800 bg-slate-950/50 p-4 lg:flex-row lg:items-center lg:justify-between"
-          >
-            <div>
-              <div className="flex flex-wrap items-center gap-3">
-                <h3 className="text-sm font-semibold text-white">{transaction.description}</h3>
-                <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${isExpense ? 'bg-rose-500/10 text-rose-300' : 'bg-emerald-500/10 text-emerald-300'}`}>
-                  {typeLabel}
-                </span>
+            <article
+              key={transaction.id}
+              className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 lg:flex-row lg:items-center lg:justify-between"
+            >
+              <div>
+                <div className="flex flex-wrap items-center gap-3">
+                  <h3 className="text-sm font-semibold text-slate-900">{transaction.description}</h3>
+                  <Badge variant={isExpense ? 'danger' : 'success'}>{typeLabel}</Badge>
+                </div>
+                <p className="mt-2 text-sm text-slate-500">
+                  {transaction.categoryName} • {accountLabel} • {formatDateBR(transaction.transactionDate)}
+                </p>
               </div>
-              <p className="mt-2 text-sm text-slate-400">
-                {transaction.categoryName} • {accountLabel} • {formatDateBR(transaction.transactionDate)}
-              </p>
-            </div>
 
-            <p className={`text-base font-semibold ${isExpense ? 'text-rose-300' : 'text-emerald-300'}`}>
-              {isExpense ? '-' : '+'}{formatCurrencyBRL(transaction.amount)}
-            </p>
-          </article>
+              <p className={`text-base font-semibold ${isExpense ? 'text-rose-600' : 'text-emerald-600'}`}>
+                {isExpense ? '-' : '+'}{formatCurrencyBRL(transaction.amount)}
+              </p>
+            </article>
         );
       })}
     </div>

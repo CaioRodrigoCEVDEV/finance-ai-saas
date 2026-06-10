@@ -1,11 +1,15 @@
 import { useEffect, useState } from 'react';
+import { Activity, AlertCircle, ChartNoAxesCombined, Layers3 } from 'lucide-react';
 
 import ExpenseCategoryList from '../components/dashboard/ExpenseCategoryList';
+import Card from '../components/ui/Card';
+import LoadingSkeleton from '../components/ui/LoadingSkeleton';
+import PageHeader from '../components/ui/PageHeader';
 import { useAuth } from '../contexts/AuthContext';
 import MonthlyFlow from '../components/dashboard/MonthlyFlow';
 import RecentTransactions from '../components/dashboard/RecentTransactions';
 import SummaryCard from '../components/dashboard/SummaryCard';
-import MainLayout from '../layouts/MainLayout';
+import AppLayout from '../layouts/AppLayout';
 import {
   getDashboardSummary,
   getExpensesByCategory,
@@ -106,40 +110,45 @@ function Dashboard() {
     : [];
 
   return (
-    <MainLayout>
-      <header className="border-b border-slate-800 pb-8">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <span className="rounded-full border border-brand-400/30 bg-brand-500/10 px-3 py-1 text-xs font-medium uppercase tracking-[0.3em] text-brand-400">
-              Dashboard em tempo real
-            </span>
-            <h1 className="mt-4 text-4xl font-bold tracking-tight text-white md:text-5xl">Finance AI Dashboard</h1>
-            <p className="mt-3 max-w-2xl text-lg text-slate-300">Visao geral da sua vida financeira</p>
-          </div>
+    <AppLayout>
+      <div className="space-y-8 pb-8">
+        <PageHeader
+          title="Dashboard financeiro"
+          description="Visao geral da operacao do tenant, com leitura clara de saldo, despesas, fluxo mensal e transacoes recentes."
+          action={(
+            <Card className="min-w-[220px] rounded-[24px] p-4">
+              <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Conta ativa</p>
+              <p className="mt-2 text-sm font-semibold text-slate-900">{user?.name || 'Usuario autenticado'}</p>
+              <p className="mt-1 text-sm text-slate-500">{tenant?.name || 'Finance AI'} • {tenant?.plan || 'FREE'}</p>
+            </Card>
+          )}
+        />
 
-          <div className="flex flex-col items-start gap-3 rounded-3xl border border-slate-800 bg-slate-900/70 p-4 text-sm text-slate-300 lg:items-end">
-            <div>
-              <p className="font-semibold text-white">{user?.name || 'Usuario autenticado'}</p>
-              <p className="mt-1">{tenant?.name || 'Finance AI'}</p>
-              <p className="text-slate-400">{tenant?.role || 'MEMBER'} • {tenant?.plan || 'FREE'}</p>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main className="py-10">
         {loading ? (
-          <section className="rounded-3xl border border-slate-800 bg-slate-900/70 p-8 text-slate-300 backdrop-blur-sm">
-            <p className="text-lg font-medium text-white">Carregando dashboard...</p>
-            <p className="mt-2 text-sm text-slate-400">Buscando saldo, categorias, transacoes e fluxo mensal.</p>
+          <section className="space-y-6">
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+              {[1, 2, 3, 4].map((item) => <LoadingSkeleton key={item} className="h-40 rounded-[28px]" />)}
+            </div>
+            <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+              <LoadingSkeleton className="h-[340px] rounded-[28px]" />
+              <LoadingSkeleton className="h-[340px] rounded-[28px]" />
+            </div>
+            <LoadingSkeleton className="h-[320px] rounded-[28px]" />
           </section>
         ) : null}
 
         {!loading && error ? (
-          <section className="rounded-3xl border border-rose-500/30 bg-rose-500/10 p-8 backdrop-blur-sm">
-            <p className="text-lg font-medium text-white">Falha ao carregar dados do dashboard</p>
-            <p className="mt-2 text-sm text-rose-100">{error}</p>
-          </section>
+          <Card className="rounded-[28px] border-rose-200 bg-rose-50 p-8">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
+                <AlertCircle className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-lg font-medium text-slate-900">Falha ao carregar dados do dashboard</p>
+                <p className="mt-2 text-sm text-rose-700">{error}</p>
+              </div>
+            </div>
+          </Card>
         ) : null}
 
         {!loading && !error ? (
@@ -151,36 +160,51 @@ function Dashboard() {
             </section>
 
             <section className="grid gap-8 xl:grid-cols-[1.1fr_0.9fr]">
-              <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6 backdrop-blur-sm">
+              <Card className="rounded-[28px] p-6">
                 <div className="mb-6 flex items-center justify-between gap-4">
                   <div>
-                    <h2 className="text-xl font-semibold text-white">Gastos por categoria</h2>
-                    <p className="mt-2 text-sm text-slate-400">Distribuicao das despesas confirmadas no mes.</p>
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
+                        <Layers3 className="h-4 w-4" />
+                      </div>
+                      <h2 className="text-xl font-semibold text-slate-900">Gastos por categoria</h2>
+                    </div>
+                    <p className="mt-2 text-sm text-slate-500">Distribuicao das despesas confirmadas no mes.</p>
                   </div>
                 </div>
                 <ExpenseCategoryList items={dashboardData.expensesByCategory} />
-              </div>
+              </Card>
 
-              <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6 backdrop-blur-sm">
+              <Card className="rounded-[28px] p-6">
                 <div className="mb-6">
-                  <h2 className="text-xl font-semibold text-white">Fluxo mensal</h2>
-                  <p className="mt-2 text-sm text-slate-400">Panorama dos ultimos 6 meses.</p>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-50 text-sky-700">
+                      <ChartNoAxesCombined className="h-4 w-4" />
+                    </div>
+                    <h2 className="text-xl font-semibold text-slate-900">Fluxo mensal</h2>
+                  </div>
+                  <p className="mt-2 text-sm text-slate-500">Panorama dos ultimos 6 meses.</p>
                 </div>
                 <MonthlyFlow items={dashboardData.monthlyFlow} />
-              </div>
+              </Card>
             </section>
 
-            <section className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6 backdrop-blur-sm">
+            <Card className="rounded-[28px] p-6">
               <div className="mb-6">
-                <h2 className="text-xl font-semibold text-white">Transacoes recentes</h2>
-                <p className="mt-2 text-sm text-slate-400">Ultimos lancamentos registrados na base.</p>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-50 text-amber-700">
+                    <Activity className="h-4 w-4" />
+                  </div>
+                  <h2 className="text-xl font-semibold text-slate-900">Transacoes recentes</h2>
+                </div>
+                <p className="mt-2 text-sm text-slate-500">Ultimos lancamentos registrados na base.</p>
               </div>
               <RecentTransactions transactions={dashboardData.recentTransactions} />
-            </section>
+            </Card>
           </div>
         ) : null}
-      </main>
-    </MainLayout>
+      </div>
+    </AppLayout>
   );
 }
 

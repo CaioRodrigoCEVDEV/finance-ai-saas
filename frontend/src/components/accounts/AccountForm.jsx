@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react';
 
+import Button from '../ui/Button';
+import Input from '../ui/Input';
+import Select from '../ui/Select';
+
 const ACCOUNT_TYPES = [
   { value: 'CHECKING', label: 'Conta corrente' },
   { value: 'SAVINGS', label: 'Poupanca' },
@@ -16,7 +20,7 @@ const initialFormValues = {
   initialBalance: '0',
   currentBalance: '',
   currency: 'BRL',
-  color: '#38bdf8',
+  color: '#10b981',
   icon: 'bank',
   isActive: true
 };
@@ -33,7 +37,7 @@ function buildFormValues(account) {
     initialBalance: String(account.initialBalance ?? 0),
     currentBalance: String(account.currentBalance ?? ''),
     currency: account.currency || 'BRL',
-    color: account.color || '#38bdf8',
+    color: account.color || '#10b981',
     icon: account.icon || 'bank',
     isActive: account.isActive ?? true
   };
@@ -90,89 +94,50 @@ function AccountForm({ account, loading, onCancel, onSubmit }) {
   }
 
   return (
-    <section className="rounded-[32px] border border-slate-800 bg-slate-900/80 p-6 backdrop-blur-sm">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-sm uppercase tracking-[0.28em] text-sky-300/80">{account ? 'Editar conta' : 'Nova conta'}</p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">
-            {account ? 'Atualize os dados da conta' : 'Cadastre uma nova conta financeira'}
-          </h2>
-        </div>
-
-        <button
-          type="button"
-          onClick={onCancel}
-          className="rounded-2xl border border-slate-700 px-4 py-2 text-sm font-medium text-slate-200 transition hover:border-slate-500 hover:text-white"
-        >
-          Fechar
-        </button>
+    <section>
+      <div>
+        <p className="text-sm uppercase tracking-[0.28em] text-emerald-600">{account ? 'Editar conta' : 'Nova conta'}</p>
+        <h2 className="mt-2 text-2xl font-semibold text-slate-900">
+          {account ? 'Atualize os dados da conta' : 'Cadastre uma nova conta financeira'}
+        </h2>
       </div>
 
       <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
         <div className="grid gap-5 md:grid-cols-2">
-          <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-200">Nome</span>
-            <input name="name" value={formValues.name} onChange={handleChange} className="w-full rounded-2xl border border-slate-700 bg-slate-950/60 px-4 py-3 text-white outline-none transition focus:border-sky-400" />
-          </label>
+          <Input label="Nome" name="name" value={formValues.name} onChange={handleChange} />
 
-          <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-200">Tipo</span>
-            <select name="type" value={formValues.type} onChange={handleChange} className="w-full rounded-2xl border border-slate-700 bg-slate-950/60 px-4 py-3 text-white outline-none transition focus:border-sky-400">
+          <Select label="Tipo" name="type" value={formValues.type} onChange={handleChange}>
               {ACCOUNT_TYPES.map((typeOption) => (
                 <option key={typeOption.value} value={typeOption.value}>{typeOption.label}</option>
               ))}
-            </select>
-          </label>
+          </Select>
 
-          <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-200">Banco</span>
-            <input name="bankName" value={formValues.bankName} onChange={handleChange} className="w-full rounded-2xl border border-slate-700 bg-slate-950/60 px-4 py-3 text-white outline-none transition focus:border-sky-400" />
-          </label>
-
-          <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-200">Moeda</span>
-            <input name="currency" maxLength="3" value={formValues.currency} onChange={handleChange} className="w-full rounded-2xl border border-slate-700 bg-slate-950/60 px-4 py-3 uppercase text-white outline-none transition focus:border-sky-400" />
-          </label>
-
-          <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-200">Saldo inicial</span>
-            <input name="initialBalance" type="number" step="0.01" value={formValues.initialBalance} onChange={handleChange} className="w-full rounded-2xl border border-slate-700 bg-slate-950/60 px-4 py-3 text-white outline-none transition focus:border-sky-400" />
-          </label>
-
-          <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-200">Saldo atual</span>
-            <input name="currentBalance" type="number" step="0.01" value={formValues.currentBalance} onChange={handleChange} className="w-full rounded-2xl border border-slate-700 bg-slate-950/60 px-4 py-3 text-white outline-none transition focus:border-sky-400" />
-          </label>
-
-          <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-200">Cor</span>
-            <input name="color" value={formValues.color} onChange={handleChange} className="w-full rounded-2xl border border-slate-700 bg-slate-950/60 px-4 py-3 text-white outline-none transition focus:border-sky-400" />
-          </label>
-
-          <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-200">Icone</span>
-            <input name="icon" value={formValues.icon} onChange={handleChange} className="w-full rounded-2xl border border-slate-700 bg-slate-950/60 px-4 py-3 text-white outline-none transition focus:border-sky-400" />
-          </label>
+          <Input label="Banco" name="bankName" value={formValues.bankName} onChange={handleChange} />
+          <Input label="Moeda" name="currency" maxLength="3" value={formValues.currency} onChange={handleChange} className="uppercase" />
+          <Input label="Saldo inicial" name="initialBalance" type="number" step="0.01" value={formValues.initialBalance} onChange={handleChange} />
+          <Input label="Saldo atual" name="currentBalance" type="number" step="0.01" value={formValues.currentBalance} onChange={handleChange} />
+          <Input label="Cor" name="color" value={formValues.color} onChange={handleChange} />
+          <Input label="Icone" name="icon" value={formValues.icon} onChange={handleChange} />
         </div>
 
-        <label className="flex items-center gap-3 rounded-2xl border border-slate-800 bg-slate-950/40 px-4 py-3 text-sm text-slate-200">
-          <input name="isActive" type="checkbox" checked={formValues.isActive} onChange={handleChange} className="h-4 w-4 rounded border-slate-600 bg-slate-900" />
+        <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+          <input name="isActive" type="checkbox" checked={formValues.isActive} onChange={handleChange} className="h-4 w-4 rounded border-slate-300 text-emerald-600" />
           Conta ativa
         </label>
 
         {error ? (
-          <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
             {error}
           </div>
         ) : null}
 
         <div className="flex flex-wrap gap-3">
-          <button type="submit" disabled={loading} className="rounded-2xl bg-sky-500 px-5 py-3 font-semibold text-slate-950 transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:opacity-60">
+          <Button type="submit" disabled={loading}>
             {loading ? 'Salvando...' : account ? 'Salvar alteracoes' : 'Criar conta'}
-          </button>
-          <button type="button" onClick={onCancel} className="rounded-2xl border border-slate-700 px-5 py-3 font-medium text-white transition hover:border-slate-500">
+          </Button>
+          <Button type="button" variant="secondary" onClick={onCancel}>
             Cancelar
-          </button>
+          </Button>
         </div>
       </form>
     </section>

@@ -1,3 +1,5 @@
+import { cn } from '../../utils/cn';
+
 const CATEGORY_TABS = [
   { value: 'ALL', label: 'Todas' },
   { value: 'INCOME', label: 'Receitas' },
@@ -17,7 +19,12 @@ function CategoryTypeTabs({ activeType, onChange }) {
             key={tab.value}
             type="button"
             onClick={() => onChange(tab.value)}
-            className={`rounded-2xl px-4 py-2 text-sm font-medium transition ${isActive ? 'bg-violet-400 text-slate-950' : 'border border-slate-700 text-slate-300 hover:border-slate-500 hover:text-white'}`}
+            className={cn(
+              'rounded-full px-4 py-2 text-sm font-medium transition',
+              isActive
+                ? 'bg-emerald-600 text-white shadow-sm'
+                : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50 hover:text-slate-900'
+            )}
           >
             {tab.label}
           </button>
