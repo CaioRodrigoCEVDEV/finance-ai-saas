@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
 import { useAuth } from '../contexts/AuthContext';
 import Accounts from '../pages/Accounts';
+import Budgets from '../pages/Budgets';
 import Categories from '../pages/Categories';
 import CreditCards from '../pages/CreditCards';
 import Dashboard from '../pages/Dashboard';
@@ -63,6 +64,14 @@ function AppRoutes() {
           element={(
             <ProtectedRoute>
               <CreditCards />
+            </ProtectedRoute>
+          )}
+        />
+        <Route
+          path="/budgets"
+          element={(
+            <ProtectedRoute>
+              <Budgets />
             </ProtectedRoute>
           )}
         />

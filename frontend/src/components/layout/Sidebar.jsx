@@ -1,4 +1,5 @@
 import {
+  BadgeDollarSign,
   CreditCard,
   FolderKanban,
   Landmark,
@@ -16,6 +17,7 @@ const navigationItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/accounts', label: 'Contas', icon: Landmark },
   { to: '/credit-cards', label: 'Cartoes', icon: CreditCard },
+  { to: '/budgets', label: 'Orcamentos', icon: BadgeDollarSign },
   { to: '/transactions', label: 'Transacoes', icon: Receipt },
   { to: '/categories', label: 'Categorias', icon: FolderKanban }
 ];

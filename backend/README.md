@@ -501,3 +501,97 @@ curl -b cookies.txt -X PUT http://localhost:3333/transactions/ID_DA_TRANSACAO \
 
 curl -b cookies.txt -X DELETE http://localhost:3333/transactions/ID_DA_TRANSACAO
 ```
+
+## Endpoints de budgets
+
+- `GET http://localhost:3333/budgets`
+- `GET http://localhost:3333/budgets/:id`
+- `POST http://localhost:3333/budgets`
+- `PUT http://localhost:3333/budgets/:id`
+- `DELETE http://localhost:3333/budgets/:id`
+- `GET http://localhost:3333/budgets/summary/month`
+
+Todos os endpoints acima exigem autenticacao, usam `req.tenant.id` para isolamento multi-tenant e ignoram registros com `deleted_at` preenchido.
+
+### Filtros de listagem
+
+- `month`
+- `year`
+- `categoryId`
+
+### Regras aplicadas
+
+- `GET /budgets` usa mes e ano atuais quando os filtros nao sao enviados
+- `GET /budgets` e `GET /budgets/:id` incluem a categoria vinculada
+- `usedAmount` considera apenas transacoes `EXPENSE` e `CONFIRMED` do tenant atual, no mesmo mes/ano e com `deleted_at = null`
+- `remainingAmount = amount - usedAmount`
+- `usedPercentage` evita divisao por zero
+- `status` segue `SAFE`, `WARNING` e `EXCEEDED`
+- `POST` e `PUT` aceitam apenas categorias globais padrao ou categorias do tenant atual com `type = EXPENSE`
+- `tenant_id` sempre vem da sessao autenticada
+- `DELETE /budgets/:id` faz soft delete preenchendo `deleted_at`
+- o cadastro bloqueia duplicidade por `tenant_id + category_id + month + year`
+
+### Exemplo de payload para criar orcamento
+
+```json
+{
+  "name": "Mercado Junho",
+  "categoryId": "UUID_DA_CATEGORIA",
+  "amount": 800,
+  "month": 6,
+  "year": 2026
+}
+```
+
+### Resposta esperada de listagem
+
+```json
+[
+  {
+    "id": "...",
+    "name": "Mercado Junho",
+    "amount": 800,
+    "month": 6,
+    "year": 2026,
+    "category": {
+      "id": "...",
+      "name": "Mercado",
+      "type": "EXPENSE"
+    },
+    "usedAmount": 650,
+    "remainingAmount": 150,
+    "usedPercentage": 81.25,
+    "status": "WARNING",
+    "createdAt": "2026-06-10T12:00:00.000Z"
+  }
+]
+```
+
+### Exemplos com curl
+
+```bash
+curl -b cookies.txt http://localhost:3333/budgets
+
+curl -b cookies.txt "http://localhost:3333/budgets?month=6&year=2026"
+
+curl -b cookies.txt http://localhost:3333/budgets/summary/month
+
+curl -b cookies.txt -X POST http://localhost:3333/budgets \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Mercado Junho","categoryId":"ID_DA_CATEGORIA","amount":800,"month":6,"year":2026}'
+
+curl -b cookies.txt -X PUT http://localhost:3333/budgets/ID_DO_ORCAMENTO \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Mercado Junho Ajustado","amount":950}'
+
+curl -b cookies.txt -X DELETE http://localhost:3333/budgets/ID_DO_ORCAMENTO
+```
+
+Se houver duplicidade, a API retorna erro amigavel:
+
+```json
+{
+  "message": "Ja existe um orcamento para esta categoria no mes e ano informados"
+}
+```

@@ -7,6 +7,7 @@ const categoriesRoutes = require('../modules/categories/categories.routes');
 const creditCardsRoutes = require('../modules/credit-cards/credit-cards.routes');
 const dashboardRoutes = require('../modules/dashboard/dashboard-routes');
 const transactionsRoutes = require('../modules/transactions/transactions.routes');
+const budgetsRoutes = require('../modules/budgets/budgets.routes');
 
 const router = Router();
 
@@ -17,5 +18,6 @@ router.use(categoriesRoutes);
 router.use(creditCardsRoutes);
 router.use(dashboardRoutes);
 router.use(transactionsRoutes);
+router.use(budgetsRoutes);
 
 module.exports = router;

@@ -33,6 +33,7 @@ VITE_API_URL=http://localhost:3333
 - `/dashboard`: dashboard financeiro protegido por sessao
 - `/accounts`: tela protegida para CRUD de contas financeiras
 - `/credit-cards`: tela protegida para CRUD de cartoes de credito
+- `/budgets`: tela protegida para CRUD de orcamentos mensais
 - `/transactions`: tela protegida para CRUD de transacoes
 - `/categories`: tela protegida para CRUD de categorias
 
@@ -68,6 +69,12 @@ Se o usuario ja estiver autenticado, `/login` redireciona para `/dashboard`.
 - `POST /credit-cards`
 - `PUT /credit-cards/:id`
 - `DELETE /credit-cards/:id`
+- `GET /budgets`
+- `GET /budgets/:id`
+- `POST /budgets`
+- `PUT /budgets/:id`
+- `DELETE /budgets/:id`
+- `GET /budgets/summary/month`
 - `GET /transactions`
 - `GET /transactions/:id`
 - `POST /transactions`
@@ -85,6 +92,7 @@ Se o usuario ja estiver autenticado, `/login` redireciona para `/dashboard`.
 - `src/components/dashboard`: componentes específicos do dashboard
 - `src/components/accounts`: componentes da tela de contas
 - `src/components/creditCards`: componentes da tela de cartoes
+- `src/components/budgets`: componentes da tela de orcamentos
 - `src/components/transactions`: componentes da tela de transacoes
 - `src/components/categories`: componentes da tela de categorias
 - `src/utils`: utilitários de formatação
@@ -128,6 +136,21 @@ A rota `/credit-cards` fica protegida pela mesma sessao do dashboard e oferece:
 
 O menu lateral do layout autenticado agora possui links para `Dashboard`, `Contas`, `Cartoes`, `Transacoes` e `Categorias`.
 
+## Tela de orcamentos
+
+A rota `/budgets` fica protegida pela mesma sessao do dashboard e oferece:
+
+- resumo do mes com orcamento total, utilizado, disponivel e percentual usado
+- filtros por mes, ano e categoria
+- listagem em grid responsivo com cards por categoria
+- criacao e edicao em modal
+- exclusao com confirmacao
+- carga de categorias reais do tenant filtradas para `EXPENSE`
+- calculo de uso com base nas transacoes confirmadas do mesmo mes
+- atualizacao automatica da lista e do resumo apos criar, editar ou excluir
+
+O menu lateral do layout autenticado agora possui links para `Dashboard`, `Contas`, `Cartoes`, `Orcamentos`, `Transacoes` e `Categorias`.
+
 ## Tela de categorias
 
 A rota `/categories` fica protegida pela mesma sessao do dashboard e oferece:
@@ -145,6 +168,7 @@ O menu superior do layout autenticado agora possui links para `Dashboard`, `Cont
 - `/dashboard`
 - `/accounts`
 - `/credit-cards`
+- `/budgets`
 - `/transactions`
 - `/categories`
 
