@@ -6,7 +6,8 @@ import {
   LayoutDashboard,
   LogOut,
   Receipt,
-  Sparkles
+  Sparkles,
+  Target
 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
@@ -18,6 +19,7 @@ const navigationItems = [
   { to: '/accounts', label: 'Contas', icon: Landmark },
   { to: '/credit-cards', label: 'Cartoes', icon: CreditCard },
   { to: '/budgets', label: 'Orcamentos', icon: BadgeDollarSign },
+  { to: '/goals', label: 'Metas', icon: Target },
   { to: '/transactions', label: 'Transacoes', icon: Receipt },
   { to: '/categories', label: 'Categorias', icon: FolderKanban }
 ];

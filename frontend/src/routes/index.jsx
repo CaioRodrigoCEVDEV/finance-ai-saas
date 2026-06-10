@@ -6,6 +6,7 @@ import Budgets from '../pages/Budgets';
 import Categories from '../pages/Categories';
 import CreditCards from '../pages/CreditCards';
 import Dashboard from '../pages/Dashboard';
+import Goals from '../pages/Goals';
 import HomePage from '../pages/HomePage';
 import Login from '../pages/Login';
 import Transactions from '../pages/Transactions';
@@ -72,6 +73,14 @@ function AppRoutes() {
           element={(
             <ProtectedRoute>
               <Budgets />
+            </ProtectedRoute>
+          )}
+        />
+        <Route
+          path="/goals"
+          element={(
+            <ProtectedRoute>
+              <Goals />
             </ProtectedRoute>
           )}
         />

@@ -34,6 +34,7 @@ VITE_API_URL=http://localhost:3333
 - `/accounts`: tela protegida para CRUD de contas financeiras
 - `/credit-cards`: tela protegida para CRUD de cartoes de credito
 - `/budgets`: tela protegida para CRUD de orcamentos mensais
+- `/goals`: tela protegida para CRUD de metas financeiras
 - `/transactions`: tela protegida para CRUD de transacoes
 - `/categories`: tela protegida para CRUD de categorias
 
@@ -75,6 +76,13 @@ Se o usuario ja estiver autenticado, `/login` redireciona para `/dashboard`.
 - `PUT /budgets/:id`
 - `DELETE /budgets/:id`
 - `GET /budgets/summary/month`
+- `GET /goals`
+- `GET /goals/:id`
+- `POST /goals`
+- `PUT /goals/:id`
+- `PATCH /goals/:id/progress`
+- `DELETE /goals/:id`
+- `GET /goals/summary`
 - `GET /transactions`
 - `GET /transactions/:id`
 - `POST /transactions`
@@ -93,6 +101,7 @@ Se o usuario ja estiver autenticado, `/login` redireciona para `/dashboard`.
 - `src/components/accounts`: componentes da tela de contas
 - `src/components/creditCards`: componentes da tela de cartoes
 - `src/components/budgets`: componentes da tela de orcamentos
+- `src/components/goals`: componentes da tela de metas
 - `src/components/transactions`: componentes da tela de transacoes
 - `src/components/categories`: componentes da tela de categorias
 - `src/utils`: utilitários de formatação
@@ -149,7 +158,20 @@ A rota `/budgets` fica protegida pela mesma sessao do dashboard e oferece:
 - calculo de uso com base nas transacoes confirmadas do mesmo mes
 - atualizacao automatica da lista e do resumo apos criar, editar ou excluir
 
-O menu lateral do layout autenticado agora possui links para `Dashboard`, `Contas`, `Cartoes`, `Orcamentos`, `Transacoes` e `Categorias`.
+O menu lateral do layout autenticado agora possui links para `Dashboard`, `Contas`, `Cartoes`, `Orcamentos`, `Metas`, `Transacoes` e `Categorias`.
+
+## Tela de metas
+
+A rota `/goals` fica protegida pela mesma sessao do dashboard e oferece:
+
+- resumo com total de metas, metas ativas, metas concluidas e progresso geral
+- filtros por status e busca por nome ou descricao
+- listagem em grid responsivo com cards de meta
+- criacao e edicao em modal
+- modal exclusivo para atualizar progresso rapidamente
+- conclusao automatica ao atingir valor alvo
+- exclusao com confirmacao
+- atualizacao automatica da lista e do resumo apos criar, editar, atualizar progresso ou excluir
 
 ## Tela de categorias
 
@@ -169,6 +191,7 @@ O menu superior do layout autenticado agora possui links para `Dashboard`, `Cont
 - `/accounts`
 - `/credit-cards`
 - `/budgets`
+- `/goals`
 - `/transactions`
 - `/categories`
 

@@ -89,3 +89,4 @@ Resposta esperada:
 - O Prisma usa `env("DATABASE_URL")` no `backend/prisma/schema.prisma`.
 - O CRUD de contas financeiras ja esta disponivel em `GET/POST/PUT/DELETE /accounts` com soft delete e filtro por tenant autenticado.
 - O CRUD de categorias ja esta disponivel em `GET/POST/PUT/DELETE /categories`, combinando categorias globais padrao e categorias personalizadas por tenant.
+- O CRUD de metas financeiras ja esta disponivel em `GET/POST/PUT/PATCH/DELETE /goals` com soft delete, progresso automatico e calculo de contribuicao mensal sugerida.

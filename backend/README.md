@@ -595,3 +595,109 @@ Se houver duplicidade, a API retorna erro amigavel:
   "message": "Ja existe um orcamento para esta categoria no mes e ano informados"
 }
 ```
+
+## Endpoints de goals
+
+- `GET http://localhost:3333/goals`
+- `GET http://localhost:3333/goals/summary`
+- `GET http://localhost:3333/goals/:id`
+- `POST http://localhost:3333/goals`
+- `PUT http://localhost:3333/goals/:id`
+- `PATCH http://localhost:3333/goals/:id/progress`
+- `DELETE http://localhost:3333/goals/:id`
+
+Todos os endpoints acima exigem autenticacao, usam `req.tenant.id` para isolamento multi-tenant e ignoram registros com `deleted_at` preenchido.
+
+### Filtros de listagem
+
+- `status=ACTIVE|COMPLETED|CANCELED`
+- `search`
+
+### Regras aplicadas
+
+- `GET /goals` retorna metas do tenant atual com `deleted_at = null`
+- `GET /goals` ordena por `status` ascendente e `deadline` ascendente
+- `progressPercentage = currentAmount / targetAmount * 100` com protecao contra divisao por zero
+- `remainingAmount = targetAmount - currentAmount`
+- `suggestedMonthlyContribution` calcula apenas quando `deadline` existe e `status = ACTIVE`
+- `daysRemaining` calcula dias entre hoje e o prazo; pode retornar negativo se vencido
+- `POST` grava `tenant_id` da sessao e `user_id` com `req.user.id`
+- `currentAmount` default `0` e nao aceita negativo
+- `targetAmount` obrigatorio e maior que zero
+- `status` default `ACTIVE`; se `currentAmount >= targetAmount` na criacao, vira `COMPLETED`
+- `PATCH /goals/:id/progress` atualiza apenas `currentAmount`
+- se `currentAmount >= targetAmount` no progresso, status vira `COMPLETED` automaticamente
+- se `currentAmount < targetAmount` e status era `COMPLETED`, volta para `ACTIVE`
+- `DELETE /goals/:id` faz soft delete preenchendo `deleted_at`
+
+### Exemplo de payload para criar meta
+
+```json
+{
+  "name": "Reserva de emergencia",
+  "description": "Juntar 6 meses de custo de vida",
+  "targetAmount": 12000,
+  "currentAmount": 3000,
+  "deadline": "2026-12-31",
+  "status": "ACTIVE"
+}
+```
+
+### Resposta esperada de listagem
+
+```json
+[
+  {
+    "id": "...",
+    "name": "Reserva de emergencia",
+    "description": "Juntar 6 meses de custo de vida",
+    "targetAmount": 12000,
+    "currentAmount": 3000,
+    "deadline": "2026-12-31T00:00:00.000Z",
+    "status": "ACTIVE",
+    "progressPercentage": 25,
+    "remainingAmount": 9000,
+    "suggestedMonthlyContribution": 1500,
+    "daysRemaining": 204,
+    "createdAt": "2026-06-10T12:00:00.000Z"
+  }
+]
+```
+
+### Resposta esperada de summary
+
+```json
+{
+  "totalGoals": 5,
+  "activeGoals": 3,
+  "completedGoals": 1,
+  "canceledGoals": 1,
+  "totalTargetAmount": 30000,
+  "totalCurrentAmount": 8500,
+  "overallProgressPercentage": 28.33
+}
+```
+
+### Exemplos com curl
+
+```bash
+curl -b cookies.txt http://localhost:3333/goals
+
+curl -b cookies.txt "http://localhost:3333/goals?status=ACTIVE&search=viagem"
+
+curl -b cookies.txt http://localhost:3333/goals/summary
+
+curl -b cookies.txt -X POST http://localhost:3333/goals \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Reserva de emergencia","description":"Juntar 6 meses de custo de vida","targetAmount":12000,"currentAmount":3000,"deadline":"2026-12-31","status":"ACTIVE"}'
+
+curl -b cookies.txt -X PUT http://localhost:3333/goals/ID_DA_META \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Reserva de emergencia","targetAmount":15000,"currentAmount":5000}'
+
+curl -b cookies.txt -X PATCH http://localhost:3333/goals/ID_DA_META/progress \
+  -H "Content-Type: application/json" \
+  -d '{"currentAmount":4500}'
+
+curl -b cookies.txt -X DELETE http://localhost:3333/goals/ID_DA_META
+```
