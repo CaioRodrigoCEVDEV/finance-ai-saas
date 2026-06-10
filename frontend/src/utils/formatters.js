@@ -29,3 +29,38 @@ export function formatDateBR(date) {
 export function formatPercentage(value) {
   return `${percentageFormatter.format(Number(value || 0))}%`;
 }
+
+export function formatTransactionType(type) {
+  const labels = {
+    INCOME: 'Receita',
+    EXPENSE: 'Despesa',
+    TRANSFER: 'Transferencia',
+    INVESTMENT: 'Investimento'
+  };
+
+  return labels[type] || type || '--';
+}
+
+export function formatTransactionStatus(status) {
+  const labels = {
+    PENDING: 'Pendente',
+    CONFIRMED: 'Confirmada',
+    CANCELED: 'Cancelada'
+  };
+
+  return labels[status] || status || '--';
+}
+
+export function formatPaymentMethod(method) {
+  const labels = {
+    PIX: 'Pix',
+    DEBIT_CARD: 'Cartao de debito',
+    CREDIT_CARD: 'Cartao de credito',
+    CASH: 'Dinheiro',
+    BANK_SLIP: 'Boleto',
+    TRANSFER: 'Transferencia',
+    OTHER: 'Outro'
+  };
+
+  return labels[method] || method || '--';
+}

@@ -3,6 +3,7 @@ import {
   Landmark,
   LayoutDashboard,
   LogOut,
+  Receipt,
   Sparkles
 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -13,6 +14,7 @@ import { cn } from '../../utils/cn';
 const navigationItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/accounts', label: 'Contas', icon: Landmark },
+  { to: '/transactions', label: 'Transacoes', icon: Receipt },
   { to: '/categories', label: 'Categorias', icon: FolderKanban }
 ];
 

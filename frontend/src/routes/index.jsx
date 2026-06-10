@@ -6,6 +6,7 @@ import Categories from '../pages/Categories';
 import Dashboard from '../pages/Dashboard';
 import HomePage from '../pages/HomePage';
 import Login from '../pages/Login';
+import Transactions from '../pages/Transactions';
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
@@ -61,6 +62,14 @@ function AppRoutes() {
           element={(
             <ProtectedRoute>
               <Categories />
+            </ProtectedRoute>
+          )}
+        />
+        <Route
+          path="/transactions"
+          element={(
+            <ProtectedRoute>
+              <Transactions />
             </ProtectedRoute>
           )}
         />

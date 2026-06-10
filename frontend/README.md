@@ -32,6 +32,7 @@ VITE_API_URL=http://localhost:3333
 - `/login`: tela de autenticacao
 - `/dashboard`: dashboard financeiro protegido por sessao
 - `/accounts`: tela protegida para CRUD de contas financeiras
+- `/transactions`: tela protegida para CRUD de transacoes
 - `/categories`: tela protegida para CRUD de categorias
 
 Se o usuario nao estiver autenticado, `/dashboard` redireciona para `/login`.
@@ -61,6 +62,12 @@ Se o usuario ja estiver autenticado, `/login` redireciona para `/dashboard`.
 - `POST /categories`
 - `PUT /categories/:id`
 - `DELETE /categories/:id`
+- `GET /transactions`
+- `GET /transactions/:id`
+- `POST /transactions`
+- `PUT /transactions/:id`
+- `DELETE /transactions/:id`
+- `GET /transactions/summary/month`
 
 ## Estrutura
 
@@ -71,6 +78,7 @@ Se o usuario ja estiver autenticado, `/login` redireciona para `/dashboard`.
 - `src/components`: componentes reutilizáveis
 - `src/components/dashboard`: componentes específicos do dashboard
 - `src/components/accounts`: componentes da tela de contas
+- `src/components/transactions`: componentes da tela de transacoes
 - `src/components/categories`: componentes da tela de categorias
 - `src/utils`: utilitários de formatação
 
@@ -85,6 +93,20 @@ A rota `/accounts` fica protegida pela mesma sessao do dashboard e oferece:
 - atualizacao automatica da lista apos criar, editar ou excluir
 
 O menu superior do layout autenticado agora possui links para `Dashboard` e `Contas`.
+
+## Tela de transacoes
+
+A rota `/transactions` fica protegida pela mesma sessao do dashboard e oferece:
+
+- cards com resumo mensal de receitas, despesas, investimentos e saldo
+- filtros por descricao, tipo, status, conta, categoria e periodo
+- listagem responsiva com tabela no desktop e cards no mobile
+- criacao e edicao em modal
+- destaque visual de conta ou cartao conforme metodo de pagamento
+- atualizacao automatica da lista e do resumo apos criar, editar ou excluir
+- exclusao com confirmacao
+
+O menu lateral do layout autenticado agora possui links para `Dashboard`, `Contas`, `Transacoes` e `Categorias`.
 
 ## Tela de categorias
 

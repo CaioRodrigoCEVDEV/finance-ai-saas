@@ -311,6 +311,12 @@ curl -b cookies.txt -X DELETE http://localhost:3333/accounts/SEU_ACCOUNT_ID
 - `POST http://localhost:3333/categories`
 - `PUT http://localhost:3333/categories/:id`
 - `DELETE http://localhost:3333/categories/:id`
+- `GET http://localhost:3333/transactions`
+- `GET http://localhost:3333/transactions/:id`
+- `POST http://localhost:3333/transactions`
+- `PUT http://localhost:3333/transactions/:id`
+- `DELETE http://localhost:3333/transactions/:id`
+- `GET http://localhost:3333/transactions/summary/month`
 
 Todos os endpoints acima exigem autenticacao e seguem as regras abaixo:
 
@@ -352,4 +358,84 @@ Se houver transacoes vinculadas, a API retorna:
 {
   "message": "Categoria possui transacoes vinculadas e nao pode ser excluida."
 }
+```
+
+## Endpoints de transactions
+
+- `GET http://localhost:3333/transactions`
+- `GET http://localhost:3333/transactions/:id`
+- `POST http://localhost:3333/transactions`
+- `PUT http://localhost:3333/transactions/:id`
+- `DELETE http://localhost:3333/transactions/:id`
+- `GET http://localhost:3333/transactions/summary/month`
+
+Todos os endpoints acima exigem autenticacao, usam `req.tenant.id` para isolamento multi-tenant e ignoram registros com `deleted_at` preenchido.
+
+### Filtros de listagem
+
+- `page`
+- `limit`
+- `type=INCOME|EXPENSE|TRANSFER|INVESTMENT`
+- `status=PENDING|CONFIRMED|CANCELED`
+- `accountId`
+- `creditCardId`
+- `categoryId`
+- `startDate`
+- `endDate`
+- `search`
+- `source=MANUAL|CSV|OFX|OPEN_FINANCE|API`
+
+### Regras aplicadas
+
+- `tenant_id` vem sempre da sessao autenticada
+- `user_id` na criacao vem de `req.user.id`
+- `source` na criacao sempre sera `MANUAL`
+- conta, cartao e categoria precisam pertencer ao tenant atual ou ser categoria global padrao
+- categoria precisa combinar com o tipo da transacao quando informada
+- pagamentos fora de `CREDIT_CARD` exigem `accountId`
+- pagamentos em `CREDIT_CARD` exigem `creditCardId` ou `accountId`
+- exclusao usa soft delete com `deleted_at`
+- resumo mensal considera apenas transacoes `CONFIRMED`
+
+### Exemplo de payload para criar transacao
+
+```json
+{
+  "description": "Mercado",
+  "amount": 650,
+  "type": "EXPENSE",
+  "status": "CONFIRMED",
+  "transactionDate": "2026-06-10",
+  "paymentMethod": "DEBIT_CARD",
+  "accountId": "UUID_DA_CONTA",
+  "creditCardId": null,
+  "categoryId": "UUID_DA_CATEGORIA",
+  "notes": "Compra mensal",
+  "isRecurring": false,
+  "isInstallment": false,
+  "installmentNumber": null,
+  "installmentTotal": null
+}
+```
+
+### Exemplos com curl
+
+```bash
+curl -i -c cookies.txt -X POST http://localhost:3333/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@financeai.com","password":"123456"}'
+
+curl -b cookies.txt http://localhost:3333/transactions
+
+curl -b cookies.txt http://localhost:3333/transactions/summary/month
+
+curl -b cookies.txt -X POST http://localhost:3333/transactions \
+  -H "Content-Type: application/json" \
+  -d '{"description":"Teste despesa manual","amount":25.9,"type":"EXPENSE","status":"CONFIRMED","transactionDate":"2026-06-10","paymentMethod":"PIX","accountId":"ID_DA_CONTA","categoryId":"ID_DA_CATEGORIA"}'
+
+curl -b cookies.txt -X PUT http://localhost:3333/transactions/ID_DA_TRANSACAO \
+  -H "Content-Type: application/json" \
+  -d '{"description":"Teste despesa manual editada","amount":30.5,"type":"EXPENSE","status":"CONFIRMED","transactionDate":"2026-06-10","paymentMethod":"PIX","accountId":"ID_DA_CONTA","categoryId":"ID_DA_CATEGORIA"}'
+
+curl -b cookies.txt -X DELETE http://localhost:3333/transactions/ID_DA_TRANSACAO
 ```
