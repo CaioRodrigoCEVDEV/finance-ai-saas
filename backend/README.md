@@ -126,7 +126,7 @@ npx prisma db seed
 O seed cria e atualiza, de forma idempotente, os seguintes dados:
 
 - tenant `Finance AI Demo` com plano `PREMIUM`
-- usuário admin `admin@financeai.com` com senha `123456`
+- usuário demo `demo@financeai.com` com senha `123456`
 - vínculo `UserTenant` com role `OWNER`
 - 22 categorias globais padrão com `tenant_id = null`
 - 4 contas demo: `Conta Corrente Nubank`, `Conta Inter`, `Carteira`, `Reserva CDB`
@@ -190,7 +190,7 @@ Autenticacao baseada em JWT gravado em cookie `httpOnly`.
 
 ```json
 {
-  "email": "admin@financeai.com",
+  "email": "demo@financeai.com",
   "password": "123456"
 }
 ```
@@ -201,8 +201,8 @@ Resposta:
 {
   "user": {
     "id": "...",
-    "name": "Admin Demo",
-    "email": "admin@financeai.com"
+    "name": "Usuário Demo",
+    "email": "demo@financeai.com"
   },
   "tenant": {
     "id": "...",

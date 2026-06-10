@@ -106,14 +106,14 @@ npx prisma db seed
 
 ## Usuário demo
 
-- **Email**: `admin@financeai.com`
+- **Email**: `demo@financeai.com`
 - **Senha**: `123456`
 - **Tenant**: `Finance AI Demo`
 
 ## O que o seed cria
 
 - Tenant `Finance AI Demo` com plano `PREMIUM`
-- Usuario `Admin Demo` vinculado como `OWNER`
+- Usuario `Usuário Demo` vinculado como `OWNER`
 - **4 contas**: Conta Corrente Nubank, Conta Inter, Carteira, Reserva CDB
 - **3 cartoes**: Cartão Nubank, Cartão Inter, Cartão Mercado Pago
 - **22 categorias globais**: Salario, Freelance, Rendimentos, Reembolso, Alimentacao, Mercado, Moradia, Transporte, Saude, Educacao, Lazer, Assinaturas, Cartao de credito, Impostos, Pets, Familia, Outros, Renda Fixa, Renda Variavel, Cripto, Reserva de Emergencia, Transferencia entre contas

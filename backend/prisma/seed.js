@@ -106,7 +106,30 @@ async function main() {
     { name: 'Finance AI Demo', status: 'ACTIVE', plan: 'PREMIUM', deleted_at: null }
   );
 
-  const user = await prisma.user.upsert({
+  const demoUser = await prisma.user.upsert({
+    where: { email: 'demo@financeai.com' },
+    create: {
+      name: 'Usuário Demo',
+      email: 'demo@financeai.com',
+      password_hash: passwordHash,
+      status: 'ACTIVE',
+      deleted_at: null
+    },
+    update: {
+      name: 'Usuário Demo',
+      password_hash: passwordHash,
+      status: 'ACTIVE',
+      deleted_at: null
+    }
+  });
+
+  await prisma.userTenant.upsert({
+    where: { user_id_tenant_id: { user_id: demoUser.id, tenant_id: tenant.id } },
+    create: { user_id: demoUser.id, tenant_id: tenant.id, role: 'OWNER' },
+    update: { role: 'OWNER' }
+  });
+
+  const adminUser = await prisma.user.upsert({
     where: { email: 'admin@financeai.com' },
     create: {
       name: 'Admin Demo',
@@ -124,8 +147,8 @@ async function main() {
   });
 
   await prisma.userTenant.upsert({
-    where: { user_id_tenant_id: { user_id: user.id, tenant_id: tenant.id } },
-    create: { user_id: user.id, tenant_id: tenant.id, role: 'OWNER' },
+    where: { user_id_tenant_id: { user_id: adminUser.id, tenant_id: tenant.id } },
+    create: { user_id: adminUser.id, tenant_id: tenant.id, role: 'OWNER' },
     update: { role: 'OWNER' }
   });
 
@@ -136,44 +159,44 @@ async function main() {
     prisma.account,
     { tenant_id: tenant.id, name: 'Conta Corrente Nubank' },
     {
-      tenant_id: tenant.id, user_id: user.id, name: 'Conta Corrente Nubank',
+      tenant_id: tenant.id, user_id: demoUser.id, name: 'Conta Corrente Nubank',
       type: 'CHECKING', bank_name: 'Nubank', initial_balance: '3200.00', current_balance: '3200.00',
       currency: 'BRL', is_active: true, deleted_at: null
     },
-    { user_id: user.id, type: 'CHECKING', bank_name: 'Nubank', initial_balance: '3200.00', current_balance: '3200.00', currency: 'BRL', is_active: true, deleted_at: null }
+    { user_id: demoUser.id, type: 'CHECKING', bank_name: 'Nubank', initial_balance: '3200.00', current_balance: '3200.00', currency: 'BRL', is_active: true, deleted_at: null }
   );
 
   const interAccount = await upsertByLookup(
     prisma.account,
     { tenant_id: tenant.id, name: 'Conta Inter' },
     {
-      tenant_id: tenant.id, user_id: user.id, name: 'Conta Inter',
+      tenant_id: tenant.id, user_id: demoUser.id, name: 'Conta Inter',
       type: 'CHECKING', bank_name: 'Inter', initial_balance: '1500.00', current_balance: '1500.00',
       currency: 'BRL', is_active: true, deleted_at: null
     },
-    { user_id: user.id, type: 'CHECKING', bank_name: 'Inter', initial_balance: '1500.00', current_balance: '1500.00', currency: 'BRL', is_active: true, deleted_at: null }
+    { user_id: demoUser.id, type: 'CHECKING', bank_name: 'Inter', initial_balance: '1500.00', current_balance: '1500.00', currency: 'BRL', is_active: true, deleted_at: null }
   );
 
   const walletAccount = await upsertByLookup(
     prisma.account,
     { tenant_id: tenant.id, name: 'Carteira' },
     {
-      tenant_id: tenant.id, user_id: user.id, name: 'Carteira',
+      tenant_id: tenant.id, user_id: demoUser.id, name: 'Carteira',
       type: 'CASH', bank_name: null, initial_balance: '250.00', current_balance: '250.00',
       currency: 'BRL', is_active: true, deleted_at: null
     },
-    { user_id: user.id, type: 'CASH', initial_balance: '250.00', current_balance: '250.00', currency: 'BRL', is_active: true, deleted_at: null }
+    { user_id: demoUser.id, type: 'CASH', initial_balance: '250.00', current_balance: '250.00', currency: 'BRL', is_active: true, deleted_at: null }
   );
 
   const reserveAccount = await upsertByLookup(
     prisma.account,
     { tenant_id: tenant.id, name: 'Reserva CDB' },
     {
-      tenant_id: tenant.id, user_id: user.id, name: 'Reserva CDB',
+      tenant_id: tenant.id, user_id: demoUser.id, name: 'Reserva CDB',
       type: 'INVESTMENT', bank_name: 'Banco X', initial_balance: '5000.00', current_balance: '5000.00',
       currency: 'BRL', is_active: true, deleted_at: null
     },
-    { user_id: user.id, type: 'INVESTMENT', bank_name: 'Banco X', initial_balance: '5000.00', current_balance: '5000.00', currency: 'BRL', is_active: true, deleted_at: null }
+    { user_id: demoUser.id, type: 'INVESTMENT', bank_name: 'Banco X', initial_balance: '5000.00', current_balance: '5000.00', currency: 'BRL', is_active: true, deleted_at: null }
   );
 
   // Credit Cards
@@ -181,33 +204,33 @@ async function main() {
     prisma.creditCard,
     { tenant_id: tenant.id, name: 'Cartão Nubank' },
     {
-      tenant_id: tenant.id, user_id: user.id, account_id: nubankAccount.id,
+      tenant_id: tenant.id, user_id: demoUser.id, account_id: nubankAccount.id,
       name: 'Cartão Nubank', brand: 'MASTERCARD', limit_amount: '5000.00',
       closing_day: 10, due_day: 17, is_active: true, deleted_at: null
     },
-    { user_id: user.id, account_id: nubankAccount.id, brand: 'MASTERCARD', limit_amount: '5000.00', closing_day: 10, due_day: 17, is_active: true, deleted_at: null }
+    { user_id: demoUser.id, account_id: nubankAccount.id, brand: 'MASTERCARD', limit_amount: '5000.00', closing_day: 10, due_day: 17, is_active: true, deleted_at: null }
   );
 
   const interCard = await upsertByLookup(
     prisma.creditCard,
     { tenant_id: tenant.id, name: 'Cartão Inter' },
     {
-      tenant_id: tenant.id, user_id: user.id, account_id: interAccount.id,
+      tenant_id: tenant.id, user_id: demoUser.id, account_id: interAccount.id,
       name: 'Cartão Inter', brand: 'MASTERCARD', limit_amount: '3000.00',
       closing_day: 8, due_day: 15, is_active: true, deleted_at: null
     },
-    { user_id: user.id, account_id: interAccount.id, brand: 'MASTERCARD', limit_amount: '3000.00', closing_day: 8, due_day: 15, is_active: true, deleted_at: null }
+    { user_id: demoUser.id, account_id: interAccount.id, brand: 'MASTERCARD', limit_amount: '3000.00', closing_day: 8, due_day: 15, is_active: true, deleted_at: null }
   );
 
   const mpCard = await upsertByLookup(
     prisma.creditCard,
     { tenant_id: tenant.id, name: 'Cartão Mercado Pago' },
     {
-      tenant_id: tenant.id, user_id: user.id, account_id: nubankAccount.id,
+      tenant_id: tenant.id, user_id: demoUser.id, account_id: nubankAccount.id,
       name: 'Cartão Mercado Pago', brand: 'VISA', limit_amount: '2000.00',
       closing_day: 5, due_day: 12, is_active: true, deleted_at: null
     },
-    { user_id: user.id, account_id: nubankAccount.id, brand: 'VISA', limit_amount: '2000.00', closing_day: 5, due_day: 12, is_active: true, deleted_at: null }
+    { user_id: demoUser.id, account_id: nubankAccount.id, brand: 'VISA', limit_amount: '2000.00', closing_day: 5, due_day: 12, is_active: true, deleted_at: null }
   );
 
   // Categorization Rules
@@ -307,7 +330,7 @@ async function main() {
         },
         {
           tenant_id: tenant.id,
-          user_id: user.id,
+          user_id: demoUser.id,
           account_id: template.accountId || null,
           credit_card_id: template.creditCardId || null,
           category_id: categories[template.key].id,
@@ -325,7 +348,7 @@ async function main() {
           deleted_at: null
         },
         {
-          user_id: user.id,
+          user_id: demoUser.id,
           account_id: template.accountId || null,
           credit_card_id: template.creditCardId || null,
           category_id: categories[template.key].id,
@@ -369,7 +392,7 @@ async function main() {
         },
         {
           tenant_id: tenant.id,
-          user_id: user.id,
+          user_id: demoUser.id,
           account_id: template.accountId || null,
           credit_card_id: template.creditCardId || null,
           category_id: categories[template.key].id,
@@ -387,7 +410,7 @@ async function main() {
           deleted_at: null
         },
         {
-          user_id: user.id,
+          user_id: demoUser.id,
           account_id: template.accountId || null,
           credit_card_id: template.creditCardId || null,
           category_id: categories[template.key].id,
@@ -431,7 +454,7 @@ async function main() {
         },
         {
           tenant_id: tenant.id,
-          user_id: user.id,
+          user_id: demoUser.id,
           account_id: template.accountId || null,
           credit_card_id: template.creditCardId || null,
           category_id: categories[template.key].id,
@@ -449,7 +472,7 @@ async function main() {
           deleted_at: null
         },
         {
-          user_id: user.id,
+          user_id: demoUser.id,
           account_id: template.accountId || null,
           credit_card_id: template.creditCardId || null,
           category_id: categories[template.key].id,
@@ -523,7 +546,7 @@ async function main() {
       { tenant_id: tenant.id, name: goal.name },
       {
         tenant_id: tenant.id,
-        user_id: user.id,
+        user_id: demoUser.id,
         name: goal.name,
         description: null,
         target_amount: goal.target,
@@ -533,7 +556,7 @@ async function main() {
         deleted_at: null
       },
       {
-        user_id: user.id,
+        user_id: demoUser.id,
         target_amount: goal.target,
         current_amount: goal.current,
         deadline: goal.deadline,
@@ -545,7 +568,8 @@ async function main() {
 
   console.log('Seed concluido com sucesso.');
   console.log(`Tenant: ${tenant.name} (${tenant.email})`);
-  console.log(`Usuario admin: ${user.email}`);
+  console.log(`Usuario demo: ${demoUser.email}`);
+  console.log(`Usuario admin: ${adminUser.email}`);
   console.log(`Categorias globais: ${CATEGORY_DEFINITIONS.length}`);
   console.log('Contas demo: Conta Corrente Nubank, Conta Inter, Carteira, Reserva CDB');
   console.log('Cartoes demo: Cartão Nubank, Cartão Inter, Cartão Mercado Pago');

@@ -14,9 +14,6 @@ import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import { useAuth } from '../contexts/AuthContext';
 
-const showDemoCredentials =
-  import.meta.env.DEV || import.meta.env.VITE_SHOW_DEMO_CREDENTIALS === 'true';
-
 function DemoIndicator({ label, value, accent }) {
   return (
     <div className="rounded-2xl bg-white/8 ring-1 ring-white/10 px-4 py-3.5 backdrop-blur-sm">
@@ -177,18 +174,6 @@ function Login() {
                 )}
               </Button>
             </form>
-
-            {/* demo credentials – only in dev */}
-            {showDemoCredentials ? (
-              <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3.5 text-xs text-slate-500">
-                <p className="mb-1 font-semibold text-slate-600">Credenciais demo</p>
-                <p className="text-slate-500">
-                  <span className="text-slate-700">Email:</span>{' '}
-                  admin@financeai.com &middot;{' '}
-                  <span className="text-slate-700">Senha:</span> 123456
-                </p>
-              </div>
-            ) : null}
 
             {/* back to landing */}
             <div className="mt-6 text-center">

@@ -54,7 +54,7 @@ Se o usuario ja estiver autenticado, `/login` redireciona para `/dashboard`.
 
 ## Login demo
 
-- email: `admin@financeai.com`
+- email: `demo@financeai.com`
 - senha: `123456`
 
 ## Endpoints consumidos
