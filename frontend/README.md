@@ -37,6 +37,7 @@ VITE_API_URL=http://localhost:3333
 - `/goals`: tela protegida para CRUD de metas financeiras
 - `/transactions`: tela protegida para CRUD de transacoes
 - `/categories`: tela protegida para CRUD de categorias
+- `/imports`: tela protegida para importar extratos CSV ou OFX
 
 Se o usuario nao estiver autenticado, `/dashboard` redireciona para `/login`.
 Se o usuario ja estiver autenticado, `/login` redireciona para `/dashboard`.
@@ -89,6 +90,8 @@ Se o usuario ja estiver autenticado, `/login` redireciona para `/dashboard`.
 - `PUT /transactions/:id`
 - `DELETE /transactions/:id`
 - `GET /transactions/summary/month`
+- `POST /imports/preview`
+- `POST /imports/confirm`
 
 ## Estrutura
 
@@ -185,6 +188,19 @@ A rota `/categories` fica protegida pela mesma sessao do dashboard e oferece:
 - atualizacao automatica da lista apos criar, editar ou excluir
 
 O menu superior do layout autenticado agora possui links para `Dashboard`, `Contas` e `Categorias`.
+## Tela de importacao
+
+A rota `/imports` fica protegida pela mesma sessao do dashboard e oferece:
+
+- selecao de conta ou cartao de credito antes do upload
+- upload de arquivos CSV ou OFX com drag-and-drop ou clique
+- preview das transacoes detectadas com edicao inline de data, descricao, valor, tipo e categoria
+- sugestao automatica de categoria via regras ou heuristicas
+- destaque visual de linhas invalidas
+- remocao de linhas individuais antes da confirmacao
+- confirmacao final com contagem de criadas e ignoradas (duplicadas)
+- atualizacao automatica do dashboard e transacoes apos importar
+
 ## Telas disponiveis
 
 - `/dashboard`
@@ -194,6 +210,7 @@ O menu superior do layout autenticado agora possui links para `Dashboard`, `Cont
 - `/goals`
 - `/transactions`
 - `/categories`
+- `/imports`
 
 ## Cartoes de credito
 

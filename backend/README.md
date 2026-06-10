@@ -711,6 +711,87 @@ Se houver duplicidade, a API retorna erro amigavel:
 }
 ```
 
+## Endpoints de imports
+
+- `POST http://localhost:3333/imports/preview`
+- `POST http://localhost:3333/imports/confirm`
+
+Ambos exigem autenticacao e usam `req.tenant.id` para isolamento multi-tenant.
+
+### Regras aplicadas
+
+- `POST /imports/preview` recebe um arquivo `CSV` ou `OFX` via multipart/form-data
+- valida extensao `.csv` ou `.ofx` e tamanho maximo de 5MB
+- aceita campos opcionais `accountId` e `creditCardId` e valida se pertencem ao tenant atual
+- nao salva transacoes no banco; apenas retorna dados normalizados para revisao
+- `POST /imports/confirm` recebe lista revisada de transacoes e salva no banco
+- `source` deve ser `CSV` ou `OFX`
+- nao duplica transacao se `externalId` ja existir para o mesmo `tenant_id` e `source`
+- `tenant_id` e `user_id` sempre vem da sessao autenticada
+- valores negativos no arquivo se tornam `EXPENSE` com amount positivo
+- valores positivos se tornam `INCOME`
+- categoria e sugerida por `CategorizationRule` ou por heuristicas simples
+
+### Exemplo de payload para confirmacao
+
+```json
+{
+  "accountId": "UUID_DA_CONTA",
+  "creditCardId": null,
+  "source": "CSV",
+  "transactions": [
+    {
+      "externalId": "abc123",
+      "description": "IFOOD",
+      "amount": 89.9,
+      "type": "EXPENSE",
+      "transactionDate": "2026-06-10",
+      "paymentMethod": "DEBIT_CARD",
+      "categoryId": "UUID_DA_CATEGORIA",
+      "status": "CONFIRMED",
+      "notes": "Importado via CSV"
+    }
+  ]
+}
+```
+
+### Resposta de confirmacao
+
+```json
+{
+  "created": 8,
+  "skipped": 2,
+  "message": "Importacao concluida"
+}
+```
+
+### Exemplo de CSV para teste
+
+```csv
+data,descricao,valor
+2026-06-10,IFOOD,-89.90
+2026-06-10,SALARIO,5000.00
+2026-06-11,UBER,-42.50
+```
+
+### Exemplos com curl
+
+```bash
+# Preview com CSV
+curl -b cookies.txt -X POST http://localhost:3333/imports/preview \
+  -F "file=@extrato.csv" \
+  -F "accountId=ID_DA_CONTA"
+
+# Preview com OFX
+curl -b cookies.txt -X POST http://localhost:3333/imports/preview \
+  -F "file=@extrato.ofx"
+
+# Confirmar importacao
+curl -b cookies.txt -X POST http://localhost:3333/imports/confirm \
+  -H "Content-Type: application/json" \
+  -d '{"accountId":"ID_DA_CONTA","creditCardId":null,"source":"CSV","transactions":[{"externalId":"abc123","description":"IFOOD","amount":89.9,"type":"EXPENSE","transactionDate":"2026-06-10","paymentMethod":"DEBIT_CARD","categoryId":"ID_DA_CATEGORIA","status":"CONFIRMED","notes":"Importado via CSV"}]}'
+```
+
 ## Endpoints de goals
 
 - `GET http://localhost:3333/goals`

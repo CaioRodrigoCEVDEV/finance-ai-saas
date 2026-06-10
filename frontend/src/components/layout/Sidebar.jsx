@@ -1,6 +1,7 @@
 import {
   BadgeDollarSign,
   CreditCard,
+  FileUp,
   FolderKanban,
   Landmark,
   LayoutDashboard,
@@ -21,7 +22,8 @@ const navigationItems = [
   { to: '/budgets', label: 'Orcamentos', icon: BadgeDollarSign },
   { to: '/goals', label: 'Metas', icon: Target },
   { to: '/transactions', label: 'Transacoes', icon: Receipt },
-  { to: '/categories', label: 'Categorias', icon: FolderKanban }
+  { to: '/categories', label: 'Categorias', icon: FolderKanban },
+  { to: '/imports', label: 'Importar', icon: FileUp }
 ];
 
 function Sidebar({ mobile = false, onNavigate }) {
