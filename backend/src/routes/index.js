@@ -10,6 +10,7 @@ const transactionsRoutes = require('../modules/transactions/transactions.routes'
 const budgetsRoutes = require('../modules/budgets/budgets.routes');
 const goalsRoutes = require('../modules/goals/goals.routes');
 const importsRoutes = require('../modules/imports/imports.routes');
+const categorizationRulesRoutes = require('../modules/categorization-rules/categorization-rules.routes');
 
 const router = Router();
 
@@ -23,5 +24,6 @@ router.use(transactionsRoutes);
 router.use(budgetsRoutes);
 router.use(goalsRoutes);
 router.use(importsRoutes);
+router.use(categorizationRulesRoutes);
 
 module.exports = router;

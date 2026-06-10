@@ -116,3 +116,5 @@ Os endpoints antigos (`/dashboard/summary`, `/dashboard/expenses-by-category`, `
 - O CRUD de contas financeiras ja esta disponivel em `GET/POST/PUT/DELETE /accounts` com soft delete e filtro por tenant autenticado.
 - O CRUD de categorias ja esta disponivel em `GET/POST/PUT/DELETE /categories`, combinando categorias globais padrao e categorias personalizadas por tenant.
 - O CRUD de metas financeiras ja esta disponivel em `GET/POST/PUT/PATCH/DELETE /goals` com soft delete, progresso automatico e calculo de contribuicao mensal sugerida.
+- O CRUD de regras de categorizacao automatica ja esta disponivel em `GET/POST/PUT/DELETE /categorization-rules`, com teste de descricao (`POST /categorization-rules/test`) e aplicacao em transacoes existentes (`POST /categorization-rules/apply`).
+- A importacao CSV/OFX usa o service de categorizacao real como primeira camada e heuristica simples como fallback.

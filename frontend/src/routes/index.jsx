@@ -8,6 +8,7 @@ import CreditCards from '../pages/CreditCards';
 import Dashboard from '../pages/Dashboard';
 import Goals from '../pages/Goals';
 import HomePage from '../pages/HomePage';
+import CategorizationRules from '../pages/CategorizationRules';
 import Imports from '../pages/Imports';
 import Login from '../pages/Login';
 import Transactions from '../pages/Transactions';
@@ -106,6 +107,14 @@ function AppRoutes() {
           element={(
             <ProtectedRoute>
               <Imports />
+            </ProtectedRoute>
+          )}
+        />
+        <Route
+          path="/categorization-rules"
+          element={(
+            <ProtectedRoute>
+              <CategorizationRules />
             </ProtectedRoute>
           )}
         />

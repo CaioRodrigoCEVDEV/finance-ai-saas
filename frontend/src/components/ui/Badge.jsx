@@ -5,7 +5,9 @@ const variantStyles = {
   warning: 'bg-amber-50 text-amber-700 ring-1 ring-amber-200',
   danger: 'bg-rose-50 text-rose-700 ring-1 ring-rose-200',
   neutral: 'bg-slate-100 text-slate-700 ring-1 ring-slate-200',
-  info: 'bg-sky-50 text-sky-700 ring-1 ring-sky-200'
+  info: 'bg-sky-50 text-sky-700 ring-1 ring-sky-200',
+  secondary: 'bg-slate-50 text-slate-700 ring-1 ring-slate-200',
+  outline: 'bg-white text-slate-700 ring-1 ring-slate-300'
 };
 
 function Badge({ variant = 'neutral', className = '', children }) {

@@ -8,7 +8,8 @@ import {
   LogOut,
   Receipt,
   Sparkles,
-  Target
+  Target,
+  Wand2
 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
@@ -23,6 +24,7 @@ const navigationItems = [
   { to: '/goals', label: 'Metas', icon: Target },
   { to: '/transactions', label: 'Transacoes', icon: Receipt },
   { to: '/categories', label: 'Categorias', icon: FolderKanban },
+  { to: '/categorization-rules', label: 'Regras', icon: Wand2 },
   { to: '/imports', label: 'Importar', icon: FileUp }
 ];
 

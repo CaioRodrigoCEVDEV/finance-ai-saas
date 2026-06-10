@@ -2,17 +2,10 @@ const prisma = require('../../config/prisma');
 const AppError = require('../../utils/app-error');
 const { parseCsv } = require('./parsers/csvParser');
 const { parseOfx } = require('./parsers/ofxParser');
+const { suggestCategoriesForTransactions } = require('../categorization-rules/categorization-rules.service');
 
 const ALLOWED_EXTENSIONS = ['.csv', '.ofx'];
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
-
-const HEURISTICS = [
-  { keywords: ['IFOOD', 'RESTAURANTE', 'LANCHONETE', 'PADARIA', 'PIZZARIA'], categoryName: 'Alimentacao' },
-  { keywords: ['MERCADO', 'SUPERMERCADO', 'ATACADO'], categoryName: 'Mercado' },
-  { keywords: ['UBER', '99', 'POSTO', 'COMBUSTIVEL', 'ESTACIONAMENTO'], categoryName: 'Transporte' },
-  { keywords: ['NETFLIX', 'SPOTIFY', 'AMAZON PRIME', 'DISNEY', 'HBO', 'YOUTUBE PREMIUM'], categoryName: 'Assinaturas' },
-  { keywords: ['SALARIO', 'PAGAMENTO', 'HOLERITE', 'DECIMO', 'FERIAS'], categoryName: 'Salario' }
-];
 
 function validateFile(file) {
   if (!file) {
@@ -33,112 +26,6 @@ function validateFile(file) {
 
 function toDecimalString(value) {
   return Number(value || 0).toFixed(2);
-}
-
-function matchRule(text, rule) {
-  const t = text.toUpperCase();
-  const m = rule.match_text.toUpperCase();
-  switch (rule.match_type) {
-    case 'CONTAINS':
-      return t.includes(m);
-    case 'STARTS_WITH':
-      return t.startsWith(m);
-    case 'ENDS_WITH':
-      return t.endsWith(m);
-    case 'EQUALS':
-      return t === m;
-    case 'REGEX':
-      try {
-        return new RegExp(m, 'i').test(text);
-      } catch {
-        return false;
-      }
-    default:
-      return false;
-  }
-}
-
-function applyHeuristic(description) {
-  const upper = description.toUpperCase();
-  for (const h of HEURISTICS) {
-    if (h.keywords.some((k) => upper.includes(k))) {
-      return h.categoryName;
-    }
-  }
-  return null;
-}
-
-async function getTenantRules(tenantId) {
-  return prisma.categorizationRule.findMany({
-    where: {
-      tenant_id: tenantId,
-      is_active: true,
-      deleted_at: null
-    },
-    orderBy: { priority: 'asc' },
-    include: {
-      category: {
-        select: {
-          id: true,
-          name: true
-        }
-      }
-    }
-  });
-}
-
-async function getTenantCategories(tenantId) {
-  const categories = await prisma.category.findMany({
-    where: {
-      is_active: true,
-      deleted_at: null,
-      OR: [
-        { tenant_id: tenantId },
-        { tenant_id: null, is_default: true }
-      ]
-    },
-    select: {
-      id: true,
-      name: true,
-      type: true
-    }
-  });
-  return categories;
-}
-
-async function suggestCategories(transactions, tenantId) {
-  const rules = await getTenantRules(tenantId);
-  const categories = await getTenantCategories(tenantId);
-
-  const mapByName = new Map();
-  for (const c of categories) {
-    mapByName.set(c.name.toUpperCase(), c);
-  }
-
-  return transactions.map((t) => {
-    const description = t.description || '';
-    let match = null;
-
-    for (const rule of rules) {
-      if (matchRule(description, rule)) {
-        match = rule.category;
-        break;
-      }
-    }
-
-    if (!match) {
-      const heuristicName = applyHeuristic(description);
-      if (heuristicName && mapByName.has(heuristicName.toUpperCase())) {
-        match = mapByName.get(heuristicName.toUpperCase());
-      }
-    }
-
-    return {
-      ...t,
-      suggestedCategoryId: match ? match.id : null,
-      suggestedCategoryName: match ? match.name : null
-    };
-  });
 }
 
 async function validateAccountOrCreditCard(accountId, creditCardId, tenantId) {
@@ -176,7 +63,7 @@ async function previewFile(file, accountId, creditCardId, tenantId) {
     result = parseOfx(file.buffer);
   }
 
-  const enriched = await suggestCategories(result.transactions, tenantId);
+  const enriched = await suggestCategoriesForTransactions(result.transactions, tenantId);
 
   return {
     fileName: file.originalname,

@@ -896,4 +896,105 @@ curl -b cookies.txt -X PATCH http://localhost:3333/goals/ID_DA_META/progress \
   -d '{"currentAmount":4500}'
 
 curl -b cookies.txt -X DELETE http://localhost:3333/goals/ID_DA_META
+
+## Endpoints de categorization-rules
+
+- `GET http://localhost:3333/categorization-rules`
+- `GET http://localhost:3333/categorization-rules/:id`
+- `POST http://localhost:3333/categorization-rules`
+- `PUT http://localhost:3333/categorization-rules/:id`
+- `DELETE http://localhost:3333/categorization-rules/:id`
+- `POST http://localhost:3333/categorization-rules/test`
+- `POST http://localhost:3333/categorization-rules/apply`
+
+Todos os endpoints acima exigem autenticacao, usam `req.tenant.id` para isolamento multi-tenant e aplicam soft delete com `deleted_at`.
+
+### Query params de listagem
+
+- `active=true|false`
+- `search`
+
+### Regras aplicadas
+
+- `tenant_id` sempre vem da sessao autenticada
+- `categoryId` obrigatorio e validado contra categorias globais ou do tenant atual
+- `matchText` obrigatorio com no minimo 2 caracteres
+- `matchType` obrigatorio: `CONTAINS`, `STARTS_WITH`, `ENDS_WITH`, `EQUALS`, `REGEX`
+- `REGEX` validado antes de salvar ou atualizar
+- `priority` default `1`
+- `isActive` default `true`
+- `GET` ordena por `priority desc` e `created_at desc`
+- `POST /categorization-rules/test` testa apenas regras ativas do tenant, em ordem de prioridade, e retorna a primeira que casar (case-insensitive)
+- `POST /categorization-rules/apply` aplica regras ativas em transacoes do tenant; nao altera `type` da transacao; ignora categorias incompatíveis com `type`, exceto quando `type = TRANSFER`
+- `DELETE` faz soft delete preenchendo `deleted_at`
+
+### Exemplo de payload para criar regra
+
+```json
+{
+  "name": "Ifood para Alimentacao",
+  "matchText": "IFOOD",
+  "matchType": "CONTAINS",
+  "categoryId": "UUID_DA_CATEGORIA",
+  "priority": 10,
+  "isActive": true
+}
+```
+
+### Exemplo de resposta de teste
+
+```json
+{
+  "matched": true,
+  "rule": {
+    "id": "...",
+    "name": "Ifood para Alimentacao",
+    "matchText": "IFOOD",
+    "matchType": "CONTAINS"
+  },
+  "category": {
+    "id": "...",
+    "name": "Alimentacao",
+    "type": "EXPENSE"
+  }
+}
+```
+
+### Exemplo de resposta de aplicacao
+
+```json
+{
+  "processed": 40,
+  "updated": 18,
+  "message": "Regras aplicadas com sucesso"
+}
+```
+
+### Exemplos com curl
+
+```bash
+curl -b cookies.txt http://localhost:3333/categorization-rules
+
+curl -b cookies.txt "http://localhost:3333/categorization-rules?active=true&search=ifood"
+
+curl -b cookies.txt -X POST http://localhost:3333/categorization-rules \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Ifood para Alimentacao","matchText":"IFOOD","matchType":"CONTAINS","categoryId":"ID_DA_CATEGORIA","priority":10,"isActive":true}'
+
+curl -b cookies.txt http://localhost:3333/categorization-rules/ID_DA_REGRA
+
+curl -b cookies.txt -X PUT http://localhost:3333/categorization-rules/ID_DA_REGRA \
+  -H "Content-Type: application/json" \
+  -d '{"priority":20,"isActive":false}'
+
+curl -b cookies.txt -X DELETE http://localhost:3333/categorization-rules/ID_DA_REGRA
+
+curl -b cookies.txt -X POST http://localhost:3333/categorization-rules/test \
+  -H "Content-Type: application/json" \
+  -d '{"description":"IFOOD SAO PAULO 123"}'
+
+curl -b cookies.txt -X POST http://localhost:3333/categorization-rules/apply \
+  -H "Content-Type: application/json" \
+  -d '{"onlyWithoutCategory":true,"startDate":"2026-06-01","endDate":"2026-06-30"}'
+```
 ```

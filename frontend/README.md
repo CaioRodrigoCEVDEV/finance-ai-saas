@@ -37,6 +37,7 @@ VITE_API_URL=http://localhost:3333
 - `/goals`: tela protegida para CRUD de metas financeiras
 - `/transactions`: tela protegida para CRUD de transacoes
 - `/categories`: tela protegida para CRUD de categorias
+- `/categorization-rules`: tela protegida para CRUD de regras de categorizacao automatica
 - `/imports`: tela protegida para importar extratos CSV ou OFX
 
 Se o usuario nao estiver autenticado, `/dashboard` redireciona para `/login`.
@@ -92,6 +93,13 @@ Se o usuario ja estiver autenticado, `/login` redireciona para `/dashboard`.
 - `GET /transactions/summary/month`
 - `POST /imports/preview`
 - `POST /imports/confirm`
+- `GET /categorization-rules`
+- `GET /categorization-rules/:id`
+- `POST /categorization-rules`
+- `PUT /categorization-rules/:id`
+- `DELETE /categorization-rules/:id`
+- `POST /categorization-rules/test`
+- `POST /categorization-rules/apply`
 
 ## Estrutura
 
@@ -201,6 +209,18 @@ A rota `/imports` fica protegida pela mesma sessao do dashboard e oferece:
 - confirmacao final com contagem de criadas e ignoradas (duplicadas)
 - atualizacao automatica do dashboard e transacoes apos importar
 
+## Tela de regras de categorizacao
+
+A rota `/categorization-rules` fica protegida pela mesma sessao do dashboard e oferece:
+
+- cards de resumo com total de regras, regras ativas e regras inativas
+- busca por nome ou texto procurado
+- listagem em grid com cards de regra (nome, comparacao, categoria, prioridade, status)
+- criacao e edicao em modal com selecao de categorias reais do tenant
+- testador de descricao para simular qual regra seria aplicada
+- modal para aplicar regras em transacoes existentes com filtros de periodo e opcao "somente sem categoria"
+- atualizacao automatica da lista apos criar, editar, excluir ou aplicar
+
 ## Telas disponiveis
 
 - `/dashboard`
@@ -210,6 +230,7 @@ A rota `/imports` fica protegida pela mesma sessao do dashboard e oferece:
 - `/goals`
 - `/transactions`
 - `/categories`
+- `/categorization-rules`
 - `/imports`
 
 ## Cartoes de credito
