@@ -11,6 +11,7 @@ import HomePage from '../pages/HomePage';
 import CategorizationRules from '../pages/CategorizationRules';
 import Imports from '../pages/Imports';
 import Login from '../pages/Login';
+import Reports from '../pages/Reports';
 import Transactions from '../pages/Transactions';
 
 function ProtectedRoute({ children }) {
@@ -115,6 +116,14 @@ function AppRoutes() {
           element={(
             <ProtectedRoute>
               <CategorizationRules />
+            </ProtectedRoute>
+          )}
+        />
+        <Route
+          path="/reports"
+          element={(
+            <ProtectedRoute>
+              <Reports />
             </ProtectedRoute>
           )}
         />

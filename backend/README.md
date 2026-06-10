@@ -997,4 +997,48 @@ curl -b cookies.txt -X POST http://localhost:3333/categorization-rules/apply \
   -H "Content-Type: application/json" \
   -d '{"onlyWithoutCategory":true,"startDate":"2026-06-01","endDate":"2026-06-30"}'
 ```
+
+## Endpoints de reports
+
+- `GET http://localhost:3333/reports/financial-summary`
+- `GET http://localhost:3333/reports/by-category`
+- `GET http://localhost:3333/reports/by-account`
+- `GET http://localhost:3333/reports/by-credit-card`
+- `GET http://localhost:3333/reports/monthly-evolution`
+- `GET http://localhost:3333/reports/top-expenses`
+- `GET http://localhost:3333/reports/export.csv`
+
+Todos os endpoints acima exigem autenticacao, usam `req.tenant.id` para isolamento multi-tenant e ignoram registros com `deleted_at` preenchido.
+
+### Filtros disponiveis
+
+- `startDate` (YYYY-MM-DD)
+- `endDate` (YYYY-MM-DD)
+- `accountId`
+- `creditCardId`
+- `categoryId`
+- `type=INCOME|EXPENSE|TRANSFER|INVESTMENT`
+
+### Regras aplicadas
+
+- `GET /reports/financial-summary` considera apenas transacoes `CONFIRMED` e nao deletadas. Se nao houver periodo, usa o mes atual. `balance = income - expense - investment`. `averageExpense` evita divisao por zero.
+- `GET /reports/by-category` agrupa por categoria e tipo. Categoria nula aparece como `Sem categoria`. Ordenado por `amount` descendente.
+- `GET /reports/by-account` agrupa por conta e tipo. `balance = income - expense`.
+- `GET /reports/by-credit-card` considera apenas despesas. Ordenado por `expense` descendente.
+- `GET /reports/monthly-evolution` retorna meses sem movimento com zero. Se nao houver periodo, usa os ultimos 12 meses.
+- `GET /reports/top-expenses` retorna as maiores despesas. `limit` default `10`.
+- `GET /reports/export.csv` exporta transacoes filtradas em CSV com BOM UTF-8. `Content-Disposition: attachment`. Respeita tenant atual.
+
+### Exemplos com curl
+
+```bash
+curl -b cookies.txt http://localhost:3333/reports/financial-summary
+curl -b cookies.txt "http://localhost:3333/reports/financial-summary?startDate=2026-06-01&endDate=2026-06-30"
+curl -b cookies.txt http://localhost:3333/reports/by-category
+curl -b cookies.txt http://localhost:3333/reports/by-account
+curl -b cookies.txt http://localhost:3333/reports/by-credit-card
+curl -b cookies.txt http://localhost:3333/reports/monthly-evolution
+curl -b cookies.txt http://localhost:3333/reports/top-expenses
+curl -b cookies.txt "http://localhost:3333/reports/top-expenses?limit=5"
+curl -b cookies.txt "http://localhost:3333/reports/export.csv?startDate=2026-06-01&endDate=2026-06-30" -o transacoes.csv
 ```

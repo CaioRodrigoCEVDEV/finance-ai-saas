@@ -38,6 +38,7 @@ VITE_API_URL=http://localhost:3333
 - `/transactions`: tela protegida para CRUD de transacoes
 - `/categories`: tela protegida para CRUD de categorias
 - `/categorization-rules`: tela protegida para CRUD de regras de categorizacao automatica
+- `/reports`: tela protegida para relatórios financeiros
 - `/imports`: tela protegida para importar extratos CSV ou OFX
 
 Se o usuario nao estiver autenticado, `/dashboard` redireciona para `/login`.
@@ -100,6 +101,13 @@ Se o usuario ja estiver autenticado, `/login` redireciona para `/dashboard`.
 - `DELETE /categorization-rules/:id`
 - `POST /categorization-rules/test`
 - `POST /categorization-rules/apply`
+- `GET /reports/financial-summary`
+- `GET /reports/by-category`
+- `GET /reports/by-account`
+- `GET /reports/by-credit-card`
+- `GET /reports/monthly-evolution`
+- `GET /reports/top-expenses`
+- `GET /reports/export.csv`
 
 ## Estrutura
 
@@ -115,6 +123,7 @@ Se o usuario ja estiver autenticado, `/login` redireciona para `/dashboard`.
 - `src/components/goals`: componentes da tela de metas
 - `src/components/transactions`: componentes da tela de transacoes
 - `src/components/categories`: componentes da tela de categorias
+- `src/components/reports`: componentes da tela de relatórios
 - `src/utils`: utilitários de formatação
 
 ## Tela de contas
@@ -196,6 +205,22 @@ A rota `/categories` fica protegida pela mesma sessao do dashboard e oferece:
 - atualizacao automatica da lista apos criar, editar ou excluir
 
 O menu superior do layout autenticado agora possui links para `Dashboard`, `Contas` e `Categorias`.
+
+## Tela de relatórios
+
+A rota `/reports` fica protegida pela mesma sessao do dashboard e oferece:
+
+- cards de resumo com receitas, despesas, investimentos e saldo do periodo
+- filtros por periodo, conta, cartao, categoria e tipo
+- relatório por categoria com valor, quantidade, percentual e barras horizontais
+- relatório por conta com receitas, despesas, saldo e quantidade
+- relatório por cartao de credito com despesas e quantidade
+- evolucao mensal com barras por tipo e saldo
+- top despesas com descricao, categoria, conta e valor
+- exportacao de CSV com transacoes filtradas
+- loading skeleton e estado vazio amigavel
+- atualizacao automatica dos relatórios ao aplicar filtros
+
 ## Tela de importacao
 
 A rota `/imports` fica protegida pela mesma sessao do dashboard e oferece:
@@ -231,6 +256,7 @@ A rota `/categorization-rules` fica protegida pela mesma sessao do dashboard e o
 - `/transactions`
 - `/categories`
 - `/categorization-rules`
+- `/reports`
 - `/imports`
 
 ## Cartoes de credito

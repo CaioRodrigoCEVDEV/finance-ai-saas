@@ -1,5 +1,6 @@
 import {
   BadgeDollarSign,
+  BarChart3,
   CreditCard,
   FileUp,
   FolderKanban,
@@ -25,6 +26,7 @@ const navigationItems = [
   { to: '/transactions', label: 'Transacoes', icon: Receipt },
   { to: '/categories', label: 'Categorias', icon: FolderKanban },
   { to: '/categorization-rules', label: 'Regras', icon: Wand2 },
+  { to: '/reports', label: 'Relatórios', icon: BarChart3 },
   { to: '/imports', label: 'Importar', icon: FileUp }
 ];
 

@@ -11,6 +11,7 @@ const budgetsRoutes = require('../modules/budgets/budgets.routes');
 const goalsRoutes = require('../modules/goals/goals.routes');
 const importsRoutes = require('../modules/imports/imports.routes');
 const categorizationRulesRoutes = require('../modules/categorization-rules/categorization-rules.routes');
+const reportsRoutes = require('../modules/reports/reports.routes');
 
 const router = Router();
 
@@ -25,5 +26,6 @@ router.use(budgetsRoutes);
 router.use(goalsRoutes);
 router.use(importsRoutes);
 router.use(categorizationRulesRoutes);
+router.use(reportsRoutes);
 
 module.exports = router;
