@@ -198,6 +198,96 @@ cd backend && npx prisma db seed
 - Interceptor 401 no frontend para redirecionar ao login automaticamente
 - Responsividade mobile com sidebar colapsavel e tabelas em cards
 
+## Deploy
+
+### Dominios
+
+| Dominio | Finalidade |
+|---------|-----------|
+| `app.financeai.orderup.com.br` | Frontend React (build estatico) |
+| `back.financeai.orderup.com.br` | Backend Node.js (API) |
+
+### Portas
+
+| Servico | Porta | Exposicao |
+|---------|-------|-----------|
+| Frontend (Apache) | 80 / 443 | Publica |
+| Backend (Node.js) | 3333 | Apenas localhost |
+| PostgreSQL | — | Apenas localhost |
+
+### Ordem de deploy
+
+1. Configurar `backend/.env` com valores de producao (veja `backend/.env.production.example`)
+2. Configurar `frontend/.env.production` com `VITE_API_URL` (veja `frontend/.env.production.example`)
+3. Buildar frontend: `cd frontend && npm install && npm run build`
+4. Copiar build para `/var/www/finance-ai/frontend`
+5. Gerar Prisma Client: `cd backend && npx prisma generate`
+6. Executar migrations: `cd backend && npx prisma migrate deploy`
+7. Iniciar backend com PM2: `pm2 start ecosystem.config.js --env production`
+8. Salvar PM2: `pm2 save`
+9. Configurar Apache (veja `docs/deploy-apache.md`)
+10. Instalar SSL com Certbot
+
+### Scripts de deploy
+
+```bash
+# Permissao (execute uma vez)
+chmod +x scripts/*.sh
+
+# Deploy completo (frontend + backend)
+./scripts/deploy-all.sh
+
+# Deploy apenas backend
+./scripts/deploy-backend.sh
+
+# Deploy apenas frontend
+./scripts/deploy-frontend.sh
+```
+
+### PM2 — Comandos principais
+
+```bash
+pm2 start ecosystem.config.js --env production   # Iniciar
+pm2 restart finance-ai-backend                    # Reiniciar
+pm2 stop finance-ai-backend                       # Parar
+pm2 status                                        # Status
+pm2 logs finance-ai-backend                       # Logs
+pm2 save                                          # Salvar processos ativos
+pm2 startup                                       # Auto-start com o sistema
+```
+
+### Estrutura de diretorios na VPS
+
+```
+/home/sites/finance-ai-saas/      → repositorio do projeto
+/var/www/finance-ai/frontend/     → build do frontend (servido pelo Apache)
+```
+
+### Como testar
+
+```bash
+# Health check da API
+curl https://back.financeai.orderup.com.br/health
+
+# Frontend no navegador
+# https://app.financeai.orderup.com.br
+```
+
+### Documentacao de deploy
+
+- `docs/deploy-apache.md` — configuracao do Apache
+- `docs/deploy-nginx.md` — alternativa Nginx (opcional)
+- `docs/production-checklist.md` — checklist de validacao
+
+### Seguranca em producao
+
+- Cookies usam `secure: true` e `sameSite: none` (exige HTTPS)
+- CORS restrito ao dominio `app.financeai.orderup.com.br`
+- Helmet habilitado com CSP em producao
+- PostgreSQL acessivel apenas localmente
+- Firewall: apenas portas 80 e 443 publicas
+- `.env` nunca commitado (ja esta no `.gitignore`)
+
 ## Licenca
 
 MIT — projeto de referencia para SaaS financeiro.
