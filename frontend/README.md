@@ -32,6 +32,7 @@ VITE_API_URL=http://localhost:3333
 - `/login`: tela de autenticacao
 - `/dashboard`: dashboard financeiro protegido por sessao
 - `/accounts`: tela protegida para CRUD de contas financeiras
+- `/credit-cards`: tela protegida para CRUD de cartoes de credito
 - `/transactions`: tela protegida para CRUD de transacoes
 - `/categories`: tela protegida para CRUD de categorias
 
@@ -62,6 +63,11 @@ Se o usuario ja estiver autenticado, `/login` redireciona para `/dashboard`.
 - `POST /categories`
 - `PUT /categories/:id`
 - `DELETE /categories/:id`
+- `GET /credit-cards`
+- `GET /credit-cards/:id`
+- `POST /credit-cards`
+- `PUT /credit-cards/:id`
+- `DELETE /credit-cards/:id`
 - `GET /transactions`
 - `GET /transactions/:id`
 - `POST /transactions`
@@ -78,6 +84,7 @@ Se o usuario ja estiver autenticado, `/login` redireciona para `/dashboard`.
 - `src/components`: componentes reutilizáveis
 - `src/components/dashboard`: componentes específicos do dashboard
 - `src/components/accounts`: componentes da tela de contas
+- `src/components/creditCards`: componentes da tela de cartoes
 - `src/components/transactions`: componentes da tela de transacoes
 - `src/components/categories`: componentes da tela de categorias
 - `src/utils`: utilitários de formatação
@@ -108,6 +115,19 @@ A rota `/transactions` fica protegida pela mesma sessao do dashboard e oferece:
 
 O menu lateral do layout autenticado agora possui links para `Dashboard`, `Contas`, `Transacoes` e `Categorias`.
 
+## Tela de cartoes
+
+A rota `/credit-cards` fica protegida pela mesma sessao do dashboard e oferece:
+
+- resumo com limite total, uso no mes, limite disponivel e quantidade de cartoes ativos
+- listagem em grid com cards visuais de cartao premium
+- criacao e edicao em modal
+- exclusao com confirmacao
+- integracao com contas do tenant atual para vinculo opcional
+- atualizacao automatica da lista apos criar, editar ou excluir
+
+O menu lateral do layout autenticado agora possui links para `Dashboard`, `Contas`, `Cartoes`, `Transacoes` e `Categorias`.
+
 ## Tela de categorias
 
 A rota `/categories` fica protegida pela mesma sessao do dashboard e oferece:
@@ -120,3 +140,19 @@ A rota `/categories` fica protegida pela mesma sessao do dashboard e oferece:
 - atualizacao automatica da lista apos criar, editar ou excluir
 
 O menu superior do layout autenticado agora possui links para `Dashboard`, `Contas` e `Categorias`.
+## Telas disponiveis
+
+- `/dashboard`
+- `/accounts`
+- `/credit-cards`
+- `/transactions`
+- `/categories`
+
+## Cartoes de credito
+
+- pagina protegida em `/credit-cards`
+- resumo com limite total, utilizado no mes, limite disponivel e quantidade de cartoes ativos
+- cards premium com conta vinculada, bandeira, fechamento, vencimento, status e barra de uso do limite
+- formulario em modal para criar e editar cartoes
+- integracao com `creditCardService` para listar, detalhar, criar, atualizar e excluir
+- a tela de transacoes passa a carregar cartoes reais e permite selecionar um cartao quando `paymentMethod = CREDIT_CARD`

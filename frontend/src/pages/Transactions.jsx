@@ -15,6 +15,7 @@ import Modal from '../components/ui/Modal';
 import PageHeader from '../components/ui/PageHeader';
 import { getAccounts } from '../services/accountService';
 import { getCategories } from '../services/categoryService';
+import { getCreditCards } from '../services/creditCardService';
 import {
   createTransaction,
   deleteTransaction,
@@ -85,14 +86,15 @@ function Transactions() {
   const [selectedTransaction, setSelectedTransaction] = useState(null);
 
   async function loadReferences() {
-    const [accountData, categoryData] = await Promise.all([
+    const [accountData, categoryData, creditCardData] = await Promise.all([
       getAccounts(),
-      getCategories({ includeInactive: false })
+      getCategories({ includeInactive: false }),
+      getCreditCards()
     ]);
 
     setAccounts(accountData);
     setCategories(categoryData);
-    setCreditCards([]);
+    setCreditCards(creditCardData);
   }
 
   async function loadTransactionsData(nextFilters = filters, nextPage = page) {

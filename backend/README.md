@@ -360,6 +360,68 @@ Se houver transacoes vinculadas, a API retorna:
 }
 ```
 
+## Endpoints de credit-cards
+
+- `GET http://localhost:3333/credit-cards`
+- `GET http://localhost:3333/credit-cards/:id`
+- `POST http://localhost:3333/credit-cards`
+- `PUT http://localhost:3333/credit-cards/:id`
+- `DELETE http://localhost:3333/credit-cards/:id`
+
+Todos os endpoints acima exigem autenticacao, usam `req.tenant.id` para isolamento multi-tenant e aplicam soft delete com `deleted_at`.
+
+### Regras aplicadas
+
+- `GET /credit-cards` retorna apenas cartoes ativos do tenant atual com `deleted_at = null`
+- `GET /credit-cards/:id` retorna cartao do tenant atual com conta vinculada e resumo do mes atual
+- `POST /credit-cards` grava `tenant_id` a partir da sessao autenticada e `user_id` com `req.user.id`
+- `POST` e `PUT` validam `accountId` somente dentro do tenant autenticado
+- `currentInvoiceAmount` considera apenas transacoes `CONFIRMED` do mes atual com `type = EXPENSE`
+- `availableLimit` nao retorna valor negativo
+- `DELETE /credit-cards/:id` nao remove fisicamente o registro; apenas preenche `deleted_at` e desativa o cartao
+- cartoes com transacoes vinculadas nao podem ser excluidos
+
+### Exemplo de payload para criar cartao
+
+```json
+{
+  "name": "Cartao Inter",
+  "brand": "MASTERCARD",
+  "limitAmount": 3000,
+  "closingDay": 8,
+  "dueDay": 15,
+  "accountId": "UUID_DA_CONTA",
+  "color": "#f97316",
+  "isActive": true
+}
+```
+
+### Exemplos com curl
+
+```bash
+curl -b cookies.txt http://localhost:3333/credit-cards
+
+curl -b cookies.txt -X POST http://localhost:3333/credit-cards \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Cartao Inter","brand":"MASTERCARD","limitAmount":3000,"closingDay":8,"dueDay":15,"accountId":"ID_DA_CONTA","color":"#f97316","isActive":true}'
+
+curl -b cookies.txt http://localhost:3333/credit-cards/SEU_CARTAO_ID
+
+curl -b cookies.txt -X PUT http://localhost:3333/credit-cards/SEU_CARTAO_ID \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Cartao Inter Black","limitAmount":4500,"closingDay":10,"dueDay":17,"isActive":true}'
+
+curl -b cookies.txt -X DELETE http://localhost:3333/credit-cards/SEU_CARTAO_ID
+```
+
+Se houver transacoes vinculadas, a API retorna:
+
+```json
+{
+  "message": "Cartao possui transacoes vinculadas e nao pode ser excluido."
+}
+```
+
 ## Endpoints de transactions
 
 - `GET http://localhost:3333/transactions`
