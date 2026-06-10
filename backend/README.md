@@ -28,6 +28,7 @@ PORT=3333
 - `npm start`: inicia em produção
 - `npm run prisma:generate`: gera o client do Prisma
 - `npm run prisma:migrate`: cria/aplica migrations locais
+- `npm run prisma:seed`: executa o seed de desenvolvimento
 
 ## Estrutura
 
@@ -56,6 +57,30 @@ Abrir o Prisma Studio:
 
 ```bash
 npx prisma studio
+```
+
+Rodar o seed de desenvolvimento:
+
+```bash
+npx prisma db seed
+```
+
+O seed cria e atualiza, de forma idempotente, os seguintes dados:
+
+- tenant `Finance AI Demo`
+- usuário admin `admin@financeai.com` com senha `123456`
+- vínculo `UserTenant` com role `OWNER`
+- categorias globais padrão com `tenant_id = null`
+- contas demo `Conta Corrente Nubank` e `Carteira`
+- cartão de crédito `Cartão Nubank`
+- transações fictícias confirmadas no mês atual
+
+Fluxo recomendado para preparar o ambiente:
+
+```bash
+npx prisma migrate dev --name init_schema
+npx prisma generate
+npx prisma db seed
 ```
 
 ## Observacoes sobre banco remoto
