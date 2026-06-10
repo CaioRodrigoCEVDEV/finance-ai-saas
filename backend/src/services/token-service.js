@@ -8,6 +8,11 @@ function signToken(payload) {
   });
 }
 
+function verifyToken(token) {
+  return jwt.verify(token, env.jwtSecret);
+}
+
 module.exports = {
-  signToken
+  signToken,
+  verifyToken
 };

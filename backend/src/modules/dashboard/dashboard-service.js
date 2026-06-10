@@ -1,50 +1,23 @@
 const prisma = require('../../config/prisma');
-const AppError = require('../../utils/app-error');
 const {
   formatMonthKey,
   getCurrentMonthRange,
   getLastMonths
 } = require('./dashboard-date-helper');
 
-const DEMO_TENANT_EMAIL = 'demo@financeai.com';
-const DEMO_TENANT_NAME = 'Finance AI Demo';
 const UNCATEGORIZED_LABEL = 'Sem categoria';
 
 function toNumber(value) {
   return Number(value || 0);
 }
 
-async function getDemoTenant() {
-  const tenant = await prisma.tenant.findFirst({
-    where: {
-      deleted_at: null,
-      OR: [
-        { email: DEMO_TENANT_EMAIL },
-        { name: DEMO_TENANT_NAME }
-      ]
-    },
-    select: {
-      id: true,
-      name: true,
-      plan: true
-    }
-  });
-
-  if (!tenant) {
-    throw new AppError('Tenant demo nao encontrado. Execute o seed ou cadastre o tenant Finance AI Demo.', 404);
-  }
-
-  return tenant;
-}
-
-async function getSummary() {
-  const tenant = await getDemoTenant();
+async function getSummary(tenantId) {
   const currentMonth = getCurrentMonthRange();
 
   const [accountBalance, transactionTotals] = await Promise.all([
     prisma.account.aggregate({
       where: {
-        tenant_id: tenant.id,
+        tenant_id: tenantId,
         is_active: true,
         deleted_at: null
       },
@@ -55,7 +28,7 @@ async function getSummary() {
     prisma.transaction.groupBy({
       by: ['type'],
       where: {
-        tenant_id: tenant.id,
+        tenant_id: tenantId,
         deleted_at: null,
         status: 'CONFIRMED',
         transaction_date: {
@@ -84,7 +57,6 @@ async function getSummary() {
     : 0;
 
   return {
-    tenant,
     summary: {
       totalBalance: toNumber(accountBalance._sum.current_balance),
       monthlyIncome,
@@ -95,14 +67,13 @@ async function getSummary() {
   };
 }
 
-async function getExpensesByCategory() {
-  const tenant = await getDemoTenant();
+async function getExpensesByCategory(tenantId) {
   const currentMonth = getCurrentMonthRange();
 
   const groupedExpenses = await prisma.transaction.groupBy({
     by: ['category_id'],
     where: {
-      tenant_id: tenant.id,
+      tenant_id: tenantId,
       deleted_at: null,
       status: 'CONFIRMED',
       type: 'EXPENSE',
@@ -157,12 +128,11 @@ async function getExpensesByCategory() {
   });
 }
 
-async function getRecentTransactions() {
-  const tenant = await getDemoTenant();
+async function getRecentTransactions(tenantId) {
 
   const transactions = await prisma.transaction.findMany({
     where: {
-      tenant_id: tenant.id,
+      tenant_id: tenantId,
       deleted_at: null
     },
     orderBy: {
@@ -207,13 +177,12 @@ async function getRecentTransactions() {
   }));
 }
 
-async function getMonthlyFlow() {
-  const tenant = await getDemoTenant();
+async function getMonthlyFlow(tenantId) {
   const months = getLastMonths(6);
 
   const transactions = await prisma.transaction.findMany({
     where: {
-      tenant_id: tenant.id,
+      tenant_id: tenantId,
       deleted_at: null,
       status: 'CONFIRMED',
       transaction_date: {

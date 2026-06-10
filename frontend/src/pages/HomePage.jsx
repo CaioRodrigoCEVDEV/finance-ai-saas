@@ -61,15 +61,15 @@ function HomePage() {
             <div>
               <h2 className="text-2xl font-semibold text-white">Painel financeiro com base para IA</h2>
               <p className="mt-3 max-w-2xl text-slate-400">
-                Estrutura inicial pronta para autenticacao, multi-tenant, dashboards e evolucao segura do produto.
+                Estrutura pronta para autenticacao real com cookies httpOnly, multi-tenant e dashboards conectados a dados reais.
               </p>
             </div>
 
             <Link
-              to="/dashboard"
+              to="/login"
               className="rounded-2xl bg-brand-500 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-brand-400"
             >
-              Acessar Dashboard
+              Entrar na plataforma
             </Link>
           </div>
         </section>

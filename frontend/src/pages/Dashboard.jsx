@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import ExpenseCategoryList from '../components/dashboard/ExpenseCategoryList';
+import { useAuth } from '../contexts/AuthContext';
 import MonthlyFlow from '../components/dashboard/MonthlyFlow';
 import RecentTransactions from '../components/dashboard/RecentTransactions';
 import SummaryCard from '../components/dashboard/SummaryCard';
@@ -21,8 +23,9 @@ const initialState = {
 };
 
 function Dashboard() {
+  const navigate = useNavigate();
+  const { logout, tenant, user } = useAuth();
   const [dashboardData, setDashboardData] = useState(initialState);
-  const [tenantName, setTenantName] = useState('Finance AI');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -51,13 +54,16 @@ function Dashboard() {
           recentTransactions: transactionsResponse,
           monthlyFlow: monthlyFlowResponse
         });
-        setTenantName(summaryResponse.tenant?.name || 'Finance AI');
       } catch (requestError) {
         if (!isMounted) {
           return;
         }
 
-        setError('Nao foi possivel carregar o dashboard agora. Verifique se a API backend esta ativa e tente novamente.');
+        setError(
+          requestError.response?.status === 401
+            ? 'Sua sessao expirou. Entre novamente para continuar.'
+            : 'Nao foi possivel carregar o dashboard agora. Verifique se a API backend esta ativa e tente novamente.'
+        );
       } finally {
         if (isMounted) {
           setLoading(false);
@@ -77,7 +83,7 @@ function Dashboard() {
         {
           title: 'Saldo Total',
           value: formatCurrencyBRL(dashboardData.summary.totalBalance),
-          description: `Posicao consolidada das contas de ${tenantName}.`,
+          description: `Posicao consolidada das contas de ${tenant?.name || 'Finance AI'}.`,
           variant: 'highlight'
         },
         {
@@ -101,14 +107,39 @@ function Dashboard() {
       ]
     : [];
 
+  async function handleLogout() {
+    await logout();
+    navigate('/login', { replace: true });
+  }
+
   return (
     <MainLayout>
       <header className="border-b border-slate-800 pb-8">
-        <span className="rounded-full border border-brand-400/30 bg-brand-500/10 px-3 py-1 text-xs font-medium uppercase tracking-[0.3em] text-brand-400">
-          Dashboard em tempo real
-        </span>
-        <h1 className="mt-4 text-4xl font-bold tracking-tight text-white md:text-5xl">Finance AI Dashboard</h1>
-        <p className="mt-3 max-w-2xl text-lg text-slate-300">Visao geral da sua vida financeira</p>
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <span className="rounded-full border border-brand-400/30 bg-brand-500/10 px-3 py-1 text-xs font-medium uppercase tracking-[0.3em] text-brand-400">
+              Dashboard em tempo real
+            </span>
+            <h1 className="mt-4 text-4xl font-bold tracking-tight text-white md:text-5xl">Finance AI Dashboard</h1>
+            <p className="mt-3 max-w-2xl text-lg text-slate-300">Visao geral da sua vida financeira</p>
+          </div>
+
+          <div className="flex flex-col items-start gap-3 rounded-3xl border border-slate-800 bg-slate-900/70 p-4 text-sm text-slate-300 lg:items-end">
+            <div>
+              <p className="font-semibold text-white">{user?.name || 'Usuario autenticado'}</p>
+              <p className="mt-1">{tenant?.name || 'Finance AI'}</p>
+              <p className="text-slate-400">{tenant?.role || 'MEMBER'} • {tenant?.plan || 'FREE'}</p>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="rounded-2xl border border-slate-700 px-4 py-2 font-medium text-white transition hover:border-brand-400 hover:text-brand-300"
+            >
+              Sair
+            </button>
+          </div>
+        </div>
       </header>
 
       <main className="py-10">

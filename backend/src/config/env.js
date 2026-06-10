@@ -10,7 +10,8 @@ const envSchema = z.object({
   DATABASE_URL: z.string().min(1).optional(),
   JWT_SECRET: z.string().min(1).default('change-me'),
   JWT_EXPIRES_IN: z.string().min(1).default('1d'),
-  JWT_COOKIE_NAME: z.string().min(1).default('financeai_token')
+  COOKIE_NAME: z.string().min(1).optional(),
+  JWT_COOKIE_NAME: z.string().min(1).optional()
 });
 
 const parsedEnv = envSchema.parse(process.env);
@@ -22,5 +23,5 @@ module.exports = {
   databaseUrl: parsedEnv.DATABASE_URL,
   jwtSecret: parsedEnv.JWT_SECRET,
   jwtExpiresIn: parsedEnv.JWT_EXPIRES_IN,
-  jwtCookieName: parsedEnv.JWT_COOKIE_NAME
+  cookieName: parsedEnv.COOKIE_NAME || parsedEnv.JWT_COOKIE_NAME || 'finance_ai_token'
 };

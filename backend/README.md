@@ -1,6 +1,6 @@
 # Backend
 
-API Node.js do Finance AI com Express, Prisma, Zod e estrutura inicial multi-tenant.
+API Node.js do Finance AI com Express, Prisma, Zod, JWT em cookie httpOnly e estrutura multi-tenant.
 
 ## Configuracao do ambiente
 
@@ -16,7 +16,16 @@ cp .env.example .env
 DATABASE_URL="postgresql://USUARIO:SENHA@HOST:PORTA/NOME_DO_BANCO?schema=public"
 ```
 
-3. Mantenha a API na porta `3333`:
+3. Configure as variaveis de autenticacao e frontend:
+
+```env
+JWT_SECRET=change_me
+JWT_EXPIRES_IN=7d
+COOKIE_NAME=finance_ai_token
+FRONTEND_URL=http://localhost:5173
+```
+
+4. Mantenha a API na porta `3333`:
 
 ```env
 PORT=3333
@@ -94,6 +103,64 @@ npx prisma db seed
 
 `GET http://localhost:3333/health`
 
+Esse endpoint continua publico.
+
+## Autenticacao
+
+Autenticacao baseada em JWT gravado em cookie `httpOnly`.
+
+- `httpOnly: true`
+- `sameSite: lax`
+- `secure: false` em desenvolvimento
+- frontend deve enviar `credentials`
+
+### Endpoints de auth
+
+- `POST http://localhost:3333/auth/login`
+- `POST http://localhost:3333/auth/logout`
+- `GET http://localhost:3333/auth/me`
+
+`POST /auth/login`
+
+```json
+{
+  "email": "admin@financeai.com",
+  "password": "123456"
+}
+```
+
+Resposta:
+
+```json
+{
+  "user": {
+    "id": "...",
+    "name": "Admin Demo",
+    "email": "admin@financeai.com"
+  },
+  "tenant": {
+    "id": "...",
+    "name": "Finance AI Demo",
+    "role": "OWNER",
+    "plan": "PREMIUM"
+  }
+}
+```
+
+`GET /auth/me`
+
+Retorna o usuario autenticado e o tenant atual a partir do cookie.
+
+`POST /auth/logout`
+
+Limpa o cookie e retorna:
+
+```json
+{
+  "message": "Logout realizado com sucesso"
+}
+```
+
 ## Endpoints do dashboard
 
 - `GET http://localhost:3333/dashboard/summary`
@@ -101,15 +168,20 @@ npx prisma db seed
 - `GET http://localhost:3333/dashboard/recent-transactions`
 - `GET http://localhost:3333/dashboard/monthly-flow`
 
-Todos os endpoints acima usam temporariamente o tenant demo localizado por `demo@financeai.com` ou `Finance AI Demo`.
+Todos os endpoints acima exigem autenticacao e usam o `tenant_id` do usuario autenticado.
 
 ### Exemplos com curl
 
 ```bash
-curl http://localhost:3333/dashboard/summary
-curl http://localhost:3333/dashboard/expenses-by-category
-curl http://localhost:3333/dashboard/recent-transactions
-curl http://localhost:3333/dashboard/monthly-flow
+curl -i -c cookies.txt -X POST http://localhost:3333/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@financeai.com","password":"123456"}'
+
+curl -b cookies.txt http://localhost:3333/auth/me
+curl -b cookies.txt http://localhost:3333/dashboard/summary
+curl -b cookies.txt http://localhost:3333/dashboard/expenses-by-category
+curl -b cookies.txt http://localhost:3333/dashboard/recent-transactions
+curl -b cookies.txt http://localhost:3333/dashboard/monthly-flow
 ```
 
 ### Respostas esperadas
