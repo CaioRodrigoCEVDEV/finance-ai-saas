@@ -88,3 +88,4 @@ Resposta esperada:
 - A base da API ja aceita cookies e CORS com credenciais para o frontend local.
 - O Prisma usa `env("DATABASE_URL")` no `backend/prisma/schema.prisma`.
 - O CRUD de contas financeiras ja esta disponivel em `GET/POST/PUT/DELETE /accounts` com soft delete e filtro por tenant autenticado.
+- O CRUD de categorias ja esta disponivel em `GET/POST/PUT/DELETE /categories`, combinando categorias globais padrao e categorias personalizadas por tenant.

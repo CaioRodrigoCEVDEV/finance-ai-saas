@@ -32,6 +32,7 @@ VITE_API_URL=http://localhost:3333
 - `/login`: tela de autenticacao
 - `/dashboard`: dashboard financeiro protegido por sessao
 - `/accounts`: tela protegida para CRUD de contas financeiras
+- `/categories`: tela protegida para CRUD de categorias
 
 Se o usuario nao estiver autenticado, `/dashboard` redireciona para `/login`.
 Se o usuario ja estiver autenticado, `/login` redireciona para `/dashboard`.
@@ -55,6 +56,11 @@ Se o usuario ja estiver autenticado, `/login` redireciona para `/dashboard`.
 - `POST /accounts`
 - `PUT /accounts/:id`
 - `DELETE /accounts/:id`
+- `GET /categories`
+- `GET /categories/:id`
+- `POST /categories`
+- `PUT /categories/:id`
+- `DELETE /categories/:id`
 
 ## Estrutura
 
@@ -65,6 +71,7 @@ Se o usuario ja estiver autenticado, `/login` redireciona para `/dashboard`.
 - `src/components`: componentes reutilizáveis
 - `src/components/dashboard`: componentes específicos do dashboard
 - `src/components/accounts`: componentes da tela de contas
+- `src/components/categories`: componentes da tela de categorias
 - `src/utils`: utilitários de formatação
 
 ## Tela de contas
@@ -78,3 +85,16 @@ A rota `/accounts` fica protegida pela mesma sessao do dashboard e oferece:
 - atualizacao automatica da lista apos criar, editar ou excluir
 
 O menu superior do layout autenticado agora possui links para `Dashboard` e `Contas`.
+
+## Tela de categorias
+
+A rota `/categories` fica protegida pela mesma sessao do dashboard e oferece:
+
+- filtros por tipo
+- listagem conjunta de categorias padrao e personalizadas do tenant atual
+- criacao e edicao de categorias personalizadas
+- seletor opcional de categoria pai
+- bloqueio visual de edicao e exclusao para categorias padrao
+- atualizacao automatica da lista apos criar, editar ou excluir
+
+O menu superior do layout autenticado agora possui links para `Dashboard`, `Contas` e `Categorias`.

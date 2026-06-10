@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
 import { useAuth } from '../contexts/AuthContext';
 import Accounts from '../pages/Accounts';
+import Categories from '../pages/Categories';
 import Dashboard from '../pages/Dashboard';
 import HomePage from '../pages/HomePage';
 import Login from '../pages/Login';
@@ -52,6 +53,14 @@ function AppRoutes() {
           element={(
             <ProtectedRoute>
               <Accounts />
+            </ProtectedRoute>
+          )}
+        />
+        <Route
+          path="/categories"
+          element={(
+            <ProtectedRoute>
+              <Categories />
             </ProtectedRoute>
           )}
         />

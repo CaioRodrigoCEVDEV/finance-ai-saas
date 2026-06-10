@@ -303,3 +303,53 @@ curl -b cookies.txt -X PUT http://localhost:3333/accounts/SEU_ACCOUNT_ID \
 
 curl -b cookies.txt -X DELETE http://localhost:3333/accounts/SEU_ACCOUNT_ID
 ```
+
+## Endpoints de categories
+
+- `GET http://localhost:3333/categories`
+- `GET http://localhost:3333/categories/:id`
+- `POST http://localhost:3333/categories`
+- `PUT http://localhost:3333/categories/:id`
+- `DELETE http://localhost:3333/categories/:id`
+
+Todos os endpoints acima exigem autenticacao e seguem as regras abaixo:
+
+- categorias globais padrao usam `tenant_id = null` e `is_default = true`
+- categorias personalizadas usam `tenant_id = req.tenant.id` e `is_default = false`
+- listagens retornam categorias globais padrao e categorias do tenant autenticado
+- soft delete com `deleted_at`
+- categorias globais padrao nao podem ser editadas ou excluidas
+- categorias de outro tenant nao ficam acessiveis
+
+### Query params de listagem
+
+- `type=INCOME|EXPENSE|TRANSFER|INVESTMENT`
+- `includeInactive=true|false`
+
+### Exemplos com curl
+
+```bash
+curl -b cookies.txt http://localhost:3333/categories
+curl -b cookies.txt "http://localhost:3333/categories?type=EXPENSE"
+curl -b cookies.txt "http://localhost:3333/categories?includeInactive=true"
+
+curl -b cookies.txt -X POST http://localhost:3333/categories \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Delivery","type":"EXPENSE","parentId":null,"color":"#ef4444","icon":"shopping-bag"}'
+
+curl -b cookies.txt http://localhost:3333/categories/SEU_CATEGORY_ID
+
+curl -b cookies.txt -X PUT http://localhost:3333/categories/SEU_CATEGORY_ID \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Delivery premium","type":"EXPENSE","parentId":null,"color":"#f97316","icon":"bag","isActive":true}'
+
+curl -b cookies.txt -X DELETE http://localhost:3333/categories/SEU_CATEGORY_ID
+```
+
+Se houver transacoes vinculadas, a API retorna:
+
+```json
+{
+  "message": "Categoria possui transacoes vinculadas e nao pode ser excluida."
+}
+```

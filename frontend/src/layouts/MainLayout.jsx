@@ -4,7 +4,8 @@ import { useAuth } from '../contexts/AuthContext';
 
 const navigationItems = [
   { to: '/dashboard', label: 'Dashboard' },
-  { to: '/accounts', label: 'Contas' }
+  { to: '/accounts', label: 'Contas' },
+  { to: '/categories', label: 'Categorias' }
 ];
 
 function MainLayout({ children }) {
