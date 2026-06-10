@@ -93,3 +93,86 @@ npx prisma db seed
 ## Health check
 
 `GET http://localhost:3333/health`
+
+## Endpoints do dashboard
+
+- `GET http://localhost:3333/dashboard/summary`
+- `GET http://localhost:3333/dashboard/expenses-by-category`
+- `GET http://localhost:3333/dashboard/recent-transactions`
+- `GET http://localhost:3333/dashboard/monthly-flow`
+
+Todos os endpoints acima usam temporariamente o tenant demo localizado por `demo@financeai.com` ou `Finance AI Demo`.
+
+### Exemplos com curl
+
+```bash
+curl http://localhost:3333/dashboard/summary
+curl http://localhost:3333/dashboard/expenses-by-category
+curl http://localhost:3333/dashboard/recent-transactions
+curl http://localhost:3333/dashboard/monthly-flow
+```
+
+### Respostas esperadas
+
+`GET /dashboard/summary`
+
+```json
+{
+  "tenant": {
+    "id": "...",
+    "name": "Finance AI Demo",
+    "plan": "PREMIUM"
+  },
+  "summary": {
+    "totalBalance": 2800,
+    "monthlyIncome": 6200,
+    "monthlyExpense": 1297.5,
+    "monthlyEconomy": 4902.5,
+    "expensePercentage": 20.93
+  }
+}
+```
+
+`GET /dashboard/expenses-by-category`
+
+```json
+[
+  {
+    "categoryId": "...",
+    "categoryName": "Mercado",
+    "amount": 650,
+    "percentage": 50.1
+  }
+]
+```
+
+`GET /dashboard/recent-transactions`
+
+```json
+[
+  {
+    "id": "...",
+    "description": "Mercado",
+    "amount": 650,
+    "type": "EXPENSE",
+    "status": "CONFIRMED",
+    "categoryName": "Mercado",
+    "accountName": "Conta Corrente Nubank",
+    "creditCardName": null,
+    "transactionDate": "2026-06-09T12:00:00.000Z"
+  }
+]
+```
+
+`GET /dashboard/monthly-flow`
+
+```json
+[
+  {
+    "month": "2026-01",
+    "income": 5000,
+    "expense": 3000,
+    "economy": 2000
+  }
+]
+```
