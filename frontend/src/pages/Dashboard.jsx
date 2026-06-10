@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 import ExpenseCategoryList from '../components/dashboard/ExpenseCategoryList';
 import { useAuth } from '../contexts/AuthContext';
@@ -23,8 +22,7 @@ const initialState = {
 };
 
 function Dashboard() {
-  const navigate = useNavigate();
-  const { logout, tenant, user } = useAuth();
+  const { tenant, user } = useAuth();
   const [dashboardData, setDashboardData] = useState(initialState);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -107,11 +105,6 @@ function Dashboard() {
       ]
     : [];
 
-  async function handleLogout() {
-    await logout();
-    navigate('/login', { replace: true });
-  }
-
   return (
     <MainLayout>
       <header className="border-b border-slate-800 pb-8">
@@ -130,14 +123,6 @@ function Dashboard() {
               <p className="mt-1">{tenant?.name || 'Finance AI'}</p>
               <p className="text-slate-400">{tenant?.role || 'MEMBER'} • {tenant?.plan || 'FREE'}</p>
             </div>
-
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="rounded-2xl border border-slate-700 px-4 py-2 font-medium text-white transition hover:border-brand-400 hover:text-brand-300"
-            >
-              Sair
-            </button>
           </div>
         </div>
       </header>

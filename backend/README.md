@@ -248,3 +248,58 @@ curl -b cookies.txt http://localhost:3333/dashboard/monthly-flow
   }
 ]
 ```
+
+## Endpoints de accounts
+
+- `GET http://localhost:3333/accounts`
+- `GET http://localhost:3333/accounts/:id`
+- `POST http://localhost:3333/accounts`
+- `PUT http://localhost:3333/accounts/:id`
+- `DELETE http://localhost:3333/accounts/:id`
+
+Todos os endpoints acima exigem autenticacao, usam `req.tenant.id` para isolamento multi-tenant e aplicam soft delete com `deleted_at`.
+
+### Regras aplicadas
+
+- `GET /accounts` retorna apenas contas ativas do tenant atual com `deleted_at = null`
+- `GET /accounts/:id` retorna apenas contas do tenant atual
+- `POST /accounts` grava `tenant_id` a partir da sessao autenticada e `user_id` com `req.user.id`
+- `PUT /accounts/:id` so atualiza contas do tenant atual
+- `DELETE /accounts/:id` nao remove fisicamente o registro; apenas preenche `deleted_at` e desativa a conta
+
+### Exemplo de payload para criar conta
+
+```json
+{
+  "name": "Conta Inter",
+  "type": "CHECKING",
+  "bankName": "Inter",
+  "initialBalance": 1000,
+  "currentBalance": 1000,
+  "currency": "BRL",
+  "color": "#f97316",
+  "icon": "bank"
+}
+```
+
+### Exemplos com curl
+
+```bash
+curl -i -c cookies.txt -X POST http://localhost:3333/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@financeai.com","password":"123456"}'
+
+curl -b cookies.txt http://localhost:3333/accounts
+
+curl -b cookies.txt -X POST http://localhost:3333/accounts \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Conta Inter","type":"CHECKING","bankName":"Inter","initialBalance":1000,"currentBalance":1000,"currency":"BRL","color":"#f97316","icon":"bank"}'
+
+curl -b cookies.txt http://localhost:3333/accounts/SEU_ACCOUNT_ID
+
+curl -b cookies.txt -X PUT http://localhost:3333/accounts/SEU_ACCOUNT_ID \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Conta Inter Premium","currentBalance":1450.75,"isActive":true}'
+
+curl -b cookies.txt -X DELETE http://localhost:3333/accounts/SEU_ACCOUNT_ID
+```

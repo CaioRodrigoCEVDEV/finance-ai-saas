@@ -87,3 +87,4 @@ Resposta esperada:
 - As futuras tabelas de dominio podem seguir o mesmo padrao para isolamento por tenant.
 - A base da API ja aceita cookies e CORS com credenciais para o frontend local.
 - O Prisma usa `env("DATABASE_URL")` no `backend/prisma/schema.prisma`.
+- O CRUD de contas financeiras ja esta disponivel em `GET/POST/PUT/DELETE /accounts` com soft delete e filtro por tenant autenticado.

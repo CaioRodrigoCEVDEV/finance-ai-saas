@@ -31,6 +31,7 @@ VITE_API_URL=http://localhost:3333
 - `/`: landing page com CTA para o dashboard
 - `/login`: tela de autenticacao
 - `/dashboard`: dashboard financeiro protegido por sessao
+- `/accounts`: tela protegida para CRUD de contas financeiras
 
 Se o usuario nao estiver autenticado, `/dashboard` redireciona para `/login`.
 Se o usuario ja estiver autenticado, `/login` redireciona para `/dashboard`.
@@ -49,6 +50,11 @@ Se o usuario ja estiver autenticado, `/login` redireciona para `/dashboard`.
 - `GET /dashboard/expenses-by-category`
 - `GET /dashboard/recent-transactions`
 - `GET /dashboard/monthly-flow`
+- `GET /accounts`
+- `GET /accounts/:id`
+- `POST /accounts`
+- `PUT /accounts/:id`
+- `DELETE /accounts/:id`
 
 ## Estrutura
 
@@ -58,4 +64,17 @@ Se o usuario ja estiver autenticado, `/login` redireciona para `/dashboard`.
 - `src/services`: camada de API
 - `src/components`: componentes reutilizáveis
 - `src/components/dashboard`: componentes específicos do dashboard
+- `src/components/accounts`: componentes da tela de contas
 - `src/utils`: utilitários de formatação
+
+## Tela de contas
+
+A rota `/accounts` fica protegida pela mesma sessao do dashboard e oferece:
+
+- listagem de contas ativas do tenant atual
+- criacao de nova conta com formulario inline
+- edicao de conta existente
+- exclusao com confirmacao
+- atualizacao automatica da lista apos criar, editar ou excluir
+
+O menu superior do layout autenticado agora possui links para `Dashboard` e `Contas`.
