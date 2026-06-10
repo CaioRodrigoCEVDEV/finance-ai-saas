@@ -81,6 +81,32 @@ Resposta esperada:
 }
 ```
 
+## Dashboard Premium 2.0
+
+O dashboard em `/dashboard` foi evoluido para uma visao completa da vida financeira do tenant autenticado, usando dados reais de contas, transacoes, cartoes, orcamentos e metas.
+
+### Widgets do frontend
+
+- `DashboardOverviewCards` — Saldo total, receitas, despesas e economia do mes.
+- `CreditCardWidget` — Resumo de cartoes de credito (limite, fatura, uso).
+- `BudgetStatusWidget` — Resumo de orcamentos (total, usado, alertas).
+- `GoalsProgressWidget` — Resumo de metas (ativas, concluidas, progresso geral).
+- `DashboardAlerts` — Alertas inteligentes baseados em regras reais (orcamento, cartao, meta, saldo, despesa vs receita).
+- `ExpensesByCategory` — Distribuicao de gastos por categoria com barras visuais.
+- `TopExpensesWidget` — Top 5 maiores despesas do mes.
+- `RecentTransactions` — Ultimas transacoes registradas.
+- `MonthlyFlow` — Fluxo mensal dos ultimos 6 meses.
+
+### Endpoints novos do backend
+
+- `GET /dashboard/overview` — visao consolidada (summary, accounts, creditCards, budgets, goals).
+- `GET /dashboard/alerts` — alertas inteligentes em tempo real.
+- `GET /dashboard/top-expenses` — top 5 despesas do mes.
+- `GET /dashboard/budget-status` — lista de orcamentos com uso e status.
+- `GET /dashboard/goals-progress` — metas ativas com progresso.
+
+Os endpoints antigos (`/dashboard/summary`, `/dashboard/expenses-by-category`, `/dashboard/recent-transactions`, `/dashboard/monthly-flow`) continuam funcionando.
+
 ## Observacoes de arquitetura
 
 - O schema inicial do Prisma ja inclui `Tenant` e `User` com `tenantId` indexado.

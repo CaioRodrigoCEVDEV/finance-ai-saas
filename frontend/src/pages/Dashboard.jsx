@@ -1,33 +1,50 @@
 import { useEffect, useState } from 'react';
-import { Activity, AlertCircle, ChartNoAxesCombined, Layers3 } from 'lucide-react';
+import { Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-import ExpenseCategoryList from '../components/dashboard/ExpenseCategoryList';
+import AppLayout from '../layouts/AppLayout';
 import Card from '../components/ui/Card';
 import LoadingSkeleton from '../components/ui/LoadingSkeleton';
 import PageHeader from '../components/ui/PageHeader';
+import Button from '../components/ui/Button';
 import { useAuth } from '../contexts/AuthContext';
-import MonthlyFlow from '../components/dashboard/MonthlyFlow';
+import DashboardOverviewCards from '../components/dashboard/DashboardOverviewCards';
+import DashboardAlerts from '../components/dashboard/DashboardAlerts';
+import CreditCardWidget from '../components/dashboard/CreditCardWidget';
+import BudgetStatusWidget from '../components/dashboard/BudgetStatusWidget';
+import GoalsProgressWidget from '../components/dashboard/GoalsProgressWidget';
+import ExpensesByCategory from '../components/dashboard/ExpensesByCategory';
+import TopExpensesWidget from '../components/dashboard/TopExpensesWidget';
 import RecentTransactions from '../components/dashboard/RecentTransactions';
-import SummaryCard from '../components/dashboard/SummaryCard';
-import AppLayout from '../layouts/AppLayout';
+import MonthlyFlow from '../components/dashboard/MonthlyFlow';
+
 import {
-  getDashboardSummary,
+  getDashboardOverview,
+  getDashboardAlerts,
   getExpensesByCategory,
-  getMonthlyFlow,
-  getRecentTransactions
+  getTopExpenses,
+  getBudgetStatus,
+  getGoalsProgress,
+  getRecentTransactions,
+  getMonthlyFlow
 } from '../services/dashboardService';
-import { formatCurrencyBRL, formatPercentage } from '../utils/formatters';
+import { formatCurrencyBRL } from '../utils/formatters';
 
 const initialState = {
-  summary: null,
+  overview: null,
+  alerts: [],
   expensesByCategory: [],
+  topExpenses: [],
+  budgetStatus: [],
+  goalsProgress: [],
   recentTransactions: [],
   monthlyFlow: []
 };
 
 function Dashboard() {
-  const { tenant, user } = useAuth();
-  const [dashboardData, setDashboardData] = useState(initialState);
+  const { tenant } = useAuth();
+  const navigate = useNavigate();
+  const [data, setData] = useState(initialState);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -39,27 +56,40 @@ function Dashboard() {
         setLoading(true);
         setError('');
 
-        const [summaryResponse, expensesResponse, transactionsResponse, monthlyFlowResponse] = await Promise.all([
-          getDashboardSummary(),
+        const [
+          overviewRes,
+          alertsRes,
+          expensesRes,
+          topExpensesRes,
+          budgetStatusRes,
+          goalsProgressRes,
+          transactionsRes,
+          monthlyFlowRes
+        ] = await Promise.all([
+          getDashboardOverview(),
+          getDashboardAlerts(),
           getExpensesByCategory(),
+          getTopExpenses(),
+          getBudgetStatus(),
+          getGoalsProgress(),
           getRecentTransactions(),
           getMonthlyFlow()
         ]);
 
-        if (!isMounted) {
-          return;
-        }
+        if (!isMounted) return;
 
-        setDashboardData({
-          summary: summaryResponse.summary,
-          expensesByCategory: expensesResponse,
-          recentTransactions: transactionsResponse,
-          monthlyFlow: monthlyFlowResponse
+        setData({
+          overview: overviewRes,
+          alerts: alertsRes,
+          expensesByCategory: expensesRes,
+          topExpenses: topExpensesRes,
+          budgetStatus: budgetStatusRes,
+          goalsProgress: goalsProgressRes,
+          recentTransactions: transactionsRes,
+          monthlyFlow: monthlyFlowRes
         });
       } catch (requestError) {
-        if (!isMounted) {
-          return;
-        }
+        if (!isMounted) return;
 
         setError(
           requestError.response?.status === 401
@@ -67,9 +97,7 @@ function Dashboard() {
             : 'Nao foi possivel carregar o dashboard agora. Verifique se a API backend esta ativa e tente novamente.'
         );
       } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        if (isMounted) setLoading(false);
       }
     }
 
@@ -80,47 +108,22 @@ function Dashboard() {
     };
   }, []);
 
-  const summaryCards = dashboardData.summary
-    ? [
-        {
-          title: 'Saldo Total',
-          value: formatCurrencyBRL(dashboardData.summary.totalBalance),
-          description: `Posicao consolidada das contas de ${tenant?.name || 'Finance AI'}.`,
-          variant: 'highlight'
-        },
-        {
-          title: 'Receitas do mes',
-          value: formatCurrencyBRL(dashboardData.summary.monthlyIncome),
-          description: 'Entradas confirmadas no mes atual.',
-          variant: 'positive'
-        },
-        {
-          title: 'Despesas do mes',
-          value: formatCurrencyBRL(dashboardData.summary.monthlyExpense),
-          description: `${formatPercentage(dashboardData.summary.expensePercentage)} da receita mensal.`,
-          variant: 'negative'
-        },
-        {
-          title: 'Economia do mes',
-          value: formatCurrencyBRL(dashboardData.summary.monthlyEconomy),
-          description: 'Receitas menos despesas confirmadas.',
-          variant: dashboardData.summary.monthlyEconomy >= 0 ? 'positive' : 'negative'
-        }
-      ]
-    : [];
-
   return (
     <AppLayout>
       <div className="space-y-8 pb-8">
         <PageHeader
-          title="Dashboard financeiro"
-          description="Visao geral da operacao do tenant, com leitura clara de saldo, despesas, fluxo mensal e transacoes recentes."
+          title="Dashboard"
+          description="Visao completa da sua vida financeira."
           action={(
-            <Card className="min-w-[220px] rounded-[24px] p-4">
-              <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Conta ativa</p>
-              <p className="mt-2 text-sm font-semibold text-slate-900">{user?.name || 'Usuario autenticado'}</p>
-              <p className="mt-1 text-sm text-slate-500">{tenant?.name || 'Finance AI'} • {tenant?.plan || 'FREE'}</p>
-            </Card>
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => navigate('/transactions')}
+              className="flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Nova transação
+            </Button>
           )}
         />
 
@@ -129,11 +132,13 @@ function Dashboard() {
             <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
               {[1, 2, 3, 4].map((item) => <LoadingSkeleton key={item} className="h-40 rounded-[28px]" />)}
             </div>
-            <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-              <LoadingSkeleton className="h-[340px] rounded-[28px]" />
-              <LoadingSkeleton className="h-[340px] rounded-[28px]" />
+            <div className="grid gap-5 md:grid-cols-3">
+              {[1, 2, 3].map((item) => <LoadingSkeleton key={item} className="h-56 rounded-[28px]" />)}
             </div>
-            <LoadingSkeleton className="h-[320px] rounded-[28px]" />
+            <LoadingSkeleton className="h-40 rounded-[28px]" />
+            <div className="grid gap-6 xl:grid-cols-2">
+              {[1, 2, 3, 4, 5, 6].map((item) => <LoadingSkeleton key={item} className="h-[340px] rounded-[28px]" />)}
+            </div>
           </section>
         ) : null}
 
@@ -141,11 +146,16 @@ function Dashboard() {
           <Card className="rounded-[28px] border-rose-200 bg-rose-50 p-8">
             <div className="flex items-start gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
-                <AlertCircle className="h-5 w-5" />
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
               </div>
               <div>
                 <p className="text-lg font-medium text-slate-900">Falha ao carregar dados do dashboard</p>
                 <p className="mt-2 text-sm text-rose-700">{error}</p>
+                <Button variant="secondary" size="sm" className="mt-4" onClick={() => window.location.reload()}>
+                  Tentar novamente
+                </Button>
               </div>
             </div>
           </Card>
@@ -153,54 +163,124 @@ function Dashboard() {
 
         {!loading && !error ? (
           <div className="space-y-8">
-            <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-              {summaryCards.map((card) => (
-                <SummaryCard key={card.title} {...card} />
-              ))}
+            <DashboardOverviewCards data={data.overview?.summary} tenantName={tenant?.name} />
+
+            <section className="grid gap-5 md:grid-cols-3">
+              <CreditCardWidget data={data.overview?.creditCards} />
+              <BudgetStatusWidget data={data.overview?.budgets} />
+              <GoalsProgressWidget data={data.overview?.goals} />
             </section>
 
-            <section className="grid gap-8 xl:grid-cols-[1.1fr_0.9fr]">
+            <DashboardAlerts alerts={data.alerts} />
+
+            <section className="grid gap-6 xl:grid-cols-2">
+              <ExpensesByCategory items={data.expensesByCategory} />
+              <TopExpensesWidget expenses={data.topExpenses} />
+            </section>
+
+            <section className="grid gap-6 xl:grid-cols-2">
               <Card className="rounded-[28px] p-6">
-                <div className="mb-6 flex items-center justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
-                        <Layers3 className="h-4 w-4" />
+                <div className="mb-6 flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-50 text-sky-700">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                  </div>
+                  <h2 className="text-xl font-semibold text-slate-900">Orçamentos do mês</h2>
+                </div>
+                <div className="space-y-3">
+                  {data.budgetStatus.map((b) => (
+                    <div key={b.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <p className="text-sm font-medium text-slate-900">{b.name}</p>
+                          <p className="text-xs text-slate-500">{b.categoryName}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-semibold text-slate-900">{formatCurrencyBRL(b.usedAmount)} de {formatCurrencyBRL(b.amount)}</p>
+                          <p className={`text-xs font-medium ${b.status === 'EXCEEDED' ? 'text-rose-600' : b.status === 'WARNING' ? 'text-amber-600' : 'text-emerald-600'}`}>
+                            {b.status === 'EXCEEDED' ? 'Excedido' : b.status === 'WARNING' ? 'Quase no limite' : 'Dentro do orçamento'}
+                          </p>
+                        </div>
                       </div>
-                      <h2 className="text-xl font-semibold text-slate-900">Gastos por categoria</h2>
+                      <div className="mt-3 h-2 rounded-full bg-slate-200">
+                        <div
+                          className={`h-2 rounded-full ${b.status === 'EXCEEDED' ? 'bg-rose-500' : b.status === 'WARNING' ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                          style={{ width: `${Math.min(b.usedPercentage, 100)}%` }}
+                        />
+                      </div>
                     </div>
-                    <p className="mt-2 text-sm text-slate-500">Distribuicao das despesas confirmadas no mes.</p>
-                  </div>
+                  ))}
+                  {data.budgetStatus.length === 0 && (
+                    <p className="text-sm text-slate-500">Nenhum orçamento para o mês atual.</p>
+                  )}
                 </div>
-                <ExpenseCategoryList items={dashboardData.expensesByCategory} />
               </Card>
 
               <Card className="rounded-[28px] p-6">
-                <div className="mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-50 text-sky-700">
-                      <ChartNoAxesCombined className="h-4 w-4" />
-                    </div>
-                    <h2 className="text-xl font-semibold text-slate-900">Fluxo mensal</h2>
+                <div className="mb-6 flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
                   </div>
-                  <p className="mt-2 text-sm text-slate-500">Panorama dos ultimos 6 meses.</p>
+                  <h2 className="text-xl font-semibold text-slate-900">Metas em andamento</h2>
                 </div>
-                <MonthlyFlow items={dashboardData.monthlyFlow} />
+                <div className="space-y-3">
+                  {data.goalsProgress.map((g) => (
+                    <div key={g.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <p className="text-sm font-medium text-slate-900">{g.name}</p>
+                          <p className="text-xs text-slate-500">
+                            Prazo: {g.deadline ? new Date(g.deadline).toLocaleDateString('pt-BR') : 'Sem prazo'}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-semibold text-slate-900">{formatCurrencyBRL(g.currentAmount)} de {formatCurrencyBRL(g.targetAmount)}</p>
+                          <p className="text-xs font-medium text-emerald-600">{g.progressPercentage.toFixed(2)}%</p>
+                        </div>
+                      </div>
+                      <div className="mt-3 h-2 rounded-full bg-slate-200">
+                        <div
+                          className="h-2 rounded-full bg-emerald-500"
+                          style={{ width: `${Math.min(g.progressPercentage, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                  {data.goalsProgress.length === 0 && (
+                    <p className="text-sm text-slate-500">Nenhuma meta ativa no momento.</p>
+                  )}
+                </div>
               </Card>
             </section>
 
-            <Card className="rounded-[28px] p-6">
-              <div className="mb-6">
-                <div className="flex items-center gap-3">
+            <section className="grid gap-6 xl:grid-cols-2">
+              <Card className="rounded-[28px] p-6">
+                <div className="mb-6 flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-50 text-amber-700">
-                    <Activity className="h-4 w-4" />
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
                   </div>
-                  <h2 className="text-xl font-semibold text-slate-900">Transacoes recentes</h2>
+                  <h2 className="text-xl font-semibold text-slate-900">Transações recentes</h2>
                 </div>
-                <p className="mt-2 text-sm text-slate-500">Ultimos lancamentos registrados na base.</p>
-              </div>
-              <RecentTransactions transactions={dashboardData.recentTransactions} />
-            </Card>
+                <RecentTransactions transactions={data.recentTransactions} />
+              </Card>
+
+              <Card className="rounded-[28px] p-6">
+                <div className="mb-6 flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-50 text-sky-700">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                    </svg>
+                  </div>
+                  <h2 className="text-xl font-semibold text-slate-900">Fluxo mensal</h2>
+                </div>
+                <MonthlyFlow items={data.monthlyFlow} />
+              </Card>
+            </section>
           </div>
         ) : null}
       </div>

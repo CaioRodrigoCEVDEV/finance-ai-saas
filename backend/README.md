@@ -163,10 +163,15 @@ Limpa o cookie e retorna:
 
 ## Endpoints do dashboard
 
+- `GET http://localhost:3333/dashboard/overview` (preferido pelo novo frontend)
 - `GET http://localhost:3333/dashboard/summary`
 - `GET http://localhost:3333/dashboard/expenses-by-category`
 - `GET http://localhost:3333/dashboard/recent-transactions`
 - `GET http://localhost:3333/dashboard/monthly-flow`
+- `GET http://localhost:3333/dashboard/alerts`
+- `GET http://localhost:3333/dashboard/top-expenses`
+- `GET http://localhost:3333/dashboard/budget-status`
+- `GET http://localhost:3333/dashboard/goals-progress`
 
 Todos os endpoints acima exigem autenticacao e usam o `tenant_id` do usuario autenticado.
 
@@ -178,13 +183,62 @@ curl -i -c cookies.txt -X POST http://localhost:3333/auth/login \
   -d '{"email":"admin@financeai.com","password":"123456"}'
 
 curl -b cookies.txt http://localhost:3333/auth/me
+curl -b cookies.txt http://localhost:3333/dashboard/overview
 curl -b cookies.txt http://localhost:3333/dashboard/summary
 curl -b cookies.txt http://localhost:3333/dashboard/expenses-by-category
 curl -b cookies.txt http://localhost:3333/dashboard/recent-transactions
 curl -b cookies.txt http://localhost:3333/dashboard/monthly-flow
+curl -b cookies.txt http://localhost:3333/dashboard/alerts
+curl -b cookies.txt http://localhost:3333/dashboard/top-expenses
+curl -b cookies.txt http://localhost:3333/dashboard/budget-status
+curl -b cookies.txt http://localhost:3333/dashboard/goals-progress
 ```
 
 ### Respostas esperadas
+
+`GET /dashboard/overview`
+
+```json
+{
+  "summary": {
+    "totalBalance": 2800,
+    "monthlyIncome": 6200,
+    "monthlyExpense": 1296.5,
+    "monthlyInvestment": 500,
+    "monthlyEconomy": 4403.5,
+    "expensePercentage": 20.91
+  },
+  "accounts": {
+    "totalAccounts": 2,
+    "activeAccounts": 2,
+    "totalBalance": 2800
+  },
+  "creditCards": {
+    "totalCards": 1,
+    "activeCards": 1,
+    "totalLimit": 5000,
+    "currentInvoiceAmount": 450.3,
+    "availableLimit": 4549.7,
+    "usagePercentage": 9.01
+  },
+  "budgets": {
+    "totalBudget": 2500,
+    "totalUsed": 1800,
+    "totalRemaining": 700,
+    "usedPercentage": 72,
+    "warningCount": 2,
+    "exceededCount": 1
+  },
+  "goals": {
+    "totalGoals": 5,
+    "activeGoals": 3,
+    "completedGoals": 1,
+    "totalTargetAmount": 30000,
+    "totalCurrentAmount": 8500,
+    "overallProgressPercentage": 28.33
+  }
+}
+```
 
 `GET /dashboard/summary`
 
@@ -245,6 +299,67 @@ curl -b cookies.txt http://localhost:3333/dashboard/monthly-flow
     "income": 5000,
     "expense": 3000,
     "economy": 2000
+  }
+]
+```
+
+`GET /dashboard/alerts`
+
+```json
+[
+  {
+    "type": "BUDGET_WARNING",
+    "severity": "warning",
+    "title": "Orçamento quase no limite",
+    "message": "Você já usou 82% do orçamento de Mercado.",
+    "entityId": "...",
+    "entityType": "budget"
+  }
+]
+```
+
+`GET /dashboard/top-expenses`
+
+```json
+[
+  {
+    "id": "...",
+    "description": "Mercado",
+    "amount": 650,
+    "categoryName": "Mercado",
+    "transactionDate": "2026-06-09T12:00:00.000Z"
+  }
+]
+```
+
+`GET /dashboard/budget-status`
+
+```json
+[
+  {
+    "id": "...",
+    "name": "Mercado Junho",
+    "categoryName": "Mercado",
+    "amount": 800,
+    "usedAmount": 650,
+    "remainingAmount": 150,
+    "usedPercentage": 81.25,
+    "status": "WARNING"
+  }
+]
+```
+
+`GET /dashboard/goals-progress`
+
+```json
+[
+  {
+    "id": "...",
+    "name": "Reserva de emergência",
+    "targetAmount": 12000,
+    "currentAmount": 3000,
+    "progressPercentage": 25,
+    "deadline": "2026-12-31T00:00:00.000Z"
   }
 ]
 ```
