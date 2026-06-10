@@ -1,5 +1,6 @@
 import MainLayout from '../layouts/MainLayout';
 import MetricCard from '../components/MetricCard';
+import { Link } from 'react-router-dom';
 
 const metrics = [
   {
@@ -64,12 +65,12 @@ function HomePage() {
               </p>
             </div>
 
-            <button
-              type="button"
+            <Link
+              to="/dashboard"
               className="rounded-2xl bg-brand-500 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-brand-400"
             >
               Acessar Dashboard
-            </button>
+            </Link>
           </div>
         </section>
       </main>
