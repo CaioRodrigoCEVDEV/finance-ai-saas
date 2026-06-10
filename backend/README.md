@@ -51,6 +51,43 @@ FRONTEND_URL=http://localhost:5173
 - `npm run prisma:migrate`: cria/aplica migrations locais
 - `npm run prisma:seed`: executa o seed de desenvolvimento
 
+## Criar usuario inicial
+
+Para criar um novo usuario e tenant via terminal (sem expor endpoint publico de cadastro):
+
+```bash
+npm run create:user -- \
+  --name "Caio Rodrigo" \
+  --email "caio@email.com" \
+  --password "senha-forte" \
+  --tenant "Finance AI Pessoal" \
+  --role OWNER \
+  --plan PREMIUM
+```
+
+Campos:
+
+| Campo      | Obrigatorio | Padrao   | Descricao                          |
+|------------|-------------|----------|------------------------------------|
+| --name     | Sim         | —        | Nome do usuario                    |
+| --email    | Sim         | —        | Email do usuario (deve conter @)   |
+| --password | Sim         | —        | Senha (minimo 6 caracteres)        |
+| --tenant   | Sim         | —        | Nome do tenant                     |
+| --role     | Nao         | OWNER    | OWNER, ADMIN, MEMBER ou READONLY   |
+| --plan     | Nao         | PREMIUM  | FREE, PRO, PREMIUM ou FAMILY       |
+
+Regras de seguranca:
+
+- A senha nunca aparece no console nem nos logs.
+- O hash da senha nunca e exibido.
+- Se o usuario ja existir, a senha so e sobrescrita com confirmacao interativa.
+- Se o tenant ja existir, o script reaproveita o tenant existente.
+- Se o relacionamento UserTenant ja existir, o script apenas informa.
+- Nao use senhas fracas em producao.
+- Esse script e para administracao via terminal. Cadastro publico sera implementado futuramente.
+
+Apos criar o usuario, acesse a aplicacao normalmente fazendo login com o email e senha definidos.
+
 ## Estrutura
 
 - `src/config`: configurações de ambiente, CORS e banco
