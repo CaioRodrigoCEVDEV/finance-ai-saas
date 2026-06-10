@@ -3,13 +3,14 @@ const { z } = require('zod');
 
 const AppError = require('../../utils/app-error');
 const { authenticate } = require('./auth.middleware');
+const { authLimiter } = require('../../middlewares/rate-limiter');
 const authController = require('./auth.controller');
 
 const authRoutes = Router();
 
 const loginSchema = z.object({
-  email: z.string().email('Email invalido'),
-  password: z.string().min(1, 'Senha obrigatoria')
+  email: z.string().email('Email invalido').max(255),
+  password: z.string().min(1, 'Senha obrigatoria').max(128)
 });
 
 function validateLogin(request, _response, next) {
@@ -23,7 +24,7 @@ function validateLogin(request, _response, next) {
   return next();
 }
 
-authRoutes.post('/auth/login', validateLogin, authController.login);
+authRoutes.post('/auth/login', authLimiter, validateLogin, authController.login);
 authRoutes.post('/auth/logout', authController.logout);
 authRoutes.get('/auth/me', authenticate, authController.getMe);
 
