@@ -20,10 +20,10 @@ import { cn } from '../../utils/cn';
 const navigationItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/accounts', label: 'Contas', icon: Landmark },
-  { to: '/credit-cards', label: 'Cartoes', icon: CreditCard },
-  { to: '/budgets', label: 'Orcamentos', icon: BadgeDollarSign },
+  { to: '/credit-cards', label: 'Cartões', icon: CreditCard },
+  { to: '/budgets', label: 'Orçamentos', icon: BadgeDollarSign },
   { to: '/goals', label: 'Metas', icon: Target },
-  { to: '/transactions', label: 'Transacoes', icon: Receipt },
+  { to: '/transactions', label: 'Transações', icon: Receipt },
   { to: '/categories', label: 'Categorias', icon: FolderKanban },
   { to: '/categorization-rules', label: 'Regras', icon: Wand2 },
   { to: '/reports', label: 'Relatórios', icon: BarChart3 },
@@ -42,19 +42,26 @@ function Sidebar({ mobile = false, onNavigate }) {
   }
 
   return (
-    <aside className={cn('flex h-full flex-col', mobile ? 'w-full' : 'sticky top-4')}>
-      <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-soft">
-        <Link to="/dashboard" className="flex items-center gap-3" onClick={onNavigate}>
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-600 text-white">
-            <Sparkles className="h-5 w-5" />
-          </span>
-          <span>
-            <span className="block text-lg font-semibold tracking-tight text-slate-900">Finance AI</span>
-            <span className="block text-xs uppercase tracking-[0.24em] text-slate-500">Personal Finance</span>
-          </span>
-        </Link>
+    <aside className={cn('flex flex-col', mobile ? 'h-full w-full' : 'sticky top-4')}>
+      <div
+        className={cn(
+          'flex flex-col rounded-[28px] border border-slate-200 bg-white shadow-soft',
+          mobile && 'h-full'
+        )}
+      >
+        <div className="shrink-0 p-5 pb-0">
+          <Link to="/dashboard" className="flex items-center gap-3" onClick={onNavigate}>
+            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-600 text-white">
+              <Sparkles className="h-5 w-5" />
+            </span>
+            <span>
+              <span className="block text-lg font-semibold tracking-tight text-slate-900">Finance AI</span>
+              <span className="block text-xs uppercase tracking-[0.24em] text-slate-500">Personal Finance</span>
+            </span>
+          </Link>
+        </div>
 
-        <nav className="mt-8 space-y-2">
+        <nav className="flex-1 overflow-y-auto p-5 pt-4 space-y-2">
           {navigationItems.map((item) => {
             const isActive = location.pathname === item.to;
             const Icon = item.icon;
@@ -78,14 +85,16 @@ function Sidebar({ mobile = false, onNavigate }) {
           })}
         </nav>
 
-        <button
-          type="button"
-          onClick={handleLogout}
-          className="mt-8 flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-slate-600 transition hover:bg-rose-50 hover:text-rose-700"
-        >
-          <LogOut className="h-4 w-4" />
-          Sair
-        </button>
+        <div className="shrink-0 border-t border-slate-200 p-5">
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-slate-600 transition hover:bg-rose-50 hover:text-rose-700"
+          >
+            <LogOut className="h-4 w-4" />
+            Sair
+          </button>
+        </div>
       </div>
     </aside>
   );

@@ -31,15 +31,23 @@ function AppLayout({ children }) {
       </div>
 
       {mobileMenuOpen ? (
-        <div className="fixed inset-0 z-40 bg-slate-950/30 backdrop-blur-sm lg:hidden" onClick={() => setMobileMenuOpen(false)}>
-          <div className="h-full max-w-xs p-4" onClick={(event) => event.stopPropagation()}>
-            <div className="mb-4 flex justify-end">
+        <div
+          className="fixed inset-0 z-40 bg-slate-950/30 backdrop-blur-sm lg:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        >
+          <div
+            className="flex h-full max-w-xs flex-col p-4"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="mb-4 flex shrink-0 justify-end">
               <Button variant="secondary" size="sm" onClick={() => setMobileMenuOpen(false)}>
                 <X className="h-4 w-4" />
                 Fechar
               </Button>
             </div>
-            <Sidebar mobile onNavigate={() => setMobileMenuOpen(false)} />
+            <div className="min-h-0 flex-1">
+              <Sidebar mobile onNavigate={() => setMobileMenuOpen(false)} />
+            </div>
           </div>
         </div>
       ) : null}
