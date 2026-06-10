@@ -1,17 +1,53 @@
 import { useState } from 'react';
-import { ArrowRight, LockKeyhole, Sparkles } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import {
+  ArrowLeft,
+  ArrowRight,
+  BarChart3,
+  FileDown,
+  Globe,
+  Layers,
+  Loader2,
+} from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 
 import Button from '../components/ui/Button';
-import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import { useAuth } from '../contexts/AuthContext';
+
+const showDemoCredentials =
+  import.meta.env.DEV || import.meta.env.VITE_SHOW_DEMO_CREDENTIALS === 'true';
+
+function DemoIndicator({ label, value, accent }) {
+  return (
+    <div className="rounded-2xl bg-white/8 ring-1 ring-white/10 px-4 py-3.5 backdrop-blur-sm">
+      <span className="text-xs font-medium uppercase tracking-wider text-emerald-200/70">
+        {label}
+      </span>
+      <p
+        className={`mt-1 text-lg font-bold tracking-tight ${accent || 'text-white'}`}
+      >
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function FeatureBullet({ icon: Icon, label }) {
+  return (
+    <div className="flex items-center gap-3 text-sm font-medium text-emerald-50/85">
+      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-white/10 text-emerald-200">
+        <Icon className="h-3.5 w-3.5" />
+      </span>
+      {label}
+    </div>
+  );
+}
 
 function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [email, setEmail] = useState('admin@financeai.com');
-  const [password, setPassword] = useState('123456');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -26,7 +62,7 @@ function Login() {
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||
-          'Nao foi possivel entrar agora. Confira seu email e senha e tente novamente.'
+          'Não foi possível entrar agora. Confira seu email e senha e tente novamente.',
       );
     } finally {
       setLoading(false);
@@ -34,59 +70,139 @@ function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-4 sm:px-6 lg:px-8">
-      <main className="mx-auto grid min-h-screen w-full max-w-content items-center gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-        <Card className="rounded-[32px] border-none bg-emerald-600 p-8 text-white shadow-lg sm:p-10 lg:min-h-[720px] lg:p-12">
-          <div className="flex h-full flex-col justify-between">
-            <div>
-              <span className="inline-flex rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-emerald-50">Finance AI</span>
-              <h1 className="mt-8 max-w-xl text-4xl font-semibold tracking-tight sm:text-5xl">Controle sua vida financeira com inteligencia</h1>
-              <p className="mt-5 max-w-xl text-base leading-7 text-emerald-50/90 sm:text-lg">
-                Entre para acompanhar saldos, categorias e dashboards em uma experiencia visual pronta para um SaaS financeiro premium.
+    <div className="relative flex min-h-screen items-center justify-center bg-slate-50 px-4 py-8 sm:px-6 lg:px-8">
+      <div className="grid w-full max-w-5xl overflow-hidden rounded-[36px] bg-white shadow-glow lg:grid-cols-[1fr_1.08fr]">
+        {/* ── Left: institutional panel ── */}
+        <div className="relative hidden flex-col justify-between bg-gradient-to-br from-emerald-600 via-emerald-700 to-slate-800 p-8 text-white sm:p-10 lg:flex lg:p-12">
+          {/* subtle texture overlay */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.08)_0%,transparent_65%)]" />
+
+          <div className="relative">
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/12 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.22em] text-emerald-100 ring-1 ring-white/8">
+              <BarChart3 className="h-3.5 w-3.5" />
+              Finance AI
+            </span>
+
+            <h1 className="mt-10 max-w-sm text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
+              Seu copiloto financeiro pessoal
+            </h1>
+
+            <p className="mt-4 max-w-sm text-base leading-relaxed text-emerald-100/80">
+              Controle contas, cartões, transações, metas e orçamentos em um
+              painel financeiro premium.
+            </p>
+
+            {/* stat cards */}
+            <div className="mt-10 grid grid-cols-3 gap-3">
+              <DemoIndicator label="Saldo total" value="R$ 42,8k" />
+              <DemoIndicator label="Economia" value="+12,4%" accent="text-emerald-200" />
+              <DemoIndicator label="Orçamentos" value="7 ativos" />
+            </div>
+
+            {/* feature bullets */}
+            <div className="mt-10 grid gap-3.5">
+              <FeatureBullet icon={BarChart3} label="Dashboard inteligente" />
+              <FeatureBullet icon={Layers} label="Multi-tenant seguro" />
+              <FeatureBullet icon={FileDown} label="Importação CSV/OFX" />
+              <FeatureBullet icon={Globe} label="Open Finance em breve" />
+            </div>
+          </div>
+
+          {/* footer */}
+          <p className="relative mt-8 text-xs text-emerald-300/60">
+            &copy; {new Date().getFullYear()} Finance AI &mdash; v2.0
+          </p>
+        </div>
+
+        {/* ── Right: login form ── */}
+        <div className="flex items-center px-6 py-10 sm:px-10 sm:py-12 lg:px-12">
+          <div className="w-full">
+            {/* mobile-only brand */}
+            <div className="mb-8 lg:hidden">
+              <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700 ring-1 ring-emerald-200/60">
+                <BarChart3 className="h-3.5 w-3.5" />
+                Finance AI
+              </span>
+            </div>
+
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+                Entre na sua conta
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-slate-500">
+                Acesse seu painel financeiro com segurança.
               </p>
             </div>
 
-            <div className="mt-10 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-3xl bg-white/10 p-5">
-                <Sparkles className="h-5 w-5" />
-                <p className="mt-4 text-lg font-semibold">Tenant multi-conta</p>
-                <p className="mt-2 text-sm text-emerald-50/85">Visualize estrutura autenticada por tenant sem mudar a regra existente.</p>
+            <form className="space-y-5" onSubmit={handleSubmit}>
+              <Input
+                id="email"
+                label="Email"
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="seu@email.com"
+                autoComplete="email"
+                required
+              />
+
+              <Input
+                id="password"
+                label="Senha"
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="Sua senha"
+                autoComplete="current-password"
+                required
+              />
+
+              {error ? (
+                <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                  {error}
+                </div>
+              ) : null}
+
+              <Button type="submit" disabled={loading} className="w-full" size="lg">
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Entrando...
+                  </>
+                ) : (
+                  <>
+                    Entrar
+                    <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </form>
+
+            {/* demo credentials – only in dev */}
+            {showDemoCredentials ? (
+              <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3.5 text-xs text-slate-500">
+                <p className="mb-1 font-semibold text-slate-600">Credenciais demo</p>
+                <p className="text-slate-500">
+                  <span className="text-slate-700">Email:</span>{' '}
+                  admin@financeai.com &middot;{' '}
+                  <span className="text-slate-700">Senha:</span> 123456
+                </p>
               </div>
-              <div className="rounded-3xl bg-white/10 p-5">
-                <LockKeyhole className="h-5 w-5" />
-                <p className="mt-4 text-lg font-semibold">Acesso seguro</p>
-                <p className="mt-2 text-sm text-emerald-50/85">Fluxo de login preservado com a mesma autenticacao e mesmas rotas.</p>
-              </div>
+            ) : null}
+
+            {/* back to landing */}
+            <div className="mt-6 text-center">
+              <Link
+                to="/"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-400 transition hover:text-slate-600"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+                Voltar para início
+              </Link>
             </div>
           </div>
-        </Card>
-
-        <Card className="rounded-[32px] p-8 sm:p-10 lg:mx-auto lg:w-full lg:max-w-xl">
-          <div className="mb-8">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-600">Acessar sistema</p>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900">Entre na sua conta</h2>
-            <p className="mt-3 text-sm leading-6 text-slate-500">Use seu usuario para abrir o painel financeiro do tenant atual.</p>
-          </div>
-
-          <form className="space-y-5" onSubmit={handleSubmit}>
-            <Input id="email" label="Email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="admin@financeai.com" autoComplete="email" required />
-            <Input id="password" label="Senha" type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="123456" autoComplete="current-password" required />
-
-            {error ? <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div> : null}
-
-            <Button type="submit" disabled={loading} className="w-full" size="lg">
-              {loading ? 'Entrando...' : 'Entrar'}
-              {!loading ? <ArrowRight className="h-4 w-4" /> : null}
-            </Button>
-          </form>
-
-          <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-500">
-            <p className="font-semibold text-slate-700">Credenciais demo</p>
-            <p className="mt-2">Email: admin@financeai.com</p>
-            <p>Senha: 123456</p>
-          </div>
-        </Card>
-      </main>
+        </div>
+      </div>
     </div>
   );
 }
