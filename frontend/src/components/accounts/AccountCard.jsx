@@ -1,3 +1,16 @@
+import {
+  Briefcase,
+  Building2,
+  Coins,
+  CreditCard,
+  Landmark,
+  PiggyBank,
+  Shield,
+  Smartphone,
+  TrendingUp,
+  Wallet
+} from 'lucide-react';
+
 import Badge from '../ui/Badge';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
@@ -12,7 +25,22 @@ const TYPE_LABELS = {
   OTHER: 'Outra'
 };
 
+const ICON_MAP = {
+  'bank': Building2,
+  'wallet': Wallet,
+  'piggy-bank': PiggyBank,
+  'credit-card': CreditCard,
+  'landmark': Landmark,
+  'coins': Coins,
+  'chart-line': TrendingUp,
+  'safe': Shield,
+  'smartphone': Smartphone,
+  'briefcase': Briefcase
+};
+
 function AccountCard({ account, onEdit, onDelete }) {
+  const AccountIcon = ICON_MAP[account.icon];
+
   return (
     <Card className="relative overflow-hidden rounded-[28px] p-6">
       <div
@@ -25,7 +53,10 @@ function AccountCard({ account, onEdit, onDelete }) {
           <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium uppercase tracking-[0.24em] text-slate-600 dark:bg-slate-700 dark:text-slate-300">
             {TYPE_LABELS[account.type] || account.type}
           </span>
-          <h3 className="mt-4 text-2xl font-semibold text-slate-900 dark:text-slate-100">{account.name}</h3>
+          <div className="mt-4 flex items-center gap-2">
+            {AccountIcon ? <AccountIcon className="h-5 w-5 text-slate-400 dark:text-slate-500" /> : null}
+            <h3 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{account.name}</h3>
+          </div>
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{account.bankName || 'Instituicao nao informada'}</p>
         </div>
 
