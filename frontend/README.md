@@ -275,3 +275,46 @@ A rota `/categorization-rules` fica protegida pela mesma sessao do dashboard e o
 - formulario em modal para criar e editar cartoes
 - integracao com `creditCardService` para listar, detalhar, criar, atualizar e excluir
 - a tela de transacoes passa a carregar cartoes reais e permite selecionar um cartao quando `paymentMethod = CREDIT_CARD`
+
+## PWA
+
+O Finance AI suporta instalacao como Progressive Web App (PWA) em navegadores desktop e mobile.
+
+### Como instalar
+
+1. Acesse o app pelo navegador em `https://app.financeai.orderup.com.br`
+2. Clique no botao **Instalar app** que aparece na barra superior (ao lado do seletor de tema)
+3. No mobile, o botao aparece como icone compacto de download
+4. O app sera adicionado a tela inicial/home screen do dispositivo
+
+### Arquivos
+
+- Icones em `frontend/public/`:
+  - `pwa-192x192.png` — icone 192x192
+  - `pwa-512x512.png` — icone 512x512
+  - `pwa-maskable-512x512.png` — icone maskable 512x512 (com area segura)
+  - `apple-touch-icon.png` — icone iOS 180x180
+  - `favicon.svg` / `favicon.ico` — favicon
+- Configuracao do PWA em `frontend/vite.config.js` (plugin `vite-plugin-pwa`)
+- Service worker gerado automaticamente pelo Workbox durante o build
+
+### Cache e seguranca
+
+- Apenas assets estaticos (JS, CSS, imagens, fontes) sao armazenados em cache
+- Chamadas para a API (`https://back.financeai.orderup.com.br`) **nunca** sao cacheadas
+- Endpoints de autenticacao (`/auth/*`) e API (`/api/*`) usam `NetworkOnly`
+- Dados financeiros sensiveis nao sao armazenados pelo service worker
+
+### Publicacao
+
+```bash
+cd frontend
+npm run build
+# copie a pasta dist para o servidor
+cp -r dist/** /var/www/finance-ai/frontend/
+```
+
+### Substituir icones
+
+Os icones PWA atuais podem ser substituidos por versoes personalizadas.
+Substitua os arquivos em `frontend/public/`, mantendo os mesmos nomes. Os icones serao copiados automaticamente para `dist/` no proximo build.

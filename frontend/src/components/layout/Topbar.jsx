@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { useAuth } from '../../contexts/AuthContext';
 import Button from '../ui/Button';
+import PwaInstallButton from '../PwaInstallButton';
 import ThemeToggle from './ThemeToggle';
 
 function getInitials(name) {
@@ -43,6 +44,7 @@ function Topbar({ onMenuClick }) {
 
       <div className="flex items-center gap-3">
         <ThemeToggle />
+        <PwaInstallButton />
         <div className="hidden text-right sm:block">
           <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{user?.name || 'Usuario autenticado'}</p>
           <p className="text-sm text-slate-500 dark:text-slate-400">{user?.email || tenant?.plan || 'Conta ativa'}</p>
