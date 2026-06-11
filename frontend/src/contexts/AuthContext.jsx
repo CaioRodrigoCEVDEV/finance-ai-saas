@@ -41,6 +41,10 @@ function AuthProvider({ children }) {
     }
   }
 
+  function updateTenant(updates) {
+    setTenant((prev) => (prev ? { ...prev, ...updates } : prev));
+  }
+
   useEffect(() => {
     loadUser();
   }, []);
@@ -51,6 +55,7 @@ function AuthProvider({ children }) {
         login,
         logout,
         loadUser,
+        updateTenant,
         user,
         tenant,
         isAuthenticated: Boolean(user && tenant),

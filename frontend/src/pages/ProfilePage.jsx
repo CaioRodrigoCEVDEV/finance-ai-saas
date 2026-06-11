@@ -9,9 +9,10 @@ import PageHeader from '../components/ui/PageHeader';
 import LoadingSkeleton from '../components/ui/LoadingSkeleton';
 import { useAuth } from '../contexts/AuthContext';
 import * as profileService from '../services/profileService';
+import * as tenantService from '../services/tenantService';
 
 function ProfilePage() {
-  const { loadUser } = useAuth();
+  const { loadUser, updateTenant } = useAuth();
 
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -30,6 +31,13 @@ function ProfilePage() {
   const [passwordSuccess, setPasswordSuccess] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
+  const [workspaceName, setWorkspaceName] = useState('');
+  const [workspaceSaving, setWorkspaceSaving] = useState(false);
+  const [workspaceSuccess, setWorkspaceSuccess] = useState('');
+  const [workspaceError, setWorkspaceError] = useState('');
+
+  const isWorkspaceManager = profile?.membership?.role === 'OWNER' || profile?.membership?.role === 'ADMIN';
+
   async function fetchProfile() {
     try {
       setLoading(true);
@@ -38,6 +46,7 @@ function ProfilePage() {
       setProfile(data);
       setName(data.user.name);
       setEmail(data.user.email);
+      setWorkspaceName(data.tenant.name);
     } catch (error) {
       setFetchError(error.response?.data?.message || 'Erro ao carregar dados do perfil');
     } finally {
@@ -89,6 +98,24 @@ function ProfilePage() {
       setPasswordSaving(false);
     }
   }, [currentPassword, newPassword, confirmPassword]);
+
+  const handleUpdateWorkspace = useCallback(async (event) => {
+    event.preventDefault();
+    setWorkspaceError('');
+    setWorkspaceSuccess('');
+
+    try {
+      setWorkspaceSaving(true);
+      const data = await tenantService.updateCurrentTenant({ name: workspaceName });
+      setProfile((prev) => prev ? { ...prev, tenant: { ...prev.tenant, name: data.tenant.name } } : prev);
+      updateTenant({ name: data.tenant.name });
+      setWorkspaceSuccess('Workspace atualizado com sucesso');
+    } catch (error) {
+      setWorkspaceError(error.response?.data?.message || 'Erro ao atualizar workspace');
+    } finally {
+      setWorkspaceSaving(false);
+    }
+  }, [workspaceName, updateTenant]);
 
   if (loading) {
     return (
@@ -274,10 +301,50 @@ function ProfilePage() {
             <h2 className="mb-6 text-lg font-semibold text-slate-900 dark:text-slate-100">Workspace</h2>
 
             <div className="space-y-4">
-              <div>
-                <span className="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">Nome do workspace</span>
-                <p className="mt-1 font-medium text-slate-900 dark:text-slate-100">{profile.tenant.name}</p>
-              </div>
+              {isWorkspaceManager ? (
+                <form onSubmit={handleUpdateWorkspace} className="space-y-3">
+                  <Input
+                    id="workspaceName"
+                    label="Nome do workspace"
+                    type="text"
+                    value={workspaceName}
+                    onChange={(e) => setWorkspaceName(e.target.value)}
+                    placeholder="Nome do workspace"
+                    required
+                  />
+
+                  {workspaceError ? (
+                    <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-800 dark:bg-rose-950/30 dark:text-rose-400">
+                      {workspaceError}
+                    </div>
+                  ) : null}
+
+                  {workspaceSuccess ? (
+                    <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400">
+                      {workspaceSuccess}
+                    </div>
+                  ) : null}
+
+                  <Button type="submit" disabled={workspaceSaving} size="lg">
+                    {workspaceSaving ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Salvando...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4" />
+                        Salvar workspace
+                      </>
+                    )}
+                  </Button>
+                </form>
+              ) : (
+                <div>
+                  <span className="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">Nome do workspace</span>
+                  <p className="mt-1 font-medium text-slate-900 dark:text-slate-100">{profile.tenant.name}</p>
+                </div>
+              )}
 
               <div>
                 <span className="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">Plano</span>
