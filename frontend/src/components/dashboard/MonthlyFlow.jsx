@@ -17,36 +17,38 @@ function MonthlyFlow({ items }) {
 
         return (
           <article key={item.month} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
-                  {formatMonthLabel(item.month)}
-                </h3>
-                <p className={`mt-2 text-sm font-medium ${economyPositive ? 'text-emerald-600' : 'text-rose-600'}`}>
-                  Economia: {formatCurrencyBRL(item.economy)}
-                </p>
-              </div>
+            <div className="mb-4">
+              <h3 className="text-sm font-bold uppercase tracking-[0.22em] text-slate-500">
+                {formatMonthLabel(item.month)}
+              </h3>
+              <p className={`mt-1 text-sm font-semibold ${economyPositive ? 'text-emerald-600' : 'text-rose-600'}`}>
+                Economia: {formatCurrencyBRL(item.economy)}
+              </p>
+            </div>
 
-              <div className="grid flex-1 gap-3 lg:max-w-2xl lg:grid-cols-3">
-                {[
-                  { label: 'Receitas', value: item.income, tone: 'bg-emerald-500' },
-                  { label: 'Despesas', value: item.expense, tone: 'bg-rose-500' },
-                  { label: 'Saldo', value: Math.abs(Number(item.economy || 0)), tone: economyPositive ? 'bg-sky-500' : 'bg-amber-500' }
-                ].map((entry) => (
-                  <div key={entry.label}>
-                    <div className="mb-2 flex items-center justify-between text-xs text-slate-500">
-                      <span>{entry.label}</span>
-                      <span>{formatCurrencyBRL(entry.value)}</span>
-                    </div>
-                    <div className="h-2 rounded-full bg-slate-200">
-                      <div
-                        className={`h-2 rounded-full ${entry.tone}`}
-                        style={{ width: `${Math.max((Number(entry.value || 0) / maxValue) * 100, 6)}%` }}
-                      />
-                    </div>
+            <div className="space-y-3">
+              {[
+                { label: 'Receitas', value: item.income, tone: 'bg-emerald-500' },
+                { label: 'Despesas', value: item.expense, tone: 'bg-rose-500' },
+                { label: 'Saldo', value: Math.abs(Number(item.economy || 0)), tone: economyPositive ? 'bg-sky-500' : 'bg-amber-500' }
+              ].map((entry) => (
+                <div key={entry.label}>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-[11px] font-bold uppercase tracking-wide text-slate-400">
+                      {entry.label}
+                    </span>
+                    <strong className="whitespace-nowrap text-sm font-bold text-slate-800">
+                      {formatCurrencyBRL(entry.value)}
+                    </strong>
                   </div>
-                ))}
-              </div>
+                  <div className="mt-1.5 h-1.5 w-full rounded-full bg-slate-200">
+                    <div
+                      className={`h-1.5 rounded-full ${entry.tone}`}
+                      style={{ width: `${Math.max((Number(entry.value || 0) / maxValue) * 100, 6)}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
           </article>
         );
