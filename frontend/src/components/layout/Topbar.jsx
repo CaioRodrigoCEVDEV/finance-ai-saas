@@ -1,9 +1,10 @@
-import { LogOut, Menu } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { ChevronDown, CircleUser, LogOut, Menu, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { useAuth } from '../../contexts/AuthContext';
+import { cn } from '../../utils/cn';
 import NotificationBell from '../notifications/NotificationBell';
-import Button from '../ui/Button';
 import PwaInstallButton from '../PwaInstallButton';
 import ThemeToggle from './ThemeToggle';
 
@@ -23,19 +24,55 @@ function getInitials(name) {
 function Topbar({ onMenuClick }) {
   const navigate = useNavigate();
   const { logout, tenant, user } = useAuth();
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setOpen(false);
+      }
+    }
+
+    function handleKeyDown(event) {
+      if (event.key === 'Escape') {
+        setOpen(false);
+      }
+    }
+
+    if (open) {
+      document.addEventListener('mousedown', handleClickOutside);
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    }
+  }, [open]);
 
   async function handleLogout() {
+    setOpen(false);
     await logout();
     navigate('/login', { replace: true });
+  }
+
+  function handleNavigate(to) {
+    setOpen(false);
+    navigate(to);
   }
 
   return (
     <header className="flex items-center justify-between gap-4 rounded-[28px] border border-slate-200 bg-white px-5 py-4 shadow-soft dark:border-slate-700 dark:bg-slate-800">
       <div className="flex items-center gap-3">
         {onMenuClick ? (
-          <Button variant="ghost" size="sm" onClick={onMenuClick} className="lg:hidden" aria-label="Abrir menu">
+          <button
+            type="button"
+            onClick={onMenuClick}
+            className="lg:hidden flex h-9 w-9 items-center justify-center rounded-2xl border border-slate-200 text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 dark:border-slate-600 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200"
+            aria-label="Abrir menu"
+          >
             <Menu className="h-4 w-4" />
-          </Button>
+          </button>
         ) : null}
         <div>
           <p className="text-xs uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Tenant atual</p>
@@ -47,17 +84,66 @@ function Topbar({ onMenuClick }) {
         <ThemeToggle />
         <PwaInstallButton />
         <NotificationBell />
-        <div className="hidden text-right sm:block">
-          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{user?.name || 'Usuario autenticado'}</p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">{user?.email || tenant?.plan || 'Conta ativa'}</p>
+
+        <div className="relative" ref={containerRef}>
+          <button
+            type="button"
+            onClick={() => setOpen((prev) => !prev)}
+            className={cn(
+              'flex items-center gap-2.5 rounded-2xl p-2 transition',
+              'hover:bg-slate-50 dark:hover:bg-slate-700/50',
+              open && 'bg-slate-50 dark:bg-slate-700/50'
+            )}
+            aria-label="Menu do usuario"
+            aria-expanded={open}
+            aria-haspopup="true"
+          >
+            <div className="hidden text-right sm:block">
+              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{user?.name || 'Usuario autenticado'}</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">{user?.email || tenant?.plan || 'Conta ativa'}</p>
+            </div>
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-sm font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+              {getInitials(user?.name)}
+            </div>
+            <ChevronDown className={cn('hidden h-4 w-4 text-slate-400 transition sm:block', open && 'rotate-180')} />
+          </button>
+
+          {open && (
+            <div
+              className={cn(
+                'absolute right-0 top-full z-50 mt-2 w-56 rounded-2xl border p-1.5 shadow-lg',
+                'border-slate-200 bg-white',
+                'dark:border-slate-600 dark:bg-slate-800'
+              )}
+            >
+              <button
+                type="button"
+                onClick={() => handleNavigate('/profile')}
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50"
+              >
+                <CircleUser className="h-4 w-4" />
+                Minha conta
+              </button>
+              <button
+                type="button"
+                onClick={() => handleNavigate('/settings')}
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50"
+              >
+                <Settings className="h-4 w-4" />
+                Configurações
+              </button>
+              <div className="my-1 border-t border-slate-200 dark:border-slate-600" />
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-rose-50 hover:text-rose-700 dark:text-slate-400 dark:hover:bg-rose-900/20 dark:hover:text-rose-400"
+              >
+                <LogOut className="h-4 w-4" />
+                Sair
+              </button>
+            </div>
+          )}
         </div>
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-sm font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-          {getInitials(user?.name)}
-        </div>
-        <Button variant="ghost" size="sm" onClick={handleLogout} className="hidden sm:inline-flex">
-          <LogOut className="h-4 w-4" />
-          Sair
-        </Button>
       </div>
     </header>
   );

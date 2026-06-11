@@ -3,7 +3,6 @@ import {
   BarChart3,
   Bell,
   CalendarDays,
-  CircleUser,
   CreditCard,
   FileUp,
   FolderKanban,
@@ -12,7 +11,6 @@ import {
   LogOut,
   Receipt,
   Repeat,
-  Settings,
   Share2,
   Sparkles,
   Target,
@@ -39,9 +37,7 @@ const navigationItems = [
   { to: '/notifications', label: 'Notificacoes', icon: Bell },
   { to: '/reports', label: 'Relatórios', icon: BarChart3 },
   { to: '/imports', label: 'Importar', icon: FileUp },
-  { to: '/invites', label: 'Convites', icon: Share2 },
-  { to: '/profile', label: 'Minha conta', icon: CircleUser },
-  { to: '/settings', label: 'Configurações', icon: Settings }
+  { to: '/invites', label: 'Convites', icon: Share2 }
 ];
 
 function Sidebar({ mobile = false, onNavigate }) {
