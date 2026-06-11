@@ -17,6 +17,7 @@ import Notifications from '../pages/Notifications';
 import ProfilePage from '../pages/ProfilePage';
 import SettingsPage from '../pages/SettingsPage';
 import RecurrencesPage from '../pages/RecurrencesPage';
+import FinancialCalendarPage from '../pages/FinancialCalendarPage';
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
@@ -168,6 +169,14 @@ function AppRoutes() {
           element={(
             <ProtectedRoute>
               <RecurrencesPage />
+            </ProtectedRoute>
+          )}
+        />
+        <Route
+          path="/calendar"
+          element={(
+            <ProtectedRoute>
+              <FinancialCalendarPage />
             </ProtectedRoute>
           )}
         />
