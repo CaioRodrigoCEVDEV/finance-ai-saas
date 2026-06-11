@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   LogOut,
   Receipt,
+  Settings,
   Sparkles,
   Target,
   Wand2
@@ -31,7 +32,8 @@ const navigationItems = [
   { to: '/notifications', label: 'Notificacoes', icon: Bell },
   { to: '/reports', label: 'Relatórios', icon: BarChart3 },
   { to: '/imports', label: 'Importar', icon: FileUp },
-  { to: '/profile', label: 'Minha conta', icon: CircleUser }
+  { to: '/profile', label: 'Minha conta', icon: CircleUser },
+  { to: '/settings', label: 'Configurações', icon: Settings }
 ];
 
 function Sidebar({ mobile = false, onNavigate }) {

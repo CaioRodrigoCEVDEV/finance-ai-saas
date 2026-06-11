@@ -566,6 +566,35 @@ async function main() {
     );
   }
 
+  // Tenant settings
+  await upsertByLookup(
+    prisma.tenantSettings,
+    { tenant_id: tenant.id },
+    {
+      tenant_id: tenant.id,
+      currency: 'BRL',
+      financial_month_start_day: 1,
+      default_account_id: nubankAccount.id,
+      theme: 'system',
+      date_format: 'DD/MM/YYYY',
+      notify_budget_warning: true,
+      notify_budget_exceeded: true,
+      notify_invoice_due: true,
+      notify_goal_behind: false
+    },
+    {
+      currency: 'BRL',
+      financial_month_start_day: 1,
+      default_account_id: nubankAccount.id,
+      theme: 'system',
+      date_format: 'DD/MM/YYYY',
+      notify_budget_warning: true,
+      notify_budget_exceeded: true,
+      notify_invoice_due: true,
+      notify_goal_behind: false
+    }
+  );
+
   console.log('Seed concluido com sucesso.');
   console.log(`Tenant: ${tenant.name} (${tenant.email})`);
   console.log(`Usuario demo: ${demoUser.email}`);

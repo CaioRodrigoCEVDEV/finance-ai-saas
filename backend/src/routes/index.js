@@ -14,6 +14,7 @@ const categorizationRulesRoutes = require('../modules/categorization-rules/categ
 const reportsRoutes = require('../modules/reports/reports.routes');
 const notificationsRoutes = require('../modules/notifications/notifications.routes');
 const profileRoutes = require('../modules/profile/profile.routes');
+const settingsRoutes = require('../modules/settings/settings.routes');
 
 const router = Router();
 
@@ -31,5 +32,6 @@ router.use(categorizationRulesRoutes);
 router.use(reportsRoutes);
 router.use(notificationsRoutes);
 router.use(profileRoutes);
+router.use(settingsRoutes);
 
 module.exports = router;

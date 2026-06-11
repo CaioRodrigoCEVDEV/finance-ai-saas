@@ -146,6 +146,7 @@ model Tenant {
   categorization_rules     CategorizationRule[]
   audit_logs               AuditLog[]
   notifications            Notification[]
+  settings                 TenantSettings?
 
   @@index([status])
   @@map("tenants")
@@ -209,6 +210,7 @@ model Account {
   user            User?       @relation(fields: [user_id], references: [id])
   credit_cards    CreditCard[]
   transactions    Transaction[]
+  defaultInSettings TenantSettings[] @relation("AccountDefaultInSettings")
 
   @@index([tenant_id])
   @@index([tenant_id, is_active])
@@ -262,6 +264,7 @@ model Category {
   transactions          Transaction[]
   budgets               Budget[]
   categorization_rules  CategorizationRule[]
+  defaultExpenseInSettings TenantSettings[] @relation("CategoryDefaultExpenseInSettings")
 
   @@index([tenant_id])
   @@index([tenant_id, type])
@@ -438,4 +441,27 @@ model Notification {
   @@index([tenant_id, is_read])
   @@index([user_id])
   @@map("notifications")
+}
+
+model TenantSettings {
+  id                        String    @id @default(uuid()) @db.Uuid
+  tenant_id                 String    @unique @db.Uuid
+  currency                  String    @default("BRL")
+  financial_month_start_day Int       @default(1) @map("financial_month_start_day")
+  default_account_id        String?   @map("default_account_id") @db.Uuid
+  default_expense_category_id String?  @map("default_expense_category_id") @db.Uuid
+  theme                     String    @default("system")
+  date_format               String    @default("DD/MM/YYYY") @map("date_format")
+  notify_budget_warning     Boolean   @default(true) @map("notify_budget_warning")
+  notify_budget_exceeded    Boolean   @default(true) @map("notify_budget_exceeded")
+  notify_invoice_due        Boolean   @default(true) @map("notify_invoice_due")
+  notify_goal_behind        Boolean   @default(false) @map("notify_goal_behind")
+  created_at                DateTime  @default(now()) @map("created_at")
+  updated_at                DateTime  @updatedAt @map("updated_at")
+
+  tenant                  Tenant    @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  defaultAccount          Account?  @relation("AccountDefaultInSettings", fields: [default_account_id], references: [id], onDelete: SetNull)
+  defaultExpenseCategory  Category? @relation("CategoryDefaultExpenseInSettings", fields: [default_expense_category_id], references: [id], onDelete: SetNull)
+
+  @@map("tenant_settings")
 }
