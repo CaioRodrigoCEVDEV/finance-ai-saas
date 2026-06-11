@@ -10,7 +10,7 @@ const options = [
 ];
 
 function ThemeToggle() {
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const [open, setOpen] = useState(false);
   const containerRef = useRef(null);
 
@@ -31,7 +31,8 @@ function ThemeToggle() {
     setOpen(false);
   }
 
-  const currentIcon = resolvedTheme === 'dark' ? Moon : Sun;
+  const themeIcons = { light: Sun, dark: Moon, system: Monitor };
+  const CurrentIcon = themeIcons[theme] || Monitor;
 
   return (
     <div className="relative" ref={containerRef}>
@@ -45,7 +46,7 @@ function ThemeToggle() {
         )}
         aria-label="Alternar tema"
       >
-        <currentIcon className="h-4 w-4" />
+        <CurrentIcon className="h-4 w-4" />
       </button>
 
       {open && (
