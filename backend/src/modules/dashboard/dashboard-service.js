@@ -4,6 +4,7 @@ const {
   getCurrentMonthRange,
   getLastMonths
 } = require('./dashboard-date-helper');
+const { computeAccountBalances } = require('../accounts/accounts.service');
 
 const UNCATEGORIZED_LABEL = 'Sem categoria';
 
@@ -16,20 +17,42 @@ function getCurrentMonthYear() {
   return { month: now.getUTCMonth() + 1, year: now.getUTCFullYear() };
 }
 
+async function computeTotalBalance(tenantId) {
+  const accounts = await prisma.account.findMany({
+    where: {
+      tenant_id: tenantId,
+      is_active: true,
+      deleted_at: null
+    },
+    select: {
+      id: true,
+      initial_balance: true
+    }
+  });
+
+  const accountIds = accounts.map((a) => a.id);
+
+  if (accountIds.length === 0) {
+    return 0;
+  }
+
+  const transactionTotals = await computeAccountBalances(tenantId, accountIds);
+
+  let total = 0;
+
+  for (const account of accounts) {
+    const tx = transactionTotals[account.id] || { INCOME: 0, EXPENSE: 0 };
+    total += toNumber(account.initial_balance) + tx.INCOME - tx.EXPENSE;
+  }
+
+  return Number(total.toFixed(2));
+}
+
 async function getSummary(tenantId) {
   const currentMonth = getCurrentMonthRange();
 
-  const [accountBalance, transactionTotals] = await Promise.all([
-    prisma.account.aggregate({
-      where: {
-        tenant_id: tenantId,
-        is_active: true,
-        deleted_at: null
-      },
-      _sum: {
-        current_balance: true
-      }
-    }),
+  const [totalBalance, transactionTotals] = await Promise.all([
+    computeTotalBalance(tenantId),
     prisma.transaction.groupBy({
       by: ['type'],
       where: {
@@ -63,7 +86,7 @@ async function getSummary(tenantId) {
 
   return {
     summary: {
-      totalBalance: toNumber(accountBalance._sum.current_balance),
+      totalBalance,
       monthlyIncome,
       monthlyExpense,
       monthlyEconomy,
@@ -264,14 +287,13 @@ async function getOverview(tenantId) {
 
   const accounts = await prisma.account.findMany({
     where: { tenant_id: tenantId, deleted_at: null },
-    select: { id: true, is_active: true, current_balance: true }
+    select: { id: true, is_active: true }
   });
 
   const totalAccounts = accounts.length;
   const activeAccounts = accounts.filter((a) => a.is_active).length;
-  const totalBalanceAccounts = accounts
-    .filter((a) => a.is_active)
-    .reduce((sum, a) => sum + toNumber(a.current_balance), 0);
+
+  const totalBalanceAccounts = summaryData.summary.totalBalance;
 
   const creditCards = await prisma.creditCard.findMany({
     where: { tenant_id: tenantId, deleted_at: null },
@@ -559,12 +581,7 @@ async function getAlerts(tenantId) {
     });
   }
 
-  const accountBalance = await prisma.account.aggregate({
-    where: { tenant_id: tenantId, deleted_at: null, is_active: true },
-    _sum: { current_balance: true }
-  });
-
-  const totalBalance = toNumber(accountBalance._sum.current_balance);
+  const totalBalance = await computeTotalBalance(tenantId);
 
   if (totalBalance < 100) {
     alerts.push({

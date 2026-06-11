@@ -5,14 +5,18 @@ function toDecimalString(value) {
   return Number(value || 0).toFixed(2);
 }
 
-function toAccountResponse(account) {
+function toNumber(value) {
+  return Number(value || 0);
+}
+
+function toAccountResponse(account, computedBalance) {
   return {
     id: account.id,
     name: account.name,
     type: account.type,
     bankName: account.bank_name,
     initialBalance: Number(account.initial_balance),
-    currentBalance: Number(account.current_balance),
+    currentBalance: computedBalance !== undefined ? computedBalance : Number(account.current_balance),
     currency: account.currency,
     color: account.color,
     icon: account.icon,
@@ -32,6 +36,46 @@ async function findAccountByTenant(accountId, tenantId) {
   });
 }
 
+async function computeAccountBalances(tenantId, accountIds) {
+  if (!accountIds || accountIds.length === 0) {
+    return {};
+  }
+
+  const aggregates = await prisma.transaction.groupBy({
+    by: ['account_id', 'type'],
+    where: {
+      tenant_id: tenantId,
+      deleted_at: null,
+      status: 'CONFIRMED',
+      account_id: { in: accountIds }
+    },
+    _sum: { amount: true }
+  });
+
+  const map = {};
+
+  for (const agg of aggregates) {
+    if (!map[agg.account_id]) {
+      map[agg.account_id] = { INCOME: 0, EXPENSE: 0 };
+    }
+
+    const amount = toNumber(agg._sum.amount);
+
+    if (agg.type === 'INCOME') {
+      map[agg.account_id].INCOME += amount;
+    } else {
+      map[agg.account_id].EXPENSE += amount;
+    }
+  }
+
+  return map;
+}
+
+function computeBalanceForAccount(account, transactionTotals) {
+  const tx = transactionTotals || { INCOME: 0, EXPENSE: 0 };
+  return toNumber(account.initial_balance) + tx.INCOME - tx.EXPENSE;
+}
+
 async function listAccounts(tenantId) {
   const accounts = await prisma.account.findMany({
     where: {
@@ -44,7 +88,13 @@ async function listAccounts(tenantId) {
     }
   });
 
-  return accounts.map(toAccountResponse);
+  const accountIds = accounts.map((a) => a.id);
+  const balances = await computeAccountBalances(tenantId, accountIds);
+
+  return accounts.map((account) => {
+    const computed = computeBalanceForAccount(account, balances[account.id]);
+    return toAccountResponse(account, computed);
+  });
 }
 
 async function getAccountById(accountId, tenantId) {
@@ -54,7 +104,10 @@ async function getAccountById(accountId, tenantId) {
     throw new AppError('Conta nao encontrada', 404);
   }
 
-  return toAccountResponse(account);
+  const balances = await computeAccountBalances(tenantId, [accountId]);
+  const computed = computeBalanceForAccount(account, balances[accountId]);
+
+  return toAccountResponse(account, computed);
 }
 
 async function createAccount(data, tenantId, userId) {
@@ -77,7 +130,10 @@ async function createAccount(data, tenantId, userId) {
     }
   });
 
-  return toAccountResponse(account);
+  const balances = await computeAccountBalances(tenantId, [account.id]);
+  const computed = computeBalanceForAccount(account, balances[account.id]);
+
+  return toAccountResponse(account, computed);
 }
 
 async function updateAccount(accountId, tenantId, data) {
@@ -132,7 +188,10 @@ async function updateAccount(accountId, tenantId, data) {
     data: updateData
   });
 
-  return toAccountResponse(account);
+  const balances = await computeAccountBalances(tenantId, [account.id]);
+  const computed = computeBalanceForAccount(account, balances[account.id]);
+
+  return toAccountResponse(account, computed);
 }
 
 async function deleteAccount(accountId, tenantId) {
@@ -158,6 +217,7 @@ async function deleteAccount(accountId, tenantId) {
 }
 
 module.exports = {
+  computeAccountBalances,
   listAccounts,
   getAccountById,
   createAccount,
