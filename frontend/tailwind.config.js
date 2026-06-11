@@ -20,7 +20,7 @@ export default {
         soft: '0 12px 30px rgba(15, 23, 42, 0.06)'
       },
       maxWidth: {
-        content: '1440px'
+        content: '1600px'
       }
     }
   },

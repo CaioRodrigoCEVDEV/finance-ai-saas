@@ -24,9 +24,7 @@ function AppLayout({ children }) {
             <Topbar />
           </div>
 
-          <main className="flex-1">
-            <div className="mx-auto w-full max-w-6xl">{children}</div>
-          </main>
+          <main className="flex-1">{children}</main>
         </div>
       </div>
 
