@@ -14,6 +14,7 @@ import Login from '../pages/Login';
 import Reports from '../pages/Reports';
 import Transactions from '../pages/Transactions';
 import Notifications from '../pages/Notifications';
+import ProfilePage from '../pages/ProfilePage';
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
@@ -141,6 +142,14 @@ function AppRoutes() {
           element={(
             <ProtectedRoute>
               <Notifications />
+            </ProtectedRoute>
+          )}
+        />
+        <Route
+          path="/profile"
+          element={(
+            <ProtectedRoute>
+              <ProfilePage />
             </ProtectedRoute>
           )}
         />

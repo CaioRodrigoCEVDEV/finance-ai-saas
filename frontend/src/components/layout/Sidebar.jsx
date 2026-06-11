@@ -2,6 +2,7 @@ import {
   BadgeDollarSign,
   BarChart3,
   Bell,
+  CircleUser,
   CreditCard,
   FileUp,
   FolderKanban,
@@ -29,7 +30,8 @@ const navigationItems = [
   { to: '/categorization-rules', label: 'Regras', icon: Wand2 },
   { to: '/notifications', label: 'Notificacoes', icon: Bell },
   { to: '/reports', label: 'Relatórios', icon: BarChart3 },
-  { to: '/imports', label: 'Importar', icon: FileUp }
+  { to: '/imports', label: 'Importar', icon: FileUp },
+  { to: '/profile', label: 'Minha conta', icon: CircleUser }
 ];
 
 function Sidebar({ mobile = false, onNavigate }) {
