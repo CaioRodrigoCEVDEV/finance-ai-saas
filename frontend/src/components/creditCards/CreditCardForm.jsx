@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import Select from '../ui/Select';
+import { cn } from '../../utils/cn';
 
 const BRAND_OPTIONS = [
   { value: 'VISA', label: 'Visa' },
@@ -11,6 +12,19 @@ const BRAND_OPTIONS = [
   { value: 'AMEX', label: 'Amex' },
   { value: 'HIPERCARD', label: 'Hipercard' },
   { value: 'OTHER', label: 'Outra' }
+];
+
+const COLORS = [
+  { hex: '#7c3aed', label: 'Roxo' },
+  { hex: '#10b981', label: 'Verde' },
+  { hex: '#2563eb', label: 'Azul' },
+  { hex: '#06b6d4', label: 'Ciano' },
+  { hex: '#f97316', label: 'Laranja' },
+  { hex: '#ef4444', label: 'Vermelho' },
+  { hex: '#ec4899', label: 'Rosa' },
+  { hex: '#eab308', label: 'Amarelo' },
+  { hex: '#64748b', label: 'Cinza' },
+  { hex: '#111827', label: 'Preto' }
 ];
 
 const initialFormValues = {
@@ -129,7 +143,50 @@ function CreditCardForm({ creditCard, accounts, loadingAccounts, loading, server
             ))}
           </Select>
 
-          <Input label="Cor" name="color" value={formValues.color} onChange={handleChange} />
+          <div>
+            <span className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Cor do cartao</span>
+            <div className="flex flex-wrap gap-2">
+              {(() => {
+                const currentColorInList = COLORS.some(
+                  (c) => c.hex.toLowerCase() === formValues.color.toLowerCase()
+                );
+                const swatches = currentColorInList
+                  ? COLORS
+                  : [
+                      ...(formValues.color && formValues.color.trim()
+                        ? [{ hex: formValues.color.trim(), label: 'Atual' }]
+                        : []),
+                      ...COLORS
+                    ];
+
+                return swatches.map((color) => (
+                  <button
+                    key={color.hex}
+                    type="button"
+                    onClick={() => setFormValues((prev) => ({ ...prev, color: color.hex }))}
+                    className={cn(
+                      'relative h-9 w-9 rounded-xl border-2 transition',
+                      formValues.color.toLowerCase() === color.hex.toLowerCase()
+                        ? 'border-slate-900 shadow-md dark:border-white scale-110'
+                        : 'border-transparent hover:scale-105'
+                    )}
+                    style={{ backgroundColor: color.hex }}
+                    title={color.label}
+                    aria-label={color.label}
+                  >
+                    {color.label === 'Atual' ? (
+                      <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] text-slate-400 dark:text-slate-500 whitespace-nowrap">
+                        Atual
+                      </span>
+                    ) : null}
+                  </button>
+                ));
+              })()}
+            </div>
+            <p className="mt-1 text-[11px] text-slate-400 dark:text-slate-500">
+              {COLORS.find((c) => c.hex.toLowerCase() === formValues.color.toLowerCase())?.label || 'Cor personalizada'}
+            </p>
+          </div>
         </div>
 
         <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:border-slate-600 dark:bg-slate-800/50 dark:text-slate-300">
