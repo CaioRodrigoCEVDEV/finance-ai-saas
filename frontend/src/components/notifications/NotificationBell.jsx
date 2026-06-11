@@ -165,7 +165,7 @@ function NotificationBell() {
         ref={bellRef}
         type="button"
         onClick={handleToggle}
-        className="relative flex h-10 w-10 items-center justify-center rounded-2xl text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200"
+        className="relative flex h-9 w-9 items-center justify-center rounded-2xl text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 sm:h-10 sm:w-10 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200"
         aria-label="Notificacoes"
       >
         <Bell className="h-5 w-5" />
