@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
   ArrowRight,
   BarChart3,
@@ -14,6 +15,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
+import { trackInvite } from '../services/inviteService';
 
 const features = [
   {
@@ -60,6 +62,28 @@ const features = [
 
 function HomePage() {
   const { isAuthenticated } = useAuth();
+  const [searchParams] = useSearchParams();
+  const [referralMessage, setReferralMessage] = useState(null);
+
+  useEffect(() => {
+    const refCode = searchParams.get('ref');
+    if (!refCode) return;
+
+    const storedCode = localStorage.getItem('financeai_referral_code');
+    if (storedCode === refCode) return;
+
+    localStorage.setItem('financeai_referral_code', refCode);
+
+    trackInvite(refCode)
+      .then((result) => {
+        if (result.valid) {
+          setReferralMessage('Voce acessou por um convite. Conheca o Finance AI.');
+        }
+      })
+      .catch(() => {
+        // silently ignore tracking errors
+      });
+  }, [searchParams]);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors">
@@ -92,6 +116,12 @@ function HomePage() {
             </div>
           </div>
         </header>
+
+        {referralMessage && (
+          <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm text-emerald-800 dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300">
+            {referralMessage}
+          </div>
+        )}
 
         {/* Hero */}
         <section className="mt-6 grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">

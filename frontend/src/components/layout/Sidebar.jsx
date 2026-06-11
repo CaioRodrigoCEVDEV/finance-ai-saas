@@ -13,6 +13,7 @@ import {
   Receipt,
   Repeat,
   Settings,
+  Share2,
   Sparkles,
   Target,
   Wand2
@@ -36,6 +37,7 @@ const navigationItems = [
   { to: '/notifications', label: 'Notificacoes', icon: Bell },
   { to: '/reports', label: 'Relatórios', icon: BarChart3 },
   { to: '/imports', label: 'Importar', icon: FileUp },
+  { to: '/invites', label: 'Convites', icon: Share2 },
   { to: '/profile', label: 'Minha conta', icon: CircleUser },
   { to: '/settings', label: 'Configurações', icon: Settings }
 ];

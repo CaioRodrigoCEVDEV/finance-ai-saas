@@ -18,6 +18,7 @@ import ProfilePage from '../pages/ProfilePage';
 import SettingsPage from '../pages/SettingsPage';
 import RecurrencesPage from '../pages/RecurrencesPage';
 import FinancialCalendarPage from '../pages/FinancialCalendarPage';
+import InvitesPage from '../pages/InvitesPage';
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
@@ -177,6 +178,14 @@ function AppRoutes() {
           element={(
             <ProtectedRoute>
               <FinancialCalendarPage />
+            </ProtectedRoute>
+          )}
+        />
+        <Route
+          path="/invites"
+          element={(
+            <ProtectedRoute>
+              <InvitesPage />
             </ProtectedRoute>
           )}
         />
