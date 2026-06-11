@@ -116,6 +116,14 @@ enum RuleMatchType {
   REGEX
 }
 
+enum NotificationType {
+  BUDGET_WARNING
+  BUDGET_EXCEEDED
+  UNCATEGORIZED_TRANSACTIONS
+  GOAL_COMPLETED
+  CREDIT_CARD_LIMIT
+}
+
 model Tenant {
   id                       String                  @id @default(uuid()) @db.Uuid
   name                     String
@@ -137,6 +145,7 @@ model Tenant {
   open_finance_connections OpenFinanceConnection[]
   categorization_rules     CategorizationRule[]
   audit_logs               AuditLog[]
+  notifications            Notification[]
 
   @@index([status])
   @@map("tenants")
@@ -158,6 +167,7 @@ model User {
   goals                    Goal[]
   open_finance_connections OpenFinanceConnection[]
   audit_logs               AuditLog[]
+  notifications            Notification[]
 
   @@index([status])
   @@map("users")
@@ -406,4 +416,26 @@ model AuditLog {
   @@index([entity, entity_id])
   @@index([created_at])
   @@map("audit_logs")
+}
+
+model Notification {
+  id             String           @id @default(uuid()) @db.Uuid
+  tenant_id      String           @db.Uuid
+  user_id        String?          @db.Uuid
+  title          String
+  message        String
+  type           NotificationType
+  is_read        Boolean          @default(false)
+  reference_id   String?          @db.Uuid
+  reference_type String?
+  metadata       Json?
+  created_at     DateTime         @default(now())
+  tenant         Tenant           @relation(fields: [tenant_id], references: [id])
+  user           User?            @relation(fields: [user_id], references: [id])
+
+  @@index([tenant_id])
+  @@index([tenant_id, type, created_at])
+  @@index([tenant_id, is_read])
+  @@index([user_id])
+  @@map("notifications")
 }

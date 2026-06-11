@@ -13,6 +13,7 @@ import Imports from '../pages/Imports';
 import Login from '../pages/Login';
 import Reports from '../pages/Reports';
 import Transactions from '../pages/Transactions';
+import Notifications from '../pages/Notifications';
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
@@ -132,6 +133,14 @@ function AppRoutes() {
           element={(
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          )}
+        />
+        <Route
+          path="/notifications"
+          element={(
+            <ProtectedRoute>
+              <Notifications />
             </ProtectedRoute>
           )}
         />
