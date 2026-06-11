@@ -75,7 +75,7 @@ function Topbar({ onMenuClick }) {
           </button>
         ) : null}
         <div>
-          <p className="text-xs uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Tenant atual</p>
+          <p className="text-xs uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Workspace</p>
           <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{tenant?.name || 'Finance AI'}</p>
         </div>
       </div>
