@@ -16,6 +16,7 @@ import Transactions from '../pages/Transactions';
 import Notifications from '../pages/Notifications';
 import ProfilePage from '../pages/ProfilePage';
 import SettingsPage from '../pages/SettingsPage';
+import RecurrencesPage from '../pages/RecurrencesPage';
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
@@ -159,6 +160,14 @@ function AppRoutes() {
           element={(
             <ProtectedRoute>
               <SettingsPage />
+            </ProtectedRoute>
+          )}
+        />
+        <Route
+          path="/recurrences"
+          element={(
+            <ProtectedRoute>
+              <RecurrencesPage />
             </ProtectedRoute>
           )}
         />

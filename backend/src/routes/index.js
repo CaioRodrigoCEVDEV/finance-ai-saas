@@ -15,6 +15,7 @@ const reportsRoutes = require('../modules/reports/reports.routes');
 const notificationsRoutes = require('../modules/notifications/notifications.routes');
 const profileRoutes = require('../modules/profile/profile.routes');
 const settingsRoutes = require('../modules/settings/settings.routes');
+const recurrencesRoutes = require('../modules/recurrences/recurrences.routes');
 
 const router = Router();
 
@@ -33,5 +34,6 @@ router.use(reportsRoutes);
 router.use(notificationsRoutes);
 router.use(profileRoutes);
 router.use(settingsRoutes);
+router.use(recurrencesRoutes);
 
 module.exports = router;
