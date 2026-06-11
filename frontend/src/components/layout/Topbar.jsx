@@ -102,8 +102,16 @@ function Topbar({ onMenuClick }) {
               <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{user?.name || 'Usuario autenticado'}</p>
               <p className="text-sm text-slate-500 dark:text-slate-400">{user?.email || tenant?.plan || 'Conta ativa'}</p>
             </div>
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-sm font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-              {getInitials(user?.name)}
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-sm font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 overflow-hidden">
+              {user?.avatar_url ? (
+                <img
+                  src={`${import.meta.env.VITE_API_URL}${user.avatar_url}`}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                getInitials(user?.name)
+              )}
             </div>
             <ChevronDown className={cn('hidden h-4 w-4 text-slate-400 transition sm:block', open && 'rotate-180')} />
           </button>

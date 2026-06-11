@@ -168,6 +168,7 @@ model User {
   name                     String
   email                    String                  @unique
   password_hash            String
+  avatar_url               String?
   status                   UserStatus              @default(ACTIVE)
   created_at               DateTime                @default(now())
   updated_at               DateTime                @updatedAt

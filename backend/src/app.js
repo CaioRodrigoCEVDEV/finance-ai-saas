@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const helmet = require('helmet');
 const compression = require('compression');
 const morgan = require('morgan');
@@ -47,6 +48,11 @@ app.use(cookieParser());
 app.use(apiLimiter);
 
 app.use(routes);
+
+app.use('/uploads', express.static(path.resolve(__dirname, '..', 'uploads'), {
+  maxAge: '7d',
+  immutable: true
+}));
 
 app.use(notFoundHandler);
 app.use(errorHandler);

@@ -28,8 +28,32 @@ async function updatePassword(request, response, next) {
   }
 }
 
+async function updateAvatar(request, response, next) {
+  try {
+    if (!request.file) {
+      return response.status(400).json({ message: 'Nenhuma imagem enviada' });
+    }
+
+    const result = await profileService.updateAvatar(request.user.id, request.file);
+    return response.json(result);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+async function removeAvatar(request, response, next) {
+  try {
+    const result = await profileService.removeAvatar(request.user.id);
+    return response.json(result);
+  } catch (error) {
+    return next(error);
+  }
+}
+
 module.exports = {
   getProfile,
   updateProfile,
-  updatePassword
+  updatePassword,
+  updateAvatar,
+  removeAvatar
 };

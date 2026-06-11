@@ -1,5 +1,6 @@
-import { Loader2, Save, Shield, User } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { Camera, Loader2, Save, Shield, Trash2, User, X } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import Cropper from 'react-easy-crop';
 
 import AppLayout from '../layouts/AppLayout';
 import Card from '../components/ui/Card';
@@ -11,8 +12,113 @@ import { useAuth } from '../contexts/AuthContext';
 import * as profileService from '../services/profileService';
 import * as tenantService from '../services/tenantService';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
+function getInitials(name) {
+  if (!name) return '??';
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase())
+    .join('');
+}
+
+async function getCroppedImg(imageSrc, pixelCrop) {
+  const image = new Image();
+  image.src = imageSrc;
+  await new Promise((resolve) => { image.onload = resolve; });
+  const canvas = document.createElement('canvas');
+  canvas.width = pixelCrop.width;
+  canvas.height = pixelCrop.height;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(
+    image,
+    pixelCrop.x,
+    pixelCrop.y,
+    pixelCrop.width,
+    pixelCrop.height,
+    0,
+    0,
+    pixelCrop.width,
+    pixelCrop.height
+  );
+  return new Promise((resolve) => {
+    canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.9);
+  });
+}
+
+function CropModal({ image, open, onClose, onSave }) {
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [saving, setSaving] = useState(false);
+
+  async function handleSave() {
+    if (!croppedAreaPixels) return;
+    setSaving(true);
+    try {
+      const croppedBlob = await getCroppedImg(image, croppedAreaPixels);
+      await onSave(croppedBlob);
+      onClose();
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+      <div
+        className="relative w-full max-w-lg rounded-2xl bg-white shadow-xl dark:bg-slate-800"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 dark:border-slate-700">
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Ajustar foto</h3>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-300"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="relative h-80 w-full bg-slate-900">
+          <Cropper
+            image={image}
+            crop={crop}
+            zoom={zoom}
+            aspect={1}
+            cropShape="round"
+            showGrid
+            onCropChange={setCrop}
+            onZoomChange={setZoom}
+            onCropComplete={(_, croppedPixels) => setCroppedAreaPixels(croppedPixels)}
+          />
+        </div>
+        <div className="flex items-center justify-end gap-3 border-t border-slate-200 px-6 py-4 dark:border-slate-700">
+          <Button type="button" variant="secondary" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button type="button" onClick={handleSave} disabled={saving}>
+            {saving ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Salvando...
+              </>
+            ) : (
+              'Salvar foto'
+            )}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ProfilePage() {
-  const { loadUser, updateTenant } = useAuth();
+  const { loadUser, user: authUser, updateTenant } = useAuth();
 
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -36,7 +142,15 @@ function ProfilePage() {
   const [workspaceSuccess, setWorkspaceSuccess] = useState('');
   const [workspaceError, setWorkspaceError] = useState('');
 
+  const [cropImage, setCropImage] = useState(null);
+  const [cropOpen, setCropOpen] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarError, setAvatarError] = useState('');
+
+  const fileInputRef = useRef(null);
+
   const isWorkspaceManager = profile?.membership?.role === 'OWNER' || profile?.membership?.role === 'ADMIN';
+  const currentAvatarUrl = profile?.user?.avatar_url || authUser?.avatar_url;
 
   async function fetchProfile() {
     try {
@@ -117,6 +231,46 @@ function ProfilePage() {
     }
   }, [workspaceName, updateTenant]);
 
+  function handleFileSelect(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    event.target.value = '';
+    const reader = new FileReader();
+    reader.onload = () => {
+      setCropImage(reader.result);
+      setCropOpen(true);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function handleCropSave(croppedBlob) {
+    setAvatarError('');
+    setAvatarUploading(true);
+    try {
+      const result = await profileService.uploadAvatar(croppedBlob);
+      setProfile((prev) => prev ? { ...prev, user: { ...prev.user, avatar_url: result.avatar_url } } : prev);
+      await loadUser();
+    } catch (error) {
+      setAvatarError(error.response?.data?.message || 'Erro ao enviar foto');
+    } finally {
+      setAvatarUploading(false);
+    }
+  }
+
+  async function handleRemoveAvatar() {
+    setAvatarError('');
+    setAvatarUploading(true);
+    try {
+      await profileService.removeAvatar();
+      setProfile((prev) => prev ? { ...prev, user: { ...prev.user, avatar_url: null } } : prev);
+      await loadUser();
+    } catch (error) {
+      setAvatarError(error.response?.data?.message || 'Erro ao remover foto');
+    } finally {
+      setAvatarUploading(false);
+    }
+  }
+
   if (loading) {
     return (
       <AppLayout>
@@ -163,6 +317,21 @@ function ProfilePage() {
     <AppLayout>
       <PageHeader title="Minha conta" description="Gerencie seus dados de acesso e informações do perfil" />
 
+      <CropModal
+        image={cropImage}
+        open={cropOpen}
+        onClose={() => setCropOpen(false)}
+        onSave={handleCropSave}
+      />
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/gif"
+        className="hidden"
+        onChange={handleFileSelect}
+      />
+
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_380px]">
         <div className="space-y-6">
           <Card>
@@ -175,6 +344,62 @@ function ProfilePage() {
                 <p className="text-sm text-slate-500 dark:text-slate-400">Atualize seu nome e e-mail</p>
               </div>
             </div>
+
+            <div className="mb-6 flex flex-col items-center gap-4 sm:flex-row">
+              <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-2xl font-semibold text-emerald-700 overflow-hidden dark:bg-emerald-900/30 dark:text-emerald-400">
+                {currentAvatarUrl ? (
+                  <img
+                    src={`${API_URL}${currentAvatarUrl}`}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  getInitials(profile?.user?.name)
+                )}
+              </div>
+              <div className="flex flex-col items-center gap-2 sm:items-start">
+                <p className="text-base font-semibold text-slate-900 dark:text-slate-100">{profile?.user?.name}</p>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={avatarUploading}
+                  >
+                    {avatarUploading ? (
+                      <>
+                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                        Enviando...
+                      </>
+                    ) : (
+                      <>
+                        <Camera className="mr-1.5 h-3.5 w-3.5" />
+                        Alterar foto
+                      </>
+                    )}
+                  </Button>
+                  {currentAvatarUrl ? (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={handleRemoveAvatar}
+                      disabled={avatarUploading}
+                    >
+                      <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                      Remover foto
+                    </Button>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+
+            {avatarError ? (
+              <div className="mb-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-800 dark:bg-rose-950/30 dark:text-rose-400">
+                {avatarError}
+              </div>
+            ) : null}
 
             <form onSubmit={handleUpdateProfile} className="space-y-4">
               <Input

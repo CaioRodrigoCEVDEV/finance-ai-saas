@@ -28,5 +28,13 @@ function buildValidator(schema, target) {
 
 module.exports = {
   validateUpdateProfile: buildValidator(updateProfileSchema, 'body'),
-  validateUpdatePassword: buildValidator(updatePasswordSchema, 'body')
+  validateUpdatePassword: buildValidator(updatePasswordSchema, 'body'),
+  validateAvatarUpload
 };
+
+function validateAvatarUpload(request, response, next) {
+  if (!request.file) {
+    return next(new AppError('Nenhuma imagem enviada', 400));
+  }
+  return next();
+}

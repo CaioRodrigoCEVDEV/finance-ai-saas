@@ -8,7 +8,8 @@ function sanitizeUser(user) {
   return {
     id: user.id,
     name: user.name,
-    email: user.email
+    email: user.email,
+    avatar_url: user.avatar_url || null
   };
 }
 
@@ -36,6 +37,7 @@ async function findUserByEmail(email) {
       id: true,
       name: true,
       email: true,
+      avatar_url: true,
       password_hash: true,
       user_tenants: {
         where: {
@@ -73,6 +75,7 @@ async function findAuthenticatedUser(userId, tenantId) {
       id: true,
       name: true,
       email: true,
+      avatar_url: true,
       user_tenants: {
         where: {
           tenant_id: tenantId,
