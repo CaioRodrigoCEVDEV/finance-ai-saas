@@ -88,6 +88,7 @@ enum TransactionSource {
   OPEN_FINANCE
   API
   RECURRENCE
+  CREDIT_CARD_PAYMENT
 }
 
 enum GoalStatus {
@@ -156,6 +157,7 @@ model Tenant {
   settings                 TenantSettings?
   recurrences              Recurrence[]
   referral_invites         ReferralInvite[]
+  creditCardInvoices       CreditCardInvoice[]
 
   @@index([status])
   @@map("tenants")
@@ -220,9 +222,10 @@ model Account {
   tenant          Tenant      @relation(fields: [tenant_id], references: [id])
   user            User?       @relation(fields: [user_id], references: [id])
   credit_cards    CreditCard[]
-  transactions    Transaction[]
-  defaultInSettings TenantSettings[] @relation("AccountDefaultInSettings")
-  recurrences      Recurrence[]
+  transactions       Transaction[]
+  defaultInSettings  TenantSettings[]     @relation("AccountDefaultInSettings")
+  recurrences        Recurrence[]
+  paymentInvoices    CreditCardInvoice[]  @relation("InvoicePaymentAccount")
 
   @@index([tenant_id])
   @@index([tenant_id, is_active])
@@ -250,12 +253,47 @@ model CreditCard {
   account         Account?         @relation(fields: [account_id], references: [id])
   transactions    Transaction[]
   recurrences     Recurrence[]
+  invoices        CreditCardInvoice[]
 
   @@index([tenant_id])
   @@index([tenant_id, is_active])
   @@index([user_id])
   @@index([account_id])
   @@map("credit_cards")
+}
+
+model CreditCardInvoice {
+  id                   String         @id @default(uuid())
+  tenantId             String         @map("tenant_id") @db.Uuid
+  creditCardId         String         @map("credit_card_id") @db.Uuid
+  referenceMonth       Int            @map("reference_month")
+  referenceYear        Int            @map("reference_year")
+  periodStart          DateTime       @map("period_start")
+  periodEnd            DateTime       @map("period_end")
+  closingDate          DateTime       @map("closing_date")
+  dueDate              DateTime       @map("due_date")
+  totalAmount          Decimal        @default(0) @db.Decimal(12, 2) @map("total_amount")
+  paidAmount           Decimal        @default(0) @db.Decimal(12, 2) @map("paid_amount")
+  status               String         @default("OPEN")
+  paidAt               DateTime?      @map("paid_at")
+  paymentAccountId     String?        @map("payment_account_id") @db.Uuid
+  paymentTransactionId String?        @unique @map("payment_transaction_id") @db.Uuid
+  notes                String?
+  createdAt            DateTime       @default(now()) @map("created_at")
+  updatedAt            DateTime       @updatedAt @map("updated_at")
+  deletedAt            DateTime?      @map("deleted_at")
+
+  tenant              Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  creditCard          CreditCard   @relation(fields: [creditCardId], references: [id], onDelete: Cascade)
+  paymentAccount      Account?     @relation("InvoicePaymentAccount", fields: [paymentAccountId], references: [id], onDelete: SetNull)
+  paymentTransaction  Transaction? @relation("InvoicePaymentTransaction", fields: [paymentTransactionId], references: [id], onDelete: SetNull)
+
+  @@unique([tenantId, creditCardId, referenceMonth, referenceYear])
+  @@index([tenantId])
+  @@index([creditCardId])
+  @@index([status])
+  @@index([dueDate])
+  @@map("credit_card_invoices")
 }
 
 model Category {
@@ -316,6 +354,7 @@ model Transaction {
   credit_card        CreditCard?        @relation(fields: [credit_card_id], references: [id])
   category           Category?          @relation(fields: [category_id], references: [id])
   recurrence         Recurrence?         @relation(fields: [recurrence_id], references: [id], onDelete: SetNull)
+  creditCardInvoicePayment CreditCardInvoice? @relation("InvoicePaymentTransaction")
 
   @@index([tenant_id])
   @@index([tenant_id, transaction_date])

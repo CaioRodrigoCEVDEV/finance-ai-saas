@@ -16,6 +16,7 @@ import {
   Share2,
   Sparkles,
   Target,
+  WalletCards,
   Wand2
 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -27,6 +28,7 @@ const navigationItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/accounts', label: 'Contas', icon: Landmark },
   { to: '/credit-cards', label: 'Cartões', icon: CreditCard },
+  { to: '/invoices', label: 'Faturas', icon: WalletCards },
   { to: '/budgets', label: 'Orçamentos', icon: BadgeDollarSign },
   { to: '/goals', label: 'Metas', icon: Target },
   { to: '/calendar', label: 'Calendario', icon: CalendarDays },

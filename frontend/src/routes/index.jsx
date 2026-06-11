@@ -19,6 +19,7 @@ import SettingsPage from '../pages/SettingsPage';
 import RecurrencesPage from '../pages/RecurrencesPage';
 import FinancialCalendarPage from '../pages/FinancialCalendarPage';
 import InvitesPage from '../pages/InvitesPage';
+import InvoicesPage from '../pages/InvoicesPage';
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
@@ -186,6 +187,14 @@ function AppRoutes() {
           element={(
             <ProtectedRoute>
               <InvitesPage />
+            </ProtectedRoute>
+          )}
+        />
+        <Route
+          path="/invoices"
+          element={(
+            <ProtectedRoute>
+              <InvoicesPage />
             </ProtectedRoute>
           )}
         />

@@ -18,6 +18,7 @@ const settingsRoutes = require('../modules/settings/settings.routes');
 const recurrencesRoutes = require('../modules/recurrences/recurrences.routes');
 const financialCalendarRoutes = require('../modules/financial-calendar/financialCalendar.routes');
 const invitesRoutes = require('../modules/invites/invites.routes');
+const invoicesRoutes = require('../modules/invoices/invoices.routes');
 
 const router = Router();
 
@@ -39,5 +40,6 @@ router.use(settingsRoutes);
 router.use(recurrencesRoutes);
 router.use(financialCalendarRoutes);
 router.use(invitesRoutes);
+router.use(invoicesRoutes);
 
 module.exports = router;
