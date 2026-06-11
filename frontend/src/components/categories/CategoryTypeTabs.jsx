@@ -23,7 +23,7 @@ function CategoryTypeTabs({ activeType, onChange }) {
               'rounded-full px-4 py-2 text-sm font-medium transition',
               isActive
                 ? 'bg-emerald-600 text-white shadow-sm'
-                : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50 hover:text-slate-900'
+                : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50 hover:text-slate-900 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-200'
             )}
           >
             {tab.label}

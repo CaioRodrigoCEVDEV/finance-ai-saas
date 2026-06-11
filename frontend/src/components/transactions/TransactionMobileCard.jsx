@@ -49,9 +49,9 @@ function TransactionMobileCard({ transaction, loading, onEdit, onDelete }) {
     <Card className="rounded-[28px] p-5 lg:hidden">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.18em] text-slate-500">{formatDateBR(transaction.transactionDate)}</p>
-          <h3 className="mt-2 text-lg font-semibold text-slate-900">{transaction.description}</h3>
-          <p className="mt-2 text-sm text-slate-500">{transaction.category?.name || 'Sem categoria'} • {holderName}</p>
+           <p className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">{formatDateBR(transaction.transactionDate)}</p>
+          <h3 className="mt-2 text-lg font-semibold text-slate-900 dark:text-slate-100">{transaction.description}</h3>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{transaction.category?.name || 'Sem categoria'} • {holderName}</p>
         </div>
         <p className={`text-base font-semibold ${amountColor}`}>
           {amountPrefix}{formatCurrencyBRL(transaction.amount)}
@@ -63,7 +63,7 @@ function TransactionMobileCard({ transaction, loading, onEdit, onDelete }) {
         <Badge variant={getStatusVariant(transaction.status)}>{formatTransactionStatus(transaction.status)}</Badge>
       </div>
 
-      {transaction.notes ? <p className="mt-4 text-sm text-slate-500">{transaction.notes}</p> : null}
+      {transaction.notes ? <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">{transaction.notes}</p> : null}
 
       <div className="mt-5 flex gap-3">
         <Button variant="secondary" size="sm" className="flex-1" onClick={() => onEdit(transaction)} disabled={loading}>

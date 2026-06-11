@@ -16,37 +16,37 @@ function ReportFilters({
     <Card className="p-5">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-700" htmlFor="startDate">Data inicial</label>
+          <label className="text-sm font-medium text-slate-700 dark:text-slate-300" htmlFor="startDate">Data inicial</label>
           <input
             id="startDate"
             name="startDate"
             type="date"
             value={filters.startDate}
             onChange={onChange}
-            className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+            className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30"
           />
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-700" htmlFor="endDate">Data final</label>
+          <label className="text-sm font-medium text-slate-700 dark:text-slate-300" htmlFor="endDate">Data final</label>
           <input
             id="endDate"
             name="endDate"
             type="date"
             value={filters.endDate}
             onChange={onChange}
-            className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+            className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30"
           />
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-700" htmlFor="accountId">Conta</label>
+          <label className="text-sm font-medium text-slate-700 dark:text-slate-300" htmlFor="accountId">Conta</label>
           <select
             id="accountId"
             name="accountId"
             value={filters.accountId}
             onChange={onChange}
-            className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+            className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30"
           >
             <option value="">Todas as contas</option>
             {accounts.map((account) => (
@@ -56,13 +56,13 @@ function ReportFilters({
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-700" htmlFor="creditCardId">Cartao</label>
+          <label className="text-sm font-medium text-slate-700 dark:text-slate-300" htmlFor="creditCardId">Cartao</label>
           <select
             id="creditCardId"
             name="creditCardId"
             value={filters.creditCardId}
             onChange={onChange}
-            className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+            className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30"
           >
             <option value="">Todos os cartoes</option>
             {creditCards.map((card) => (
@@ -72,13 +72,13 @@ function ReportFilters({
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-700" htmlFor="categoryId">Categoria</label>
+          <label className="text-sm font-medium text-slate-700 dark:text-slate-300" htmlFor="categoryId">Categoria</label>
           <select
             id="categoryId"
             name="categoryId"
             value={filters.categoryId}
             onChange={onChange}
-            className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+            className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30"
           >
             <option value="">Todas as categorias</option>
             {categories.map((category) => (
@@ -88,13 +88,13 @@ function ReportFilters({
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-700" htmlFor="type">Tipo</label>
+          <label className="text-sm font-medium text-slate-700 dark:text-slate-300" htmlFor="type">Tipo</label>
           <select
             id="type"
             name="type"
             value={filters.type}
             onChange={onChange}
-            className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+            className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30"
           >
             <option value="">Todos os tipos</option>
             <option value="INCOME">Receita</option>

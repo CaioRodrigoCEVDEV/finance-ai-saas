@@ -159,34 +159,34 @@ function CategorizationRules() {
         <div className="grid gap-5 sm:grid-cols-3">
           <Card className="rounded-[28px] p-6">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300">
                 <Wand2 className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-sm text-slate-500">Total de regras</p>
-                <p className="text-2xl font-semibold text-slate-900">{stats.total}</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Total de regras</p>
+                <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{stats.total}</p>
               </div>
             </div>
           </Card>
           <Card className="rounded-[28px] p-6">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
                 <Sparkles className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-sm text-slate-500">Regras ativas</p>
-                <p className="text-2xl font-semibold text-slate-900">{stats.active}</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Regras ativas</p>
+                <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{stats.active}</p>
               </div>
             </div>
           </Card>
           <Card className="rounded-[28px] p-6">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-600">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400">
                 <AlertCircle className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-sm text-slate-500">Regras inativas</p>
-                <p className="text-2xl font-semibold text-slate-900">{stats.inactive}</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Regras inativas</p>
+                <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{stats.inactive}</p>
               </div>
             </div>
           </Card>
@@ -199,7 +199,7 @@ function CategorizationRules() {
             <input
               type="text"
               placeholder="Buscar regras..."
-              className="w-full max-w-md rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+              className="w-full max-w-md rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />

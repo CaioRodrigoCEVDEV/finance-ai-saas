@@ -4,24 +4,24 @@ import { formatCurrencyBRL, formatPercentage } from '../../utils/formatters';
 
 function ExpenseCategoryList({ items }) {
   if (!items.length) {
-    return <p className="text-sm text-slate-500">Nenhuma despesa encontrada no mes atual.</p>;
+    return <p className="text-sm text-slate-500 dark:text-slate-400">Nenhuma despesa encontrada no mes atual.</p>;
   }
 
   return (
     <div className="space-y-4">
       {items.map((item) => (
-        <article key={`${item.categoryId || 'uncategorized'}-${item.categoryName}`} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+        <article key={`${item.categoryId || 'uncategorized'}-${item.categoryName}`} className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-medium text-slate-900">{item.categoryName}</h3>
+                <h3 className="text-sm font-medium text-slate-900 dark:text-slate-100">{item.categoryName}</h3>
                 <Badge variant="info">{formatPercentage(item.percentage)}</Badge>
               </div>
-              <p className="mt-1 text-xs text-slate-500">do total de despesas</p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">do total de despesas</p>
             </div>
-            <p className="text-sm font-semibold text-rose-600">{formatCurrencyBRL(item.amount)}</p>
+            <p className="text-sm font-semibold text-rose-600 dark:text-rose-400">{formatCurrencyBRL(item.amount)}</p>
           </div>
-          <div className="mt-3 h-2 rounded-full bg-slate-200">
+          <div className="mt-3 h-2 rounded-full bg-slate-200 dark:bg-slate-700">
             <div
               className="h-2 rounded-full bg-emerald-500"
               style={{ width: `${Math.min(Number(item.percentage || 0), 100)}%` }}

@@ -40,21 +40,21 @@ function GoalProgressModal({ isOpen, goal, loading, serverError, onClose, onSubm
     <Modal isOpen={isOpen} title="Atualizar progresso" onClose={onClose}>
       {goal ? (
         <div>
-          <div className="mb-6 rounded-2xl bg-slate-50 p-4">
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Meta</p>
-            <p className="mt-1 text-lg font-semibold text-slate-900">{goal.name}</p>
+          <div className="mb-6 rounded-2xl bg-slate-50 p-4 dark:bg-slate-700/50">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Meta</p>
+            <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">{goal.name}</p>
             <div className="mt-3 flex items-center gap-4">
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Alvo</p>
-                <p className="mt-1 text-sm font-medium text-slate-900">{formatCurrencyBRL(goal.targetAmount)}</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Alvo</p>
+                <p className="mt-1 text-sm font-medium text-slate-900 dark:text-slate-100">{formatCurrencyBRL(goal.targetAmount)}</p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Atual</p>
-                <p className="mt-1 text-sm font-medium text-slate-900">{formatCurrencyBRL(goal.currentAmount)}</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Atual</p>
+                <p className="mt-1 text-sm font-medium text-slate-900 dark:text-slate-100">{formatCurrencyBRL(goal.currentAmount)}</p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Progresso</p>
-                <p className="mt-1 text-sm font-medium text-slate-900">{formatPercentage(goal.progressPercentage)}</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Progresso</p>
+                <p className="mt-1 text-sm font-medium text-slate-900 dark:text-slate-100">{formatPercentage(goal.progressPercentage)}</p>
               </div>
             </div>
           </div>

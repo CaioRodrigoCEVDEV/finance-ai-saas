@@ -8,8 +8,10 @@
   background: #f8fafc;
 }
 
-html {
-  background: #f8fafc;
+html { background: #f8fafc; }
+
+html.dark {
+  background: #0f172a;
 }
 
 body {
@@ -20,21 +22,12 @@ body {
   color: #0f172a;
 }
 
-* {
-  box-sizing: border-box;
+html.dark body {
+  background: #0f172a;
+  color: #e2e8f0;
 }
 
-#root {
-  min-height: 100vh;
-}
-
-button,
-input,
-select,
-textarea {
-  font: inherit;
-}
-
-::selection {
-  background: rgba(16, 185, 129, 0.18);
-}
+* { box-sizing: border-box; }
+#root { min-height: 100vh; }
+button, input, select, textarea { font: inherit; }
+::selection { background: rgba(16, 185, 129, 0.18); }

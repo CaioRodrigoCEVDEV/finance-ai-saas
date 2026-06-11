@@ -43,9 +43,9 @@ function TransactionTable({ transactions, pagination, loading, onEdit, onDelete,
   return (
     <Card className="hidden overflow-hidden rounded-[28px] p-0 lg:block">
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-slate-200">
-          <thead className="bg-slate-50">
-            <tr className="text-left text-xs uppercase tracking-[0.2em] text-slate-500">
+        <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+          <thead className="bg-slate-50 dark:bg-slate-800/50">
+            <tr className="text-left text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
               <th className="px-6 py-4">Data</th>
               <th className="px-6 py-4">Descricao</th>
               <th className="px-6 py-4">Categoria</th>
@@ -57,19 +57,19 @@ function TransactionTable({ transactions, pagination, loading, onEdit, onDelete,
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-slate-100 bg-white">
+          <tbody className="divide-y divide-slate-100 bg-white dark:divide-slate-700 dark:bg-slate-800">
             {transactions.map((transaction) => {
               const holderName = transaction.creditCard?.name || transaction.account?.name || 'Sem vinculacao';
               const isNegativeValue = ['EXPENSE', 'INVESTMENT'].includes(transaction.type);
-              const amountColor = isNegativeValue ? 'text-rose-600' : transaction.type === 'TRANSFER' ? 'text-slate-700' : 'text-emerald-600';
+              const amountColor = isNegativeValue ? 'text-rose-600' : transaction.type === 'TRANSFER' ? 'text-slate-700 dark:text-slate-300' : 'text-emerald-600';
               const amountPrefix = transaction.type === 'TRANSFER' ? '' : isNegativeValue ? '-' : '+';
 
               return (
-                <tr key={transaction.id} className="align-top text-sm text-slate-600">
-                  <td className="px-6 py-5 font-medium text-slate-900">{formatDateBR(transaction.transactionDate)}</td>
+                <tr key={transaction.id} className="align-top text-sm text-slate-600 dark:text-slate-400">
+                  <td className="px-6 py-5 font-medium text-slate-900 dark:text-slate-100">{formatDateBR(transaction.transactionDate)}</td>
                   <td className="px-6 py-5">
-                    <p className="font-semibold text-slate-900">{transaction.description}</p>
-                    {transaction.notes ? <p className="mt-1 max-w-xs text-xs text-slate-500">{transaction.notes}</p> : null}
+                    <p className="font-semibold text-slate-900 dark:text-slate-100">{transaction.description}</p>
+                    {transaction.notes ? <p className="mt-1 max-w-xs text-xs text-slate-500 dark:text-slate-400">{transaction.notes}</p> : null}
                   </td>
                   <td className="px-6 py-5">{transaction.category?.name || 'Sem categoria'}</td>
                   <td className="px-6 py-5">{holderName}</td>
@@ -97,7 +97,7 @@ function TransactionTable({ transactions, pagination, loading, onEdit, onDelete,
         </table>
       </div>
 
-      <div className="flex items-center justify-between border-t border-slate-200 px-6 py-4 text-sm text-slate-500">
+      <div className="flex items-center justify-between border-t border-slate-200 px-6 py-4 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
         <span>Pagina {pagination.page} de {pagination.totalPages} • {pagination.total} registros</span>
         <div className="flex gap-3">
           <Button variant="secondary" size="sm" onClick={() => onPageChange(pagination.page - 1)} disabled={loading || pagination.page <= 1}>Anterior</Button>

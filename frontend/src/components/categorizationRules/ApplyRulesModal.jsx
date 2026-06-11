@@ -46,7 +46,7 @@ function ApplyRulesModal({ isOpen, onClose }) {
     <Modal isOpen={isOpen} title="Aplicar regras em transacoes" onClose={handleClose}>
       <div className="space-y-5">
         {result ? (
-          <div className="rounded-2xl bg-emerald-50 p-5 text-sm text-emerald-800">
+          <div className="rounded-2xl bg-emerald-50 p-5 text-sm text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300">
             <p className="font-semibold">{result.message}</p>
             <p className="mt-1">Processadas: {result.processed}</p>
             <p>Atualizadas: {result.updated}</p>
@@ -63,12 +63,12 @@ function ApplyRulesModal({ isOpen, onClose }) {
           <input
             id="onlyWithoutCategory"
             type="checkbox"
-            className="h-5 w-5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+            className="h-5 w-5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 dark:border-slate-500 dark:bg-slate-700"
             checked={onlyWithoutCategory}
             onChange={(e) => setOnlyWithoutCategory(e.target.checked)}
             disabled={loading || !!result}
           />
-          <label htmlFor="onlyWithoutCategory" className="text-sm font-medium text-slate-700">
+          <label htmlFor="onlyWithoutCategory" className="text-sm font-medium text-slate-700 dark:text-slate-300">
             Aplicar apenas em transacoes sem categoria
           </label>
         </div>

@@ -154,12 +154,12 @@ function CategorizationRuleForm({ rule, loading, onCancel, onSubmit }) {
           <input
             id="isActive"
             type="checkbox"
-            className="h-5 w-5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+            className="h-5 w-5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 dark:border-slate-500 dark:bg-slate-700"
             checked={isActive}
             onChange={(e) => setIsActive(e.target.checked)}
             disabled={loading || categoriesLoading}
           />
-          <label htmlFor="isActive" className="text-sm font-medium text-slate-700">
+          <label htmlFor="isActive" className="text-sm font-medium text-slate-700 dark:text-slate-300">
             Regra ativa
           </label>
         </div>

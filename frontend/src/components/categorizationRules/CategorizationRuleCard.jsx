@@ -17,8 +17,8 @@ function CategorizationRuleCard({ rule, onEdit, onDelete }) {
     <Card className="flex flex-col gap-4 rounded-[28px] p-6">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <h3 className="text-base font-semibold text-slate-900">{rule.name}</h3>
-          <p className="mt-1 text-sm text-slate-500">
+          <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">{rule.name}</h3>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             {matchTypeLabels[rule.matchType] || rule.matchType} "{rule.matchText}"
           </p>
         </div>

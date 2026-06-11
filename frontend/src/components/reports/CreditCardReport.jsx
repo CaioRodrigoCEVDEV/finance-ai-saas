@@ -33,19 +33,19 @@ function CreditCardReport({ data, loading }) {
     <Card className="overflow-hidden p-0">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead className="bg-slate-50 text-slate-500">
+          <thead className="bg-slate-50 text-slate-500 dark:bg-slate-800/50 dark:text-slate-400">
             <tr>
               <th className="px-6 py-4 font-medium">Cartao</th>
               <th className="px-6 py-4 font-medium">Despesas</th>
               <th className="px-6 py-4 font-medium">Quantidade</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
             {data.map((item) => (
-              <tr key={item.creditCardId} className="hover:bg-slate-50">
-                <td className="px-6 py-4 font-medium text-slate-900">{item.creditCardName}</td>
-                <td className="px-6 py-4 text-rose-600">{formatCurrency(item.expense)}</td>
-                <td className="px-6 py-4 text-slate-600">{item.transactionCount}</td>
+              <tr key={item.creditCardId} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                <td className="px-6 py-4 font-medium text-slate-900 dark:text-slate-100">{item.creditCardName}</td>
+                <td className="px-6 py-4 text-rose-600 dark:text-rose-400">{formatCurrency(item.expense)}</td>
+                <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{item.transactionCount}</td>
               </tr>
             ))}
           </tbody>

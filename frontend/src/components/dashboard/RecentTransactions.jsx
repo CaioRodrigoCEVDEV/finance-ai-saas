@@ -4,7 +4,7 @@ import { formatCurrencyBRL, formatDateBR } from '../../utils/formatters';
 
 function RecentTransactions({ transactions }) {
   if (!transactions.length) {
-    return <p className="text-sm text-slate-500">Nenhuma transacao recente encontrada.</p>;
+    return <p className="text-sm text-slate-500 dark:text-slate-400">Nenhuma transacao recente encontrada.</p>;
   }
 
   return (
@@ -17,14 +17,14 @@ function RecentTransactions({ transactions }) {
         return (
             <article
               key={transaction.id}
-              className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 lg:flex-row lg:items-center lg:justify-between"
+              className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 lg:flex-row lg:items-center lg:justify-between dark:border-slate-700 dark:bg-slate-800/50"
             >
               <div>
                 <div className="flex flex-wrap items-center gap-3">
-                  <h3 className="text-sm font-semibold text-slate-900">{transaction.description}</h3>
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{transaction.description}</h3>
                   <Badge variant={isExpense ? 'danger' : 'success'}>{typeLabel}</Badge>
                 </div>
-                <p className="mt-2 text-sm text-slate-500">
+                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
                   {transaction.categoryName} • {accountLabel} • {formatDateBR(transaction.transactionDate)}
                 </p>
               </div>

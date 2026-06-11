@@ -35,7 +35,7 @@ function CategoryReport({ data, loading }) {
     <Card className="overflow-hidden p-0">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead className="bg-slate-50 text-slate-500">
+          <thead className="bg-slate-50 text-slate-500 dark:bg-slate-800/50 dark:text-slate-400">
             <tr>
               <th className="px-6 py-4 font-medium">Categoria</th>
               <th className="px-6 py-4 font-medium">Tipo</th>
@@ -45,10 +45,10 @@ function CategoryReport({ data, loading }) {
               <th className="px-6 py-4 font-medium">Visual</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
             {data.map((item) => (
-              <tr key={`${item.categoryId}-${item.type}`} className="hover:bg-slate-50">
-                <td className="px-6 py-4 font-medium text-slate-900">{item.categoryName}</td>
+              <tr key={`${item.categoryId}-${item.type}`} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                <td className="px-6 py-4 font-medium text-slate-900 dark:text-slate-100">{item.categoryName}</td>
                 <td className="px-6 py-4">
                     <span className={
                     item.type === 'INCOME'
@@ -60,11 +60,11 @@ function CategoryReport({ data, loading }) {
                     {formatTransactionType(item.type)}
                   </span>
                 </td>
-                <td className="px-6 py-4 font-medium text-slate-900">{formatCurrency(item.amount)}</td>
-                <td className="px-6 py-4 text-slate-600">{item.transactionCount}</td>
-                <td className="px-6 py-4 text-slate-600">{item.percentage}%</td>
+                <td className="px-6 py-4 font-medium text-slate-900 dark:text-slate-100">{formatCurrency(item.amount)}</td>
+                <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{item.transactionCount}</td>
+                <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{item.percentage}%</td>
                 <td className="px-6 py-4">
-                  <div className="h-2 w-32 overflow-hidden rounded-full bg-slate-100">
+                  <div className="h-2 w-32 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
                     <div
                       className="h-full rounded-full bg-emerald-500"
                       style={{

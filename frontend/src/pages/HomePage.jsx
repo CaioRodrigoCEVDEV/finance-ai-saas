@@ -62,17 +62,17 @@ function HomePage() {
   const { isAuthenticated } = useAuth();
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors">
       <div className="mx-auto flex min-h-screen w-full max-w-content flex-col px-4 py-6 sm:px-6 lg:px-8">
         {/* Header */}
-        <header className="rounded-[32px] border border-slate-200 bg-white px-6 py-5 shadow-soft sm:px-8">
+        <header className="rounded-[32px] border border-slate-200 bg-white px-6 py-5 shadow-soft dark:border-slate-700 dark:bg-slate-800 sm:px-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-600">Finance AI</p>
-              <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
+              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-600 dark:text-emerald-400">Finance AI</p>
+              <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">
                 Seu copiloto financeiro pessoal
               </h1>
-              <p className="mt-2 max-w-2xl text-base leading-7 text-slate-500">
+              <p className="mt-2 max-w-2xl text-base leading-7 text-slate-500 dark:text-slate-400">
                 Controle contas, cartoes, transacoes, metas e orcamentos em um painel financeiro premium.
               </p>
             </div>
@@ -96,13 +96,13 @@ function HomePage() {
         {/* Hero */}
         <section className="mt-6 grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
           <Card className="rounded-[32px] p-8 sm:p-10">
-            <span className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-emerald-700">
+            <span className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
               Premium fintech UI
             </span>
-            <h2 className="mt-6 max-w-2xl text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">
+            <h2 className="mt-6 max-w-2xl text-4xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 sm:text-5xl">
               Finance AI
             </h2>
-            <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-600">
+            <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-600 dark:text-slate-300">
               Centralize contas, acompanhe indicadores e evolua sua operacao financeira em
               uma interface clara, premium e confiavel. Tudo isolado por tenant com
               autenticacao segura.
@@ -121,7 +121,7 @@ function HomePage() {
           </Card>
 
           <Card className="rounded-[32px] p-8">
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">
               Visao rapida
             </p>
             <div className="mt-6 space-y-5">
@@ -133,10 +133,10 @@ function HomePage() {
               ].map(([label, value]) => (
                 <div
                   key={label}
-                  className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+                  className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-600 dark:bg-slate-800/50"
                 >
-                  <p className="text-sm text-slate-500">{label}</p>
-                  <p className="mt-2 text-2xl font-semibold text-slate-900">{value}</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">{label}</p>
+                  <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">{value}</p>
                 </div>
               ))}
             </div>
@@ -146,10 +146,10 @@ function HomePage() {
         {/* Features */}
         <section className="mt-6">
           <div className="mb-6">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-600">
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-600 dark:text-emerald-400">
               Funcionalidades
             </p>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900">
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
               Tudo que voce precisa em um so lugar
             </h2>
           </div>
@@ -158,11 +158,11 @@ function HomePage() {
               const Icon = feature.icon;
               return (
                 <Card key={feature.title} className="rounded-[28px]">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
                     <Icon className="h-5 w-5" />
                   </div>
-                  <h3 className="mt-5 text-lg font-semibold text-slate-900">{feature.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-500">{feature.description}</p>
+                  <h3 className="mt-5 text-lg font-semibold text-slate-900 dark:text-slate-100">{feature.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">{feature.description}</p>
                 </Card>
               );
             })}
@@ -171,11 +171,11 @@ function HomePage() {
 
         {/* Footer */}
         <footer className="mt-auto py-8">
-          <div className="rounded-[28px] border border-slate-200 bg-white px-6 py-6 text-center shadow-soft sm:px-8">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-600">
+          <div className="rounded-[28px] border border-slate-200 bg-white px-6 py-6 text-center shadow-soft dark:border-slate-700 dark:bg-slate-800 sm:px-8">
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-600 dark:text-emerald-400">
               Finance AI
             </p>
-            <p className="mt-3 text-sm leading-6 text-slate-500">
+            <p className="mt-3 text-sm leading-6 text-slate-500 dark:text-slate-400">
               Seu copiloto financeiro pessoal — seguro, premium e pronto para producao.
             </p>
             <div className="mt-5">

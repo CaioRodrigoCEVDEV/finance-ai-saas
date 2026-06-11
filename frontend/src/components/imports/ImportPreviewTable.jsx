@@ -40,8 +40,8 @@ function ImportPreviewTable({
       <Card>
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-slate-900">Pre-visualizacao</h3>
-            <p className="text-sm text-slate-500">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Pre-visualizacao</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
               {preview.fileName} — {preview.totalRows} linha(s) — {preview.validRows} valida(s) — {preview.invalidRows} invalida(s)
             </p>
           </div>
@@ -54,8 +54,8 @@ function ImportPreviewTable({
         </div>
 
         {invalidTransactions.length > 0 && (
-          <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 p-4">
-            <div className="flex items-center gap-2 text-rose-700">
+          <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 p-4 dark:border-rose-800 dark:bg-rose-900/20">
+            <div className="flex items-center gap-2 text-rose-700 dark:text-rose-400">
               <AlertTriangle className="h-4 w-4" />
               <span className="text-sm font-medium">
                 {invalidTransactions.length} linha(s) invalida(s) detectada(s)
@@ -67,7 +67,7 @@ function ImportPreviewTable({
         <div className="mt-6 overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-slate-200 text-slate-500">
+              <tr className="border-b border-slate-200 text-slate-500 dark:border-slate-700 dark:text-slate-400">
                 <th className="pb-3 pr-4 font-medium">Data</th>
                 <th className="pb-3 pr-4 font-medium">Descricao</th>
                 <th className="pb-3 pr-4 font-medium">Valor</th>
@@ -77,16 +77,16 @@ function ImportPreviewTable({
                 <th className="pb-3 pr-4 font-medium text-right">Acoes</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
               {transactions.map((transaction, index) => (
                 <tr
                   key={index}
-                  className={transaction.isValid === false ? 'bg-rose-50/50' : ''}
+                  className={transaction.isValid === false ? 'bg-rose-50/50 dark:bg-rose-900/10' : ''}
                 >
                   <td className="py-3 pr-4">
                     <input
                       type="date"
-                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30"
                       value={transaction.transactionDate || ''}
                       onChange={(e) => handleFieldChange(index, 'transactionDate', e.target.value)}
                     />
@@ -99,7 +99,7 @@ function ImportPreviewTable({
                   <td className="py-3 pr-4">
                     <input
                       type="text"
-                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30"
                       value={transaction.description || ''}
                       onChange={(e) => handleFieldChange(index, 'description', e.target.value)}
                     />
@@ -109,14 +109,14 @@ function ImportPreviewTable({
                       type="number"
                       step="0.01"
                       min="0"
-                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30"
                       value={transaction.amount || ''}
                       onChange={(e) => handleFieldChange(index, 'amount', parseFloat(e.target.value))}
                     />
                   </td>
                   <td className="py-3 pr-4">
                     <select
-                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30"
                       value={transaction.type || 'EXPENSE'}
                       onChange={(e) => handleFieldChange(index, 'type', e.target.value)}
                     >
@@ -128,7 +128,7 @@ function ImportPreviewTable({
                   </td>
                   <td className="py-3 pr-4">
                     <select
-                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30"
                       value={transaction.categoryId || transaction.suggestedCategoryId || ''}
                       onChange={(e) => handleFieldChange(index, 'categoryId', e.target.value || null)}
                     >
@@ -164,7 +164,7 @@ function ImportPreviewTable({
           </table>
 
           {transactions.length === 0 && (
-            <div className="py-8 text-center text-sm text-slate-500">
+            <div className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
               Nenhuma transacao detectada no arquivo.
             </div>
           )}

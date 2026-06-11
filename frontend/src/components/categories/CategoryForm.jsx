@@ -84,7 +84,7 @@ function CategoryForm({ category, categories, loading, onCancel, onSubmit }) {
     <section>
       <div>
         <p className="text-sm uppercase tracking-[0.28em] text-emerald-600">{category ? 'Editar categoria' : 'Nova categoria'}</p>
-        <h2 className="mt-2 text-2xl font-semibold text-slate-900">
+        <h2 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">
           {category ? 'Atualize a categoria personalizada' : 'Cadastre uma nova categoria para este tenant'}
         </h2>
       </div>
@@ -113,8 +113,8 @@ function CategoryForm({ category, categories, loading, onCancel, onSubmit }) {
         </div>
 
         {category ? (
-          <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-            <input name="isActive" type="checkbox" checked={formValues.isActive} onChange={handleChange} className="h-4 w-4 rounded border-slate-300 text-emerald-600" />
+          <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:border-slate-600 dark:bg-slate-800/50 dark:text-slate-300">
+            <input name="isActive" type="checkbox" checked={formValues.isActive} onChange={handleChange} className="h-4 w-4 rounded border-slate-300 text-emerald-600 dark:border-slate-500 dark:bg-slate-700" />
             Categoria ativa
           </label>
         ) : null}

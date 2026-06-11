@@ -38,12 +38,12 @@ function TopExpensesReport({ data, loading }) {
     <div className="space-y-3">
       {data.map((item) => (
         <Card key={item.id} className="flex items-center gap-4 p-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-600">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400">
             <ArrowDown className="h-4 w-4" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-slate-900">{item.description}</p>
-            <p className="mt-0.5 text-xs text-slate-500">
+            <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">{item.description}</p>
+            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
               {item.categoryName || 'Sem categoria'}
               {item.accountName ? ` • ${item.accountName}` : ''}
               {item.creditCardName ? ` • ${item.creditCardName}` : ''}

@@ -45,7 +45,7 @@ function Sidebar({ mobile = false, onNavigate }) {
     <aside className={cn('flex flex-col', mobile ? 'h-full w-full' : 'sticky top-4')}>
       <div
         className={cn(
-          'flex flex-col rounded-[28px] border border-slate-200 bg-white shadow-soft',
+          'flex flex-col rounded-[28px] border border-slate-200 bg-white shadow-soft dark:border-slate-700 dark:bg-slate-800',
           mobile && 'h-full'
         )}
       >
@@ -55,8 +55,8 @@ function Sidebar({ mobile = false, onNavigate }) {
               <Sparkles className="h-5 w-5" />
             </span>
             <span>
-              <span className="block text-lg font-semibold tracking-tight text-slate-900">Finance AI</span>
-              <span className="block text-xs uppercase tracking-[0.24em] text-slate-500">Personal Finance</span>
+              <span className="block text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-100">Finance AI</span>
+              <span className="block text-xs uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Personal Finance</span>
             </span>
           </Link>
         </div>
@@ -74,8 +74,8 @@ function Sidebar({ mobile = false, onNavigate }) {
                 className={cn(
                   'flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition',
                   isActive
-                    ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100'
-                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                    ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:ring-emerald-800'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200'
                 )}
               >
                 <Icon className="h-4 w-4" />
@@ -85,11 +85,11 @@ function Sidebar({ mobile = false, onNavigate }) {
           })}
         </nav>
 
-        <div className="shrink-0 border-t border-slate-200 p-5">
+        <div className="shrink-0 border-t border-slate-200 p-5 dark:border-slate-700">
           <button
             type="button"
             onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-slate-600 transition hover:bg-rose-50 hover:text-rose-700"
+            className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-slate-600 transition hover:bg-rose-50 hover:text-rose-700 dark:text-slate-400 dark:hover:bg-rose-900/20 dark:hover:text-rose-400"
           >
             <LogOut className="h-4 w-4" />
             Sair

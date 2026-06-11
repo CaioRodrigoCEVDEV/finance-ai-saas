@@ -176,8 +176,8 @@ function TransactionForm({ transaction, accounts, categories, creditCards, loadi
   return (
     <section>
       <div>
-        <p className="text-sm uppercase tracking-[0.28em] text-emerald-600">{transaction ? 'Editar transacao' : 'Nova transacao'}</p>
-        <h2 className="mt-2 text-2xl font-semibold text-slate-900">
+        <p className="text-sm uppercase tracking-[0.28em] text-emerald-600 dark:text-emerald-400">{transaction ? 'Editar transacao' : 'Nova transacao'}</p>
+        <h2 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">
           {transaction ? 'Atualize os dados da transacao' : 'Cadastre uma nova movimentacao financeira'}
         </h2>
       </div>
@@ -219,47 +219,47 @@ function TransactionForm({ transaction, accounts, categories, creditCards, loadi
         </div>
 
         <div className="grid gap-5 md:grid-cols-2">
-          <div className={cn('rounded-[24px] border p-4 transition', !isCreditCardPayment ? 'border-emerald-200 bg-emerald-50/70' : 'border-slate-200 bg-slate-50')}>
+          <div className={cn('rounded-[24px] border p-4 transition', !isCreditCardPayment ? 'border-emerald-200 bg-emerald-50/70 dark:border-emerald-800 dark:bg-emerald-900/30' : 'border-slate-200 bg-slate-50 dark:border-slate-600 dark:bg-slate-800/50')}>
             <Select label="Conta" name="accountId" value={formValues.accountId} onChange={handleChange}>
               <option value="">Selecione uma conta</option>
               {accounts.map((account) => (
                 <option key={account.id} value={account.id}>{account.name}</option>
               ))}
             </Select>
-            <p className="mt-2 text-xs text-slate-500">Obrigatoria para pagamentos fora do credito.</p>
+            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">Obrigatoria para pagamentos fora do credito.</p>
           </div>
 
-          <div className={cn('rounded-[24px] border p-4 transition', isCreditCardPayment ? 'border-emerald-200 bg-emerald-50/70' : 'border-slate-200 bg-slate-50')}>
+          <div className={cn('rounded-[24px] border p-4 transition', isCreditCardPayment ? 'border-emerald-200 bg-emerald-50/70 dark:border-emerald-800 dark:bg-emerald-900/30' : 'border-slate-200 bg-slate-50 dark:border-slate-600 dark:bg-slate-800/50')}>
             <Select label="Cartao de credito" name="creditCardId" value={formValues.creditCardId} onChange={handleChange} disabled={!creditCards.length}>
               <option value="">{creditCards.length ? 'Selecione um cartao' : 'Nenhum cartao disponivel'}</option>
               {creditCards.map((creditCard) => (
                 <option key={creditCard.id} value={creditCard.id}>{creditCard.name}</option>
               ))}
             </Select>
-            <p className="mt-2 text-xs text-slate-500">Destacado quando o metodo for cartao de credito.</p>
+            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">Destacado quando o metodo for cartao de credito.</p>
           </div>
         </div>
 
         <label className="block">
-          <span className="mb-2 block text-sm font-medium text-slate-700">Observacoes</span>
+          <span className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Observacoes</span>
           <textarea
             name="notes"
             rows="4"
             value={formValues.notes}
             onChange={handleChange}
-            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30"
             placeholder="Detalhes adicionais da transacao"
           />
         </label>
 
         <div className="grid gap-4 md:grid-cols-2">
-          <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-            <input name="isRecurring" type="checkbox" checked={formValues.isRecurring} onChange={handleChange} className="h-4 w-4 rounded border-slate-300 text-emerald-600" />
+          <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:border-slate-600 dark:bg-slate-800/50 dark:text-slate-300">
+            <input name="isRecurring" type="checkbox" checked={formValues.isRecurring} onChange={handleChange} className="h-4 w-4 rounded border-slate-300 text-emerald-600 dark:border-slate-500 dark:bg-slate-700" />
             Transacao recorrente
           </label>
 
-          <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-            <input name="isInstallment" type="checkbox" checked={formValues.isInstallment} onChange={handleChange} className="h-4 w-4 rounded border-slate-300 text-emerald-600" />
+          <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:border-slate-600 dark:bg-slate-800/50 dark:text-slate-300">
+            <input name="isInstallment" type="checkbox" checked={formValues.isInstallment} onChange={handleChange} className="h-4 w-4 rounded border-slate-300 text-emerald-600 dark:border-slate-500 dark:bg-slate-700" />
             Transacao parcelada
           </label>
         </div>

@@ -67,8 +67,8 @@ function Login() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-slate-50 px-4 py-8 sm:px-6 lg:px-8">
-      <div className="grid w-full max-w-5xl overflow-hidden rounded-[36px] bg-white shadow-glow lg:grid-cols-[1fr_1.08fr]">
+    <div className="relative flex min-h-screen items-center justify-center bg-slate-50 px-4 py-8 sm:px-6 lg:px-8 dark:bg-slate-950">
+      <div className="grid w-full max-w-5xl overflow-hidden rounded-[36px] bg-white shadow-glow lg:grid-cols-[1fr_1.08fr] dark:bg-slate-800 dark:shadow-[0_18px_40px_rgba(0,0,0,0.4)]">
         {/* ── Left: institutional panel ── */}
         <div className="relative hidden flex-col justify-between bg-gradient-to-br from-emerald-600 via-emerald-700 to-slate-800 p-8 text-white sm:p-10 lg:flex lg:p-12">
           {/* subtle texture overlay */}
@@ -116,17 +116,17 @@ function Login() {
           <div className="w-full">
             {/* mobile-only brand */}
             <div className="mb-8 lg:hidden">
-              <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700 ring-1 ring-emerald-200/60">
+              <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700 ring-1 ring-emerald-200/60 dark:bg-emerald-900/30 dark:text-emerald-400 dark:ring-emerald-800">
                 <BarChart3 className="h-3.5 w-3.5" />
                 Finance AI
               </span>
             </div>
 
             <div className="mb-8">
-              <h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+              <h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl dark:text-slate-100">
                 Entre na sua conta
               </h2>
-              <p className="mt-2 text-sm leading-6 text-slate-500">
+              <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
                 Acesse seu painel financeiro com segurança.
               </p>
             </div>
@@ -179,7 +179,7 @@ function Login() {
             <div className="mt-6 text-center">
               <Link
                 to="/"
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-400 transition hover:text-slate-600"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-400 transition hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
               >
                 <ArrowLeft className="h-3.5 w-3.5" />
                 Voltar para início

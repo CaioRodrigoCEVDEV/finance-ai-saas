@@ -45,12 +45,12 @@ function GoalCard({ goal, onEdit, onDelete, onUpdateProgress, loading }) {
   const progressWidth = `${Math.min(Math.max(goal.progressPercentage, 0), 100)}%`;
 
   return (
-    <Card className="rounded-[30px] border-slate-200/80 bg-white/95 p-6">
+    <Card className="rounded-[30px] border-slate-200/80 bg-white/95 p-6 dark:border-slate-700 dark:bg-slate-800">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Meta financeira</p>
-          <h3 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{goal.name}</h3>
-          {goal.description ? <p className="mt-2 text-sm text-slate-500">{goal.description}</p> : null}
+          <p className="text-xs uppercase tracking-[0.24em] text-slate-400 dark:text-slate-500">Meta financeira</p>
+          <h3 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">{goal.name}</h3>
+          {goal.description ? <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{goal.description}</p> : null}
         </div>
 
         <div className="flex items-center gap-2">
@@ -69,46 +69,46 @@ function GoalCard({ goal, onEdit, onDelete, onUpdateProgress, loading }) {
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Valor alvo</p>
-          <p className="mt-2 text-lg font-semibold text-slate-900">{formatCurrencyBRL(goal.targetAmount)}</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Valor alvo</p>
+          <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyBRL(goal.targetAmount)}</p>
         </div>
         <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Valor atual</p>
-          <p className="mt-2 text-lg font-semibold text-slate-900">{formatCurrencyBRL(goal.currentAmount)}</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Valor atual</p>
+          <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyBRL(goal.currentAmount)}</p>
         </div>
         <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Restante</p>
-          <p className="mt-2 text-lg font-semibold text-slate-900">{formatCurrencyBRL(goal.remainingAmount)}</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Restante</p>
+          <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyBRL(goal.remainingAmount)}</p>
         </div>
       </div>
 
       <div className="mt-6">
-        <div className="mb-2 flex items-center justify-between gap-3 text-sm text-slate-500">
+        <div className="mb-2 flex items-center justify-between gap-3 text-sm text-slate-500 dark:text-slate-400">
           <span>Progresso</span>
-          <span className="font-medium text-slate-800">{formatPercentage(goal.progressPercentage)}</span>
+          <span className="font-medium text-slate-800 dark:text-slate-200">{formatPercentage(goal.progressPercentage)}</span>
         </div>
-        <div className="h-3 rounded-full bg-slate-100">
+        <div className="h-3 rounded-full bg-slate-100 dark:bg-slate-700">
           <div className={`h-3 rounded-full ${getProgressColor(goal.progressPercentage)}`} style={{ width: progressWidth }} />
         </div>
       </div>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
         <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Prazo</p>
-          <p className="mt-2 text-sm font-medium text-slate-900">{goal.deadline ? formatDateBR(goal.deadline) : 'Sem prazo'}</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Prazo</p>
+          <p className="mt-2 text-sm font-medium text-slate-900 dark:text-slate-100">{goal.deadline ? formatDateBR(goal.deadline) : 'Sem prazo'}</p>
         </div>
         <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Dias restantes</p>
-          <p className="mt-2 text-sm font-medium text-slate-900">
+          <p className="text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Dias restantes</p>
+          <p className="mt-2 text-sm font-medium text-slate-900 dark:text-slate-100">
             {goal.daysRemaining !== null ? `${goal.daysRemaining} dias` : '---'}
           </p>
         </div>
       </div>
 
       {goal.suggestedMonthlyContribution !== null ? (
-        <div className="mt-4 rounded-2xl bg-slate-50 px-4 py-3">
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Contribuicao mensal sugerida</p>
-          <p className="mt-1 text-sm font-semibold text-slate-900">{formatCurrencyBRL(goal.suggestedMonthlyContribution)} / mes</p>
+        <div className="mt-4 rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-700/50">
+          <p className="text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Contribuicao mensal sugerida</p>
+          <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyBRL(goal.suggestedMonthlyContribution)} / mes</p>
         </div>
       ) : null}
     </Card>

@@ -29,8 +29,8 @@ function CategorizationRuleTester() {
 
   return (
     <Card className="rounded-[28px] p-6">
-      <h3 className="text-base font-semibold text-slate-900">Testar regra</h3>
-      <p className="mt-1 text-sm text-slate-500">
+      <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Testar regra</h3>
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
         Digite uma descricao de transacao para simular qual regra seria aplicada.
       </p>
 
@@ -56,21 +56,21 @@ function CategorizationRuleTester() {
       ) : null}
 
       {result && !error ? (
-        <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+        <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-600 dark:bg-slate-800/50">
           {result.matched ? (
             <div className="space-y-2 text-sm">
-              <p className="font-medium text-emerald-700">
+              <p className="font-medium text-emerald-700 dark:text-emerald-400">
                 Regra encontrada: {result.rule.name}
               </p>
-              <p className="text-slate-600">
+              <p className="text-slate-600 dark:text-slate-400">
                 Comparacao: {result.rule.matchType} "{result.rule.matchText}"
               </p>
-              <p className="text-slate-600">
+              <p className="text-slate-600 dark:text-slate-400">
                 Categoria sugerida: {result.category?.name || '-'} ({result.category?.type || '-'})
               </p>
             </div>
           ) : (
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
               Nenhuma regra ativa corresponde a essa descricao.
             </p>
           )}

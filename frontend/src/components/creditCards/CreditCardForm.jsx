@@ -103,7 +103,7 @@ function CreditCardForm({ creditCard, accounts, loadingAccounts, loading, server
     <section>
       <div>
         <p className="text-sm uppercase tracking-[0.28em] text-emerald-600">{creditCard ? 'Editar cartao' : 'Novo cartao'}</p>
-        <h2 className="mt-2 text-2xl font-semibold text-slate-900">
+        <h2 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">
           {creditCard ? 'Atualize os dados do cartao' : 'Cadastre um novo cartao de credito'}
         </h2>
       </div>
@@ -132,8 +132,8 @@ function CreditCardForm({ creditCard, accounts, loadingAccounts, loading, server
           <Input label="Cor" name="color" value={formValues.color} onChange={handleChange} />
         </div>
 
-        <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-          <input name="isActive" type="checkbox" checked={formValues.isActive} onChange={handleChange} className="h-4 w-4 rounded border-slate-300 text-emerald-600" />
+        <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:border-slate-600 dark:bg-slate-800/50 dark:text-slate-300">
+          <input name="isActive" type="checkbox" checked={formValues.isActive} onChange={handleChange} className="h-4 w-4 rounded border-slate-300 text-emerald-600 dark:border-slate-500 dark:bg-slate-700" />
           Cartao ativo
         </label>
 

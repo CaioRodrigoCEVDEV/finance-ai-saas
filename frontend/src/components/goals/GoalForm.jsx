@@ -94,7 +94,7 @@ function GoalForm({ goal, loading, serverError, onCancel, onSubmit }) {
     <section>
       <div>
         <p className="text-sm uppercase tracking-[0.28em] text-emerald-600">{goal ? 'Editar meta' : 'Nova meta'}</p>
-        <h2 className="mt-2 text-2xl font-semibold text-slate-900">
+        <h2 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">
           {goal ? 'Atualize os dados da meta financeira' : 'Defina um objetivo financeiro e acompanhe seu progresso'}
         </h2>
       </div>

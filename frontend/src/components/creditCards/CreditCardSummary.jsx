@@ -29,13 +29,13 @@ function CreditCardSummary({ cards }) {
         const Icon = item.icon;
 
         return (
-          <Card key={item.label} className="rounded-[28px] border-slate-200/80 bg-white/95 p-6">
+          <Card key={item.label} className="rounded-[28px] border-slate-200/80 bg-white/95 p-6 dark:border-slate-700 dark:bg-slate-800">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-sm text-slate-500">{item.label}</p>
-                <p className="mt-3 text-3xl font-semibold tracking-tight text-slate-900">{item.value}</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">{item.label}</p>
+                <p className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">{item.value}</p>
               </div>
-              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
                 <Icon className="h-5 w-5" />
               </span>
             </div>

@@ -32,7 +32,7 @@ function BudgetFilters({ filters, categories, onChange, onClear, loading }) {
   const yearOptions = getYearOptions();
 
   return (
-    <Card className="rounded-[28px] border-slate-200/80 bg-white/95 p-6">
+    <Card className="rounded-[28px] border-slate-200/80 bg-white/95 p-6 dark:border-slate-700 dark:bg-slate-800">
       <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
         <div className="grid flex-1 gap-4 md:grid-cols-3">
           <Select label="Mes" name="month" value={filters.month} onChange={onChange} disabled={loading}>

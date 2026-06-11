@@ -201,32 +201,32 @@ function Reports() {
 
         <div className="space-y-10">
           <section>
-            <h2 className="mb-4 text-lg font-semibold text-slate-900">Resumo do periodo</h2>
+            <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-slate-100">Resumo do periodo</h2>
             <FinancialSummaryReport data={summary} loading={loading} />
           </section>
 
           <section>
-            <h2 className="mb-4 text-lg font-semibold text-slate-900">Por categoria</h2>
+            <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-slate-100">Por categoria</h2>
             <CategoryReport data={categoryReport} loading={loading} />
           </section>
 
           <section>
-            <h2 className="mb-4 text-lg font-semibold text-slate-900">Por conta</h2>
+            <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-slate-100">Por conta</h2>
             <AccountReport data={accountReport} loading={loading} />
           </section>
 
           <section>
-            <h2 className="mb-4 text-lg font-semibold text-slate-900">Por cartao de credito</h2>
+            <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-slate-100">Por cartao de credito</h2>
             <CreditCardReport data={creditCardReport} loading={loading} />
           </section>
 
           <section>
-            <h2 className="mb-4 text-lg font-semibold text-slate-900">Evolucao mensal</h2>
+            <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-slate-100">Evolucao mensal</h2>
             <MonthlyEvolutionReport data={monthlyEvolution} loading={loading} />
           </section>
 
           <section>
-            <h2 className="mb-4 text-lg font-semibold text-slate-900">Maiores despesas</h2>
+            <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-slate-100">Maiores despesas</h2>
             <TopExpensesReport data={topExpenses} loading={loading} />
           </section>
         </div>

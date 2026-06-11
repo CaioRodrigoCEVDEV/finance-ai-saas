@@ -161,14 +161,14 @@ function Categories() {
             ) : null}
 
             {!loading && error ? (
-              <Card className="rounded-[28px] border-rose-200 bg-rose-50 p-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
-                    <AlertCircle className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="text-lg font-medium text-slate-900">Falha ao processar categorias</p>
-                    <p className="mt-2 text-sm text-rose-700">{error}</p>
+          <Card className="rounded-[28px] border-rose-200 bg-rose-50 p-6 dark:border-rose-800 dark:bg-rose-900/20">
+              <div className="flex items-start gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-100 text-rose-600 dark:bg-rose-900/40 dark:text-rose-400">
+                  <AlertCircle className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-lg font-medium text-slate-900 dark:text-slate-100">Falha ao processar categorias</p>
+                  <p className="mt-2 text-sm text-rose-700 dark:text-rose-400">{error}</p>
                   </div>
                 </div>
               </Card>

@@ -11,12 +11,12 @@ function formatCurrency(value) {
 function SummaryCard({ icon: Icon, label, value, colorClass, iconBgClass }) {
   return (
     <Card className="flex items-center gap-4 p-5">
-      <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${iconBgClass}`}>
+      <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${iconBgClass} dark:bg-opacity-30`}>
         <Icon className={`h-5 w-5 ${colorClass}`} />
       </div>
       <div>
-        <p className="text-sm text-slate-500">{label}</p>
-        <p className="mt-1 text-xl font-semibold text-slate-900">{value}</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">{label}</p>
+        <p className="mt-1 text-xl font-semibold text-slate-900 dark:text-slate-100">{value}</p>
       </div>
     </Card>
   );

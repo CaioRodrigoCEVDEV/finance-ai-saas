@@ -38,7 +38,7 @@ function MonthlyEvolutionReport({ data, loading }) {
       {data.map((item) => (
         <Card key={item.month} className="p-5">
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-base font-semibold text-slate-900">{formatMonthLabel(item.month)}</h3>
+            <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">{formatMonthLabel(item.month)}</h3>
             <span className={`text-sm font-semibold ${item.balance >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
               Saldo: {formatCurrency(item.balance)}
             </span>
@@ -47,10 +47,10 @@ function MonthlyEvolutionReport({ data, loading }) {
           <div className="space-y-4">
             <div className="space-y-1">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-slate-600">Receitas</span>
-                <span className="font-medium text-emerald-600">{formatCurrency(item.income)}</span>
+                <span className="text-slate-600 dark:text-slate-400">Receitas</span>
+                <span className="font-medium text-emerald-600 dark:text-emerald-400">{formatCurrency(item.income)}</span>
               </div>
-              <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+              <div className="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
                 <div
                   className="h-full rounded-full bg-emerald-500"
                   style={{ width: `${(item.income / maxIncome) * 100}%` }}
@@ -60,10 +60,10 @@ function MonthlyEvolutionReport({ data, loading }) {
 
             <div className="space-y-1">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-slate-600">Despesas</span>
-                <span className="font-medium text-rose-600">{formatCurrency(item.expense)}</span>
+                <span className="text-slate-600 dark:text-slate-400">Despesas</span>
+                <span className="font-medium text-rose-600 dark:text-rose-400">{formatCurrency(item.expense)}</span>
               </div>
-              <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+              <div className="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
                 <div
                   className="h-full rounded-full bg-rose-500"
                   style={{ width: `${(item.expense / maxExpense) * 100}%` }}
@@ -73,10 +73,10 @@ function MonthlyEvolutionReport({ data, loading }) {
 
             <div className="space-y-1">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-slate-600">Investimentos</span>
-                <span className="font-medium text-blue-600">{formatCurrency(item.investment)}</span>
+                <span className="text-slate-600 dark:text-slate-400">Investimentos</span>
+                <span className="font-medium text-blue-600 dark:text-blue-400">{formatCurrency(item.investment)}</span>
               </div>
-              <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+              <div className="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
                 <div
                   className="h-full rounded-full bg-blue-500"
                   style={{ width: `${(item.investment / maxInvestment) * 100}%` }}

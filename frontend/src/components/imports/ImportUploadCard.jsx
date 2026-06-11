@@ -83,7 +83,7 @@ function ImportUploadCard({
 
         <div
           className={`flex flex-col items-center justify-center gap-4 rounded-3xl border-2 border-dashed px-6 py-10 transition ${
-            dragOver ? 'border-emerald-500 bg-emerald-50' : 'border-slate-300 bg-slate-50'
+            dragOver             ? 'border-emerald-500 bg-emerald-50 dark:border-emerald-600 dark:bg-emerald-900/20' : 'border-slate-300 bg-slate-50 dark:border-slate-600 dark:bg-slate-800/50'
           }`}
           onDrop={handleDrop}
           onDragOver={handleDragOver}
@@ -92,14 +92,14 @@ function ImportUploadCard({
           role="button"
           tabIndex={0}
         >
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-sm">
-            <UploadCloud className="h-6 w-6 text-emerald-600" />
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-sm dark:bg-slate-800">
+            <UploadCloud className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
           </div>
           <div className="text-center">
-            <p className="text-sm font-medium text-slate-700">
+            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
               {file ? file.name : 'Arraste um arquivo CSV ou OFX aqui'}
             </p>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               {file ? `${(file.size / 1024).toFixed(1)} KB` : 'Ou clique para selecionar'}
             </p>
           </div>
@@ -113,7 +113,7 @@ function ImportUploadCard({
         </div>
 
         <div className="flex items-center justify-between">
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             Tamanho maximo: 5MB. Formatos: CSV, OFX.
           </p>
           <Button type="submit" disabled={!file || loading}>
