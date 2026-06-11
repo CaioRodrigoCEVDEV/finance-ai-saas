@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import AppLayout from '../layouts/AppLayout';
 import Card from '../components/ui/Card';
 import LoadingSkeleton from '../components/ui/LoadingSkeleton';
-import PageHeader from '../components/ui/PageHeader';
 import Button from '../components/ui/Button';
 import { useAuth } from '../contexts/AuthContext';
 import DashboardOverviewCards from '../components/dashboard/DashboardOverviewCards';
@@ -29,6 +28,7 @@ import {
   getMonthlyFlow
 } from '../services/dashboardService';
 import { formatCurrencyBRL, formatDateBR } from '../utils/formatters';
+import { getGreeting, getFirstName } from '../utils/greeting';
 
 const initialState = {
   overview: null,
@@ -42,8 +42,10 @@ const initialState = {
 };
 
 function Dashboard() {
-  const { tenant } = useAuth();
+  const { user, tenant } = useAuth();
   const navigate = useNavigate();
+  const firstName = getFirstName(user?.name);
+  const greeting = getGreeting();
   const [data, setData] = useState(initialState);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -111,10 +113,18 @@ function Dashboard() {
   return (
     <AppLayout>
       <div className="space-y-8 pb-8">
-        <PageHeader
-          title="Dashboard"
-          description="Visao completa da sua vida financeira."
-          action={(
+        <Card className="flex flex-col gap-6 p-6 sm:p-8 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-600">Finance AI</p>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">
+              {firstName ? `${greeting}, ${firstName}` : greeting}
+              <span aria-hidden="true"> 👋</span>
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400 sm:text-base">
+              Aqui está o resumo da sua vida financeira hoje.
+            </p>
+          </div>
+          <div className="flex shrink-0 items-center">
             <Button
               variant="primary"
               size="md"
@@ -124,8 +134,8 @@ function Dashboard() {
               <Plus className="h-4 w-4" />
               Nova transação
             </Button>
-          )}
-        />
+          </div>
+        </Card>
 
         {loading ? (
           <section className="space-y-6">
