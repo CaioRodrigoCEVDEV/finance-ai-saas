@@ -148,6 +148,14 @@ function getRecurringDatesInMonth(recurrence, year, month) {
   return dates;
 }
 
+const FREQUENCIES_AT_MOST_ONE_PER_MONTH = [
+  'MONTHLY', 'BIMONTHLY', 'QUARTERLY', 'SEMIANNUAL', 'YEARLY'
+];
+
+function getMonthKey(year, month) {
+  return `${year}-${String(month).padStart(2, '0')}`;
+}
+
 async function buildFinancialCalendar({ tenantId, year, month }) {
   const { monthStart, monthEnd } = getMonthRange(year, month);
 
@@ -177,6 +185,8 @@ async function buildFinancialCalendar({ tenantId, year, month }) {
 
   const transactionDatesByDay = new Map();
   const transactionRecurrenceIdsByDay = new Map();
+  const currentMonthKey = getMonthKey(year, month);
+  const generatedRecurrenceIdsThisMonth = new Set();
 
   for (const tx of transactions) {
     const dayKey = tx.transaction_date.toISOString().split('T')[0];
@@ -191,6 +201,11 @@ async function buildFinancialCalendar({ tenantId, year, month }) {
         transactionRecurrenceIdsByDay.set(dayKey, new Set());
       }
       transactionRecurrenceIdsByDay.get(dayKey).add(tx.recurrence_id);
+
+      const txMonthKey = tx.transaction_date.toISOString().substring(0, 7);
+      if (txMonthKey === currentMonthKey) {
+        generatedRecurrenceIdsThisMonth.add(tx.recurrence_id);
+      }
     }
   }
 
@@ -214,6 +229,13 @@ async function buildFinancialCalendar({ tenantId, year, month }) {
   }
 
   for (const recurrence of recurrences) {
+    if (
+      FREQUENCIES_AT_MOST_ONE_PER_MONTH.includes(recurrence.frequency) &&
+      generatedRecurrenceIdsThisMonth.has(recurrence.id)
+    ) {
+      continue;
+    }
+
     const recurringDates = getRecurringDatesInMonth(recurrence, year, month);
 
     for (const dateStr of recurringDates) {
