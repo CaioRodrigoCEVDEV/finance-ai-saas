@@ -196,7 +196,7 @@ function InvitesPage() {
                 <code className="flex-1 break-all rounded-xl bg-white px-4 py-2.5 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                   {generatedInvite.inviteUrl}
                 </code>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Button
                     variant="secondary"
                     size="sm"
@@ -345,16 +345,16 @@ function InvitesPage() {
                 const status = STATUS_MAP[invite.status] || STATUS_MAP.EXPIRED;
                 return (
                   <div key={invite.id} className="p-4 space-y-3">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 break-words">
                           {invite.title || invite.code}
                         </p>
-                        <code className="text-xs text-slate-500 dark:text-slate-400">{invite.code}</code>
+                        <code className="text-xs text-slate-500 dark:text-slate-400 break-all">{invite.code}</code>
                       </div>
                       <Badge variant={status.variant}>{status.label}</Badge>
                     </div>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                       <div>
                         <span className="text-slate-500 dark:text-slate-400">Destino: </span>
                         <span className="text-slate-900 dark:text-slate-100">{getDestinationLabel(invite.targetPath)}</span>
@@ -372,7 +372,7 @@ function InvitesPage() {
                         <span className="text-slate-900 dark:text-slate-100">{formatDate(invite.lastClickAt)}</span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 pt-1">
+                    <div className="flex flex-wrap items-center gap-2 pt-1">
                       <Button
                         variant="secondary"
                         size="sm"
@@ -404,7 +404,7 @@ function InvitesPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleDelete(invite)}
-                        className="text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 ml-auto"
+                        className="text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
