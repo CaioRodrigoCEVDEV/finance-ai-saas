@@ -132,6 +132,13 @@ enum ReferralInviteStatus {
   EXPIRED
 }
 
+enum FeedbackStatus {
+  OPEN
+  IN_REVIEW
+  RESOLVED
+  CLOSED
+}
+
 model Tenant {
   id                       String                  @id @default(uuid()) @db.Uuid
   name                     String
@@ -158,6 +165,7 @@ model Tenant {
   recurrences              Recurrence[]
   referral_invites         ReferralInvite[]
   creditCardInvoices       CreditCardInvoice[]
+  feedbacks                Feedback[]
 
   @@index([status])
   @@map("tenants")
@@ -183,6 +191,7 @@ model User {
   notifications            Notification[]
   recurrences              Recurrence[]
   referral_invites         ReferralInvite[]
+  feedbacks                Feedback[]
 
   @@index([status])
   @@map("users")
@@ -569,6 +578,27 @@ model ReferralInvite {
   @@index([code])
   @@index([status])
   @@map("referral_invites")
+}
+
+model Feedback {
+  id         String         @id @default(uuid()) @db.Uuid
+  tenant_id  String         @db.Uuid
+  user_id    String         @db.Uuid
+  name       String
+  email      String
+  message    String
+  page_url   String?
+  user_agent String?
+  status     FeedbackStatus @default(OPEN)
+  created_at DateTime       @default(now())
+  updated_at DateTime       @updatedAt
+  tenant     Tenant         @relation(fields: [tenant_id], references: [id])
+  user       User           @relation(fields: [user_id], references: [id])
+
+  @@index([tenant_id])
+  @@index([tenant_id, status])
+  @@index([user_id])
+  @@map("feedbacks")
 }
 
 model TenantSettings {

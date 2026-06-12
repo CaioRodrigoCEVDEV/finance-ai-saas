@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { ChevronDown, CircleUser, LogOut, Menu, Settings } from 'lucide-react';
+import { ChevronDown, CircleUser, LogOut, Menu, MessageSquareText, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { useAuth } from '../../contexts/AuthContext';
@@ -7,6 +7,7 @@ import { cn } from '../../utils/cn';
 import NotificationBell from '../notifications/NotificationBell';
 import PwaInstallButton from '../PwaInstallButton';
 import ThemeToggle from './ThemeToggle';
+import FeedbackModal from '../feedback/FeedbackModal';
 
 function getInitials(name) {
   if (!name) {
@@ -25,6 +26,7 @@ function Topbar({ onMenuClick }) {
   const navigate = useNavigate();
   const { logout, tenant, user } = useAuth();
   const [open, setOpen] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -85,6 +87,15 @@ function Topbar({ onMenuClick }) {
           <ThemeToggle />
         </div>
         <PwaInstallButton />
+        <button
+          type="button"
+          onClick={() => setFeedbackOpen(true)}
+          className="relative flex h-9 w-9 items-center justify-center rounded-2xl transition hover:bg-slate-50 dark:hover:bg-slate-700/50"
+          aria-label="Enviar feedback"
+          title="Enviar feedback"
+        >
+          <MessageSquareText className="h-5 w-5 text-slate-500 dark:text-slate-400" />
+        </button>
         <NotificationBell />
 
         <div className="relative" ref={containerRef}>
@@ -155,6 +166,8 @@ function Topbar({ onMenuClick }) {
           )}
         </div>
       </div>
+
+      <FeedbackModal isOpen={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
     </header>
   );
 }
