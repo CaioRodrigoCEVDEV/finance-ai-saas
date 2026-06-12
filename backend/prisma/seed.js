@@ -129,11 +129,16 @@ async function main() {
     update: { role: 'OWNER' }
   });
 
-  const adminUser = await prisma.user.upsert({
+  await prisma.user.updateMany({
     where: { email: 'admin@financeai.com' },
+    data: { global_role: 'USER' }
+  });
+
+  const adminUser = await prisma.user.upsert({
+    where: { email: 'caiorodrigocev@gmail.com' },
     create: {
       name: 'Admin SaaS',
-      email: 'admin@financeai.com',
+      email: 'caiorodrigocev@gmail.com',
       password_hash: passwordHash,
       status: 'ACTIVE',
       global_role: 'SUPER_ADMIN',
