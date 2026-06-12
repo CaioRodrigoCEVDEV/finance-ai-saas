@@ -279,7 +279,6 @@ function buildCreateData(data, tenantId, userId) {
     payment_method: data.paymentMethod,
     notes: data.notes ?? null,
     source: 'MANUAL',
-    is_recurring: data.isRecurring ?? false,
     is_installment: data.isInstallment ?? false,
     installment_number: data.isInstallment ? (data.installmentNumber ?? null) : null,
     installment_total: data.isInstallment ? (data.installmentTotal ?? null) : null
@@ -327,10 +326,6 @@ function buildUpdateData(existingTransaction, data) {
 
   if (data.notes !== undefined) {
     updateData.notes = data.notes;
-  }
-
-  if (data.isRecurring !== undefined) {
-    updateData.is_recurring = data.isRecurring;
   }
 
   if (data.isInstallment !== undefined) {
@@ -423,7 +418,6 @@ async function updateTransaction(transactionId, tenantId, data) {
     creditCardId: data.creditCardId !== undefined ? data.creditCardId : existingTransaction.credit_card_id,
     categoryId: data.categoryId !== undefined ? data.categoryId : existingTransaction.category_id,
     notes: data.notes !== undefined ? data.notes : existingTransaction.notes,
-    isRecurring: data.isRecurring ?? existingTransaction.is_recurring,
     isInstallment: data.isInstallment ?? existingTransaction.is_installment,
     installmentNumber: data.installmentNumber !== undefined ? data.installmentNumber : existingTransaction.installment_number,
     installmentTotal: data.installmentTotal !== undefined ? data.installmentTotal : existingTransaction.installment_total

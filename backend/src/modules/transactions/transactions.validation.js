@@ -128,7 +128,6 @@ const transactionBodyFields = {
   creditCardId: z.preprocess(normalizeNullableUuid, z.string().uuid('Cartao invalido').nullable().optional()),
   categoryId: z.preprocess(normalizeNullableUuid, z.string().uuid('Categoria invalida').nullable().optional()),
   notes: z.preprocess(normalizeNullableText, z.string().max(1000, 'Observacoes devem ter no maximo 1000 caracteres').nullable().optional()),
-  isRecurring: z.boolean().optional(),
   isInstallment: z.boolean().optional(),
   installmentNumber: z.preprocess(normalizeOptionalInteger, z.number().int('Numero da parcela invalido').nullable().optional()),
   installmentTotal: z.preprocess(normalizeOptionalInteger, z.number().int('Total de parcelas invalido').nullable().optional())
@@ -179,7 +178,6 @@ function withInstallmentValidation(schema) {
 const createTransactionSchema = withInstallmentValidation(z.object({
   ...transactionBodyFields,
   status: z.enum(TRANSACTION_STATUSES).default('CONFIRMED'),
-  isRecurring: z.boolean().default(false),
   isInstallment: z.boolean().default(false)
 }));
 

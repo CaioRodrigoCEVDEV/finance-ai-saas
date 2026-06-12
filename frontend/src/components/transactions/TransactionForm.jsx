@@ -39,7 +39,6 @@ const initialFormValues = {
   creditCardId: '',
   categoryId: '',
   notes: '',
-  isRecurring: false,
   isInstallment: false,
   installmentNumber: '',
   installmentTotal: ''
@@ -61,7 +60,6 @@ function buildFormValues(transaction) {
     creditCardId: transaction.creditCard?.id || '',
     categoryId: transaction.category?.id || '',
     notes: transaction.notes || '',
-    isRecurring: transaction.isRecurring ?? false,
     isInstallment: transaction.isInstallment ?? false,
     installmentNumber: transaction.installmentNumber ? String(transaction.installmentNumber) : '',
     installmentTotal: transaction.installmentTotal ? String(transaction.installmentTotal) : ''
@@ -163,7 +161,6 @@ function TransactionForm({ transaction, accounts, categories, creditCards, loadi
       creditCardId: formValues.creditCardId || null,
       categoryId: formValues.type === 'TRANSFER' ? (formValues.categoryId || null) : (formValues.categoryId || null),
       notes: formValues.notes.trim() || null,
-      isRecurring: formValues.isRecurring,
       isInstallment: formValues.isInstallment,
       installmentNumber: formValues.isInstallment ? Number(formValues.installmentNumber) : null,
       installmentTotal: formValues.isInstallment ? Number(formValues.installmentTotal) : null
@@ -252,16 +249,13 @@ function TransactionForm({ transaction, accounts, categories, creditCards, loadi
           />
         </label>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:border-slate-600 dark:bg-slate-800/50 dark:text-slate-300">
-            <input name="isRecurring" type="checkbox" checked={formValues.isRecurring} onChange={handleChange} className="h-4 w-4 rounded border-slate-300 text-emerald-600 dark:border-slate-500 dark:bg-slate-700" />
-            Transacao recorrente
-          </label>
-
+        <div className="space-y-4">
           <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:border-slate-600 dark:bg-slate-800/50 dark:text-slate-300">
             <input name="isInstallment" type="checkbox" checked={formValues.isInstallment} onChange={handleChange} className="h-4 w-4 rounded border-slate-300 text-emerald-600 dark:border-slate-500 dark:bg-slate-700" />
             Transacao parcelada
           </label>
+
+          <p className="text-xs text-slate-400 dark:text-slate-500">Para lançamentos recorrentes, use a tela <strong className="text-slate-500 dark:text-slate-400">Recorrencias</strong>.</p>
         </div>
 
         {formValues.isInstallment ? (
