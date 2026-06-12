@@ -12,6 +12,7 @@ import HomePage from '../pages/HomePage';
 import CategorizationRules from '../pages/CategorizationRules';
 import Imports from '../pages/Imports';
 import Login from '../pages/Login';
+import Register from '../pages/Register';
 import Reports from '../pages/Reports';
 import Transactions from '../pages/Transactions';
 import Notifications from '../pages/Notifications';
@@ -61,6 +62,22 @@ function AppRoutes() {
           element={(
             <GuestRoute>
               <Login />
+            </GuestRoute>
+          )}
+        />
+        <Route
+          path="/register"
+          element={(
+            <GuestRoute>
+              <Register />
+            </GuestRoute>
+          )}
+        />
+        <Route
+          path="/cadastro"
+          element={(
+            <GuestRoute>
+              <Register />
             </GuestRoute>
           )}
         />

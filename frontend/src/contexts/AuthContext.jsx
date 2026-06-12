@@ -45,6 +45,16 @@ function AuthProvider({ children }) {
     return response;
   }
 
+  async function register(payload) {
+    const response = await authService.register(payload);
+
+    setUser(response.user);
+    setTenant(response.tenant);
+    setInitialized(true);
+
+    return response;
+  }
+
   async function logout() {
     try {
       await authService.logout();
@@ -63,6 +73,7 @@ function AuthProvider({ children }) {
     <AuthContext.Provider
       value={{
         login,
+        register,
         logout,
         loadUser,
         ensureAuth,

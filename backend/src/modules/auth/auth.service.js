@@ -144,7 +144,85 @@ async function login(email, password) {
   };
 }
 
+async function register({ name, email, password, workspaceName }) {
+  const normalizedEmail = email.trim().toLowerCase();
+  const existingUser = await prisma.user.findFirst({
+    where: { email: normalizedEmail, deleted_at: null }
+  });
+
+  if (existingUser) {
+    throw new AppError(
+      'Já existe uma conta cadastrada com este e-mail.',
+      409,
+      'EMAIL_ALREADY_EXISTS'
+    );
+  }
+
+  const passwordHash = await bcrypt.hash(password, 12);
+  const tenantName = (workspaceName && workspaceName.trim())
+    ? workspaceName.trim()
+    : `Workspace de ${name.trim()}`;
+
+  const result = await prisma.$transaction(async (tx) => {
+    const user = await tx.user.create({
+      data: {
+        name: name.trim(),
+        email: normalizedEmail,
+        password_hash: passwordHash,
+        status: 'ACTIVE'
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        avatar_url: true
+      }
+    });
+
+    const tenant = await tx.tenant.create({
+      data: {
+        name: tenantName,
+        plan: 'FREE',
+        status: 'ACTIVE'
+      },
+      select: {
+        id: true,
+        name: true,
+        plan: true
+      }
+    });
+
+    await tx.userTenant.create({
+      data: {
+        user_id: user.id,
+        tenant_id: tenant.id,
+        role: 'OWNER'
+      }
+    });
+
+    return { user, tenant };
+  });
+
+  const token = signToken({
+    userId: result.user.id,
+    tenantId: result.tenant.id,
+    role: 'OWNER'
+  });
+
+  return {
+    token,
+    user: sanitizeUser(result.user),
+    tenant: {
+      id: result.tenant.id,
+      name: result.tenant.name,
+      role: 'OWNER',
+      plan: result.tenant.plan
+    }
+  };
+}
+
 module.exports = {
   findAuthenticatedUser,
-  login
+  login,
+  register
 };

@@ -14,3 +14,13 @@ export async function getMe() {
   const { data } = await api.get('/auth/me');
   return data;
 }
+
+export async function register({ name, email, password, workspaceName }) {
+  const { data } = await api.post('/auth/register', {
+    name,
+    email,
+    password,
+    workspaceName
+  });
+  return data;
+}

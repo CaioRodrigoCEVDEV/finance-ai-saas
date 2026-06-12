@@ -101,18 +101,17 @@ function HomePage() {
               </p>
             </div>
             <div className="flex flex-col gap-2 sm:flex-row">
-              <Button as={Link} to="/login" size="lg">
+              <Button as={Link} to="/register" size="lg">
+                Começar grátis
+              </Button>
+              <Button as={Link} to="/login" variant="secondary" size="lg">
                 Entrar no sistema
               </Button>
               {isAuthenticated ? (
                 <Button as={Link} to="/dashboard" variant="secondary" size="lg">
                   Ver dashboard
                 </Button>
-              ) : (
-                <Button as={Link} to="/login" variant="secondary" size="lg">
-                  Ver dashboard
-                </Button>
-              )}
+              ) : null}
             </div>
           </div>
         </header>
@@ -138,9 +137,12 @@ function HomePage() {
               autenticação segura.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Button as={Link} to="/login" size="lg">
-                Entrar no sistema
+              <Button as={Link} to="/register" size="lg">
+                Começar grátis
                 <ArrowRight className="h-4 w-4" />
+              </Button>
+              <Button as={Link} to="/login" variant="secondary" size="lg">
+                Entrar no sistema
               </Button>
               {isAuthenticated ? (
                 <Button as={Link} to="/dashboard" variant="secondary" size="lg">
@@ -208,14 +210,18 @@ function HomePage() {
             <p className="mt-3 text-sm leading-6 text-slate-500 dark:text-slate-400">
               Seu copiloto financeiro pessoal — seguro, premium e pronto para produção.
             </p>
-            <div className="mt-5">
+            <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-center">
+              <Button as={Link} to="/register">
+                Começar grátis
+                <ArrowRight className="h-4 w-4" />
+              </Button>
               {isAuthenticated ? (
-                <Button as={Link} to="/dashboard">
+                <Button as={Link} to="/dashboard" variant="secondary">
                   Ir para dashboard
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               ) : (
-                <Button as={Link} to="/login">
+                <Button as={Link} to="/login" variant="secondary">
                   Entrar no sistema
                   <ArrowRight className="h-4 w-4" />
                 </Button>
