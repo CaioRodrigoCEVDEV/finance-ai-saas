@@ -159,6 +159,72 @@ async function main() {
     update: { role: 'OWNER' }
   });
 
+  await prisma.paymentGatewayConfig.upsert({
+    where: { provider: 'STRIPE' },
+    create: {
+      provider: 'STRIPE',
+      enabled: false,
+      environment: 'SANDBOX'
+    },
+    update: {
+      enabled: false,
+      environment: 'SANDBOX'
+    }
+  });
+
+  await prisma.paymentGatewayConfig.upsert({
+    where: { provider: 'MERCADO_PAGO' },
+    create: {
+      provider: 'MERCADO_PAGO',
+      enabled: false,
+      environment: 'SANDBOX'
+    },
+    update: {
+      enabled: false,
+      environment: 'SANDBOX'
+    }
+  });
+
+  await prisma.billingPlan.upsert({
+    where: { plan_billingCycle: { plan: 'PREMIUM', billingCycle: 'MONTHLY' } },
+    create: {
+      plan: 'PREMIUM',
+      billingCycle: 'MONTHLY',
+      currency: 'BRL',
+      amount: '29.90',
+      active: true,
+      defaultProvider: 'STRIPE',
+      allowProviderSelection: true
+    },
+    update: {
+      currency: 'BRL',
+      amount: '29.90',
+      active: true,
+      defaultProvider: 'STRIPE',
+      allowProviderSelection: true
+    }
+  });
+
+  await prisma.billingPlan.upsert({
+    where: { plan_billingCycle: { plan: 'PREMIUM', billingCycle: 'YEARLY' } },
+    create: {
+      plan: 'PREMIUM',
+      billingCycle: 'YEARLY',
+      currency: 'BRL',
+      amount: '299.90',
+      active: true,
+      defaultProvider: 'STRIPE',
+      allowProviderSelection: true
+    },
+    update: {
+      currency: 'BRL',
+      amount: '299.90',
+      active: true,
+      defaultProvider: 'STRIPE',
+      allowProviderSelection: true
+    }
+  });
+
   const categories = await ensureGlobalCategories();
 
   // Accounts

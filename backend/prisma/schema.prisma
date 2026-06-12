@@ -144,6 +144,37 @@ enum GlobalRole {
   SUPER_ADMIN
 }
 
+enum PaymentProvider {
+  STRIPE
+  MERCADO_PAGO
+}
+
+enum PaymentEnvironment {
+  SANDBOX
+  PRODUCTION
+}
+
+enum SubscriptionStatus {
+  FREE
+  TRIAL
+  PENDING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  EXPIRED
+  FAILED
+}
+
+enum BillingPlanType {
+  FREE
+  PREMIUM
+}
+
+enum BillingCycle {
+  MONTHLY
+  YEARLY
+}
+
 model Tenant {
   id                       String                  @id @default(uuid()) @db.Uuid
   name                     String
@@ -171,6 +202,8 @@ model Tenant {
   referral_invites         ReferralInvite[]
   creditCardInvoices       CreditCardInvoice[]
   feedbacks                Feedback[]
+  subscriptions            Subscription[]
+  paymentEventLogs         PaymentEventLog[]
 
   @@index([status])
   @@map("tenants")
@@ -536,6 +569,96 @@ model AuditLog {
   @@index([entity, entity_id])
   @@index([created_at])
   @@map("audit_logs")
+}
+
+model PaymentGatewayConfig {
+  id                    String             @id @default(uuid()) @db.Uuid
+  provider              PaymentProvider    @unique
+  enabled               Boolean            @default(false)
+  environment           PaymentEnvironment @default(SANDBOX)
+  publicKey             String?            @map("public_key")
+  secretKeyEncrypted    String?            @map("secret_key_encrypted")
+  webhookSecretEncrypted String?           @map("webhook_secret_encrypted")
+  monthlyPlanExternalId String?            @map("monthly_plan_external_id")
+  yearlyPlanExternalId  String?            @map("yearly_plan_external_id")
+  successUrl            String?            @map("success_url")
+  cancelUrl             String?            @map("cancel_url")
+  failureUrl            String?            @map("failure_url")
+  pendingUrl            String?            @map("pending_url")
+  webhookUrl            String?            @map("webhook_url")
+  createdAt             DateTime           @default(now()) @map("created_at")
+  updatedAt             DateTime           @updatedAt @map("updated_at")
+
+  @@map("payment_gateway_configs")
+}
+
+model BillingPlan {
+  id                    String          @id @default(uuid()) @db.Uuid
+  plan                  BillingPlanType
+  billingCycle          BillingCycle    @map("billing_cycle")
+  currency              String          @default("BRL")
+  amount                Decimal         @default(0) @db.Decimal(10, 2)
+  active                Boolean         @default(true)
+  stripePriceId         String?         @map("stripe_price_id")
+  mercadoPagoPlanId     String?         @map("mercado_pago_plan_id")
+  defaultProvider       PaymentProvider? @map("default_provider")
+  allowProviderSelection Boolean        @default(true) @map("allow_provider_selection")
+  createdAt             DateTime        @default(now()) @map("created_at")
+  updatedAt             DateTime        @updatedAt @map("updated_at")
+
+  @@unique([plan, billingCycle])
+  @@map("billing_plans")
+}
+
+model Subscription {
+  id                        String             @id @default(uuid()) @db.Uuid
+  tenantId                  String             @map("tenant_id") @db.Uuid
+  provider                  PaymentProvider?
+  status                    SubscriptionStatus @default(FREE)
+  plan                      BillingPlanType    @default(FREE)
+  billingCycle              BillingCycle?      @map("billing_cycle")
+  externalCustomerId        String?            @map("external_customer_id")
+  externalSubscriptionId    String?            @map("external_subscription_id")
+  externalCheckoutSessionId String?            @map("external_checkout_session_id")
+  currentPeriodStart        DateTime?          @map("current_period_start")
+  currentPeriodEnd          DateTime?          @map("current_period_end")
+  cancelAtPeriodEnd         Boolean            @default(false) @map("cancel_at_period_end")
+  canceledAt                DateTime?          @map("canceled_at")
+  trialEndsAt               DateTime?          @map("trial_ends_at")
+  createdAt                 DateTime           @default(now()) @map("created_at")
+  updatedAt                 DateTime           @updatedAt @map("updated_at")
+
+  tenant                    Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  paymentEventLogs          PaymentEventLog[]
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([externalSubscriptionId])
+  @@index([externalCheckoutSessionId])
+  @@map("subscriptions")
+}
+
+model PaymentEventLog {
+  id              String          @id @default(uuid()) @db.Uuid
+  provider        PaymentProvider
+  eventType       String          @map("event_type")
+  externalEventId String          @map("external_event_id")
+  tenantId        String?         @map("tenant_id") @db.Uuid
+  subscriptionId  String?         @map("subscription_id") @db.Uuid
+  payload         Json
+  processed       Boolean         @default(false)
+  errorMessage    String?         @map("error_message")
+  createdAt       DateTime        @default(now()) @map("created_at")
+
+  tenant          Tenant?         @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  subscription    Subscription?   @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
+  @@unique([provider, externalEventId])
+  @@index([tenantId])
+  @@index([subscriptionId])
+  @@index([provider, processed])
+  @@index([createdAt])
+  @@map("payment_event_logs")
 }
 
 model Notification {

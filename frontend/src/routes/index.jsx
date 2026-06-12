@@ -23,6 +23,9 @@ import FinancialCalendarPage from '../pages/FinancialCalendarPage';
 import InvitesPage from '../pages/InvitesPage';
 import InvoicesPage from '../pages/InvoicesPage';
 import Plans from '../pages/Plans';
+import BillingSuccess from '../pages/BillingSuccess';
+import BillingCancel from '../pages/BillingCancel';
+import BillingPending from '../pages/BillingPending';
 import AdminDashboard from '../pages/admin/AdminDashboard';
 import AdminTenants from '../pages/admin/AdminTenants';
 import AdminTenantDetails from '../pages/admin/AdminTenantDetails';
@@ -31,6 +34,7 @@ import AdminUserDetails from '../pages/admin/AdminUserDetails';
 import AdminPlans from '../pages/admin/AdminPlans';
 import AdminFeedbacks from '../pages/admin/AdminFeedbacks';
 import AdminAuditLogs from '../pages/admin/AdminAuditLogs';
+import PaymentSettingsPage from '../pages/admin/PaymentSettingsPage';
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading, initialized, ensureAuth } = useAuth();
@@ -255,6 +259,31 @@ function AppRoutes() {
             </ProtectedRoute>
           )}
         />
+        <Route path="/billing" element={<Navigate to="/plans" replace />} />
+        <Route
+          path="/billing/success"
+          element={(
+            <ProtectedRoute>
+              <BillingSuccess />
+            </ProtectedRoute>
+          )}
+        />
+        <Route
+          path="/billing/cancel"
+          element={(
+            <ProtectedRoute>
+              <BillingCancel />
+            </ProtectedRoute>
+          )}
+        />
+        <Route
+          path="/billing/pending"
+          element={(
+            <ProtectedRoute>
+              <BillingPending />
+            </ProtectedRoute>
+          )}
+        />
         <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
         <Route
           path="/admin/dashboard"
@@ -301,6 +330,14 @@ function AppRoutes() {
           element={(
             <AdminRoute>
               <AdminPlans />
+            </AdminRoute>
+          )}
+        />
+        <Route
+          path="/admin/payment-settings"
+          element={(
+            <AdminRoute>
+              <PaymentSettingsPage />
             </AdminRoute>
           )}
         />

@@ -66,7 +66,7 @@ const navigationGroups = [
     title: 'Conta',
     items: [
       { to: '/invites', label: 'Convites', icon: Share2 },
-      { to: '/plans', label: 'Planos', icon: Crown }
+      { to: '/plans', label: 'Plano / Assinatura', icon: Crown }
     ]
   }
 ];

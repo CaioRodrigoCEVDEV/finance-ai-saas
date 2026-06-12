@@ -15,7 +15,8 @@ const envSchema = z.object({
   JWT_COOKIE_NAME: z.string().min(1).optional(),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().default(60000),
   RATE_LIMIT_AUTH_MAX: z.coerce.number().default(10),
-  RATE_LIMIT_API_MAX: z.coerce.number().default(200)
+  RATE_LIMIT_API_MAX: z.coerce.number().default(200),
+  PAYMENT_SECRET_ENCRYPTION_KEY: z.string().min(16, 'PAYMENT_SECRET_ENCRYPTION_KEY deve ter no minimo 16 caracteres').default('change-payment-secret-key')
 });
 
 const parsedEnv = envSchema.parse(process.env);
@@ -31,5 +32,6 @@ module.exports = {
   cookieName: parsedEnv.COOKIE_NAME || parsedEnv.JWT_COOKIE_NAME || 'finance_ai_token',
   rateLimitWindowMs: parsedEnv.RATE_LIMIT_WINDOW_MS,
   rateLimitAuthMax: parsedEnv.RATE_LIMIT_AUTH_MAX,
-  rateLimitApiMax: parsedEnv.RATE_LIMIT_API_MAX
+  rateLimitApiMax: parsedEnv.RATE_LIMIT_API_MAX,
+  paymentSecretEncryptionKey: parsedEnv.PAYMENT_SECRET_ENCRYPTION_KEY
 };

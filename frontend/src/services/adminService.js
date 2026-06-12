@@ -94,3 +94,38 @@ export async function listAuditLogs(params) {
   const { data } = await api.get('/admin/audit-logs', { params });
   return data;
 }
+
+export async function getPaymentSettings() {
+  const { data } = await api.get('/admin/payment-settings');
+  return data;
+}
+
+export async function updateStripeSettings(payload) {
+  const { data } = await api.patch('/admin/payment-settings/stripe', payload);
+  return data;
+}
+
+export async function updateMercadoPagoSettings(payload) {
+  const { data } = await api.patch('/admin/payment-settings/mercado-pago', payload);
+  return data;
+}
+
+export async function testStripeSettings() {
+  const { data } = await api.post('/admin/payment-settings/stripe/test');
+  return data;
+}
+
+export async function testMercadoPagoSettings() {
+  const { data } = await api.post('/admin/payment-settings/mercado-pago/test');
+  return data;
+}
+
+export async function updateBillingPlans(payload) {
+  const { data } = await api.patch('/admin/payment-settings/plans', payload);
+  return data;
+}
+
+export async function listPaymentEvents(params) {
+  const { data } = await api.get('/admin/payment-events', { params });
+  return data;
+}

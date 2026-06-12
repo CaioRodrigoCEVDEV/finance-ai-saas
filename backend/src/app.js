@@ -8,6 +8,7 @@ const cookieParser = require('cookie-parser');
 const env = require('./config/env');
 const corsMiddleware = require('./config/cors');
 const routes = require('./routes');
+const webhookRoutes = require('./modules/billing/billing.webhook.routes');
 const { apiLimiter } = require('./middlewares/rate-limiter');
 const { errorHandler, notFoundHandler } = require('./middlewares/error-handler');
 
@@ -39,6 +40,8 @@ app.use(compression());
 app.use(morgan(env.nodeEnv === 'production' ? 'combined' : 'dev'));
 
 app.use(corsMiddleware);
+
+app.use(webhookRoutes);
 
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));

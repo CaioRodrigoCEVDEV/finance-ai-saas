@@ -5,6 +5,7 @@ import {
   Users,
   Crown,
   MessageSquareText,
+  Settings2,
   ScrollText,
   Shield,
   ArrowLeft,
@@ -20,6 +21,7 @@ const adminNavigation = [
   { to: '/admin/tenants', label: 'Workspaces', icon: Building2 },
   { to: '/admin/users', label: 'Usuários', icon: Users },
   { to: '/admin/plans', label: 'Planos e Limites', icon: Crown },
+  { to: '/admin/payment-settings', label: 'Pagamentos', icon: Settings2 },
   { to: '/admin/feedbacks', label: 'Feedbacks', icon: MessageSquareText },
   { to: '/admin/audit-logs', label: 'Auditoria', icon: ScrollText }
 ];

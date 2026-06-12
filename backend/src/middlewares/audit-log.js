@@ -1,17 +1,30 @@
 const prisma = require('../config/prisma');
 
 async function createAuditLog(action, entity, entityId, metadata, request) {
+  return createAuditLogEntry({
+    tenantId: request.tenant?.id || null,
+    userId: request.user?.id || null,
+    action,
+    entity,
+    entityId,
+    metadata,
+    ipAddress: request.ip || null,
+    userAgent: request.get('user-agent') || null
+  });
+}
+
+async function createAuditLogEntry({ tenantId = null, userId = null, action, entity, entityId = null, metadata = null, ipAddress = null, userAgent = null }) {
   try {
     await prisma.auditLog.create({
       data: {
-        tenant_id: request.tenant?.id || null,
-        user_id: request.user?.id || null,
+        tenant_id: tenantId,
+        user_id: userId,
         action,
         entity,
         entity_id: entityId || null,
         metadata: metadata || null,
-        ip_address: request.ip || null,
-        user_agent: request.get('user-agent') || null
+        ip_address: ipAddress,
+        user_agent: userAgent
       }
     });
   } catch {
@@ -40,5 +53,6 @@ function auditLog(action, entity, getMetadata) {
 
 module.exports = {
   createAuditLog,
+  createAuditLogEntry,
   auditLog
 };

@@ -169,6 +169,7 @@ COOKIE_NAME=finance_ai_token
 RATE_LIMIT_WINDOW_MS=60000
 RATE_LIMIT_AUTH_MAX=10
 RATE_LIMIT_API_MAX=200
+PAYMENT_SECRET_ENCRYPTION_KEY=change-payment-secret-key-with-at-least-16-chars
 ```
 
 Em produção, use `backend/.env.production.example` como referência. Os principais ajustes são:
@@ -176,6 +177,7 @@ Em produção, use `backend/.env.production.example` como referência. Os princi
 - `NODE_ENV=production`
 - `FRONTEND_URL=https://app.financeai.orderup.com.br`
 - `JWT_SECRET` com chave forte
+- `PAYMENT_SECRET_ENCRYPTION_KEY` com chave forte e exclusiva
 - Cookies passam a usar `secure: true` e `sameSite: 'none'`
 
 ### Frontend (`frontend/.env`)
@@ -241,6 +243,7 @@ Com o painel administrativo, o schema também inclui:
 
 - `User.global_role` com valores `USER` e `SUPER_ADMIN`
 - `PlanLimit` para limites e features por plano
+- `PaymentGatewayConfig`, `BillingPlan`, `Subscription` e `PaymentEventLog` para pagamentos Premium
 
 ## Usuário demo e admin
 
@@ -268,6 +271,7 @@ O seed também cria:
 - 10 regras de categorização
 - Configurações padrão do tenant
 - Limites padrão para os planos `FREE`, `PRO`, `PREMIUM` e `FAMILY`
+- Gateways de pagamento Stripe e Mercado Pago desativados por padrão em `SANDBOX`
 
 ## Planos e limites
 
@@ -283,6 +287,40 @@ Campos suportados:
 - `canExportReports`
 - `canUseAi`
 - `canUseOpenFinance`
+
+## Pagamentos Premium
+
+### Configuração no hPanel Admin
+
+- Menu: `Configurações -> Pagamentos`
+- Rota: `/admin/payment-settings`
+- Abas disponíveis: `Stripe`, `Mercado Pago`, `Planos`, `Webhooks`, `Logs`
+
+### Stripe
+
+1. Acesse `/admin/payment-settings`.
+2. Preencha `Publishable Key`, `Secret Key`, `Webhook Secret` e os `Price IDs` mensal/anual.
+3. Configure a URL de webhook: `https://back.financeai.orderup.com.br/webhooks/stripe`.
+4. Use o botão `Testar conexão` antes de ativar o gateway.
+
+### Mercado Pago
+
+1. Acesse `/admin/payment-settings`.
+2. Preencha `Public Key`, `Access Token`, webhook e IDs externos mensal/anual.
+3. Configure a URL de webhook: `https://back.financeai.orderup.com.br/webhooks/mercado-pago`.
+4. Use `Sandbox` para testes.
+
+### Fluxo de ativação Premium
+
+1. O usuário inicia o checkout em `/plans`.
+2. O backend cria uma `Subscription` com status `PENDING`.
+3. O plano do tenant só muda para `PREMIUM` após confirmação do webhook.
+4. Eventos recebidos ficam registrados em `PaymentEventLog` e visíveis em `Logs de Pagamento`.
+
+### Testes em sandbox
+
+- Stripe: use chaves de teste e um webhook secret do ambiente de testes.
+- Mercado Pago: use credenciais `TEST`/sandbox e confirme o webhook configurado.
 
 ## Rotas administrativas
 
@@ -314,6 +352,16 @@ Todas as rotas abaixo exigem autenticação e permissão global `SUPER_ADMIN`.
 - `GET /admin/plans`
 - `GET /admin/plans/:plan`
 - `PATCH /admin/plans/:plan`
+
+### Pagamentos
+
+- `GET /admin/payment-settings`
+- `PATCH /admin/payment-settings/stripe`
+- `PATCH /admin/payment-settings/mercado-pago`
+- `PATCH /admin/payment-settings/plans`
+- `POST /admin/payment-settings/stripe/test`
+- `POST /admin/payment-settings/mercado-pago/test`
+- `GET /admin/payment-events`
 
 ### Feedbacks
 
@@ -360,6 +408,16 @@ cd backend && npm run create:user -- \
 | GET | `/dashboard/top-expenses` | Top despesas do mês |
 | GET | `/dashboard/budget-status` | Status dos orçamentos |
 | GET | `/dashboard/goals-progress` | Progresso das metas |
+
+### Billing
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| GET | `/billing/current` | Assinatura atual do tenant |
+| GET | `/billing/plans` | Catálogo de planos Premium e gateways ativos |
+| POST | `/billing/checkout` | Inicia checkout Premium |
+| POST | `/billing/customer-portal` | Abre portal do cliente (Stripe) |
+| POST | `/webhooks/stripe` | Recebe eventos do Stripe |
+| POST | `/webhooks/mercado-pago` | Recebe eventos do Mercado Pago |
 
 ### Accounts, Categories, Transactions, Credit Cards, Budgets, Goals
 Cada módulo oferece endpoints RESTful:
@@ -488,6 +546,7 @@ pm2 startup                                       # Auto-start com o sistema
 - **Use os `.env.example` como referência** — `backend/.env.example` e `frontend/.env.example`
 - **`FRONTEND_URL` em produção** deve apontar para o domínio real do frontend (ex: `https://app.financeai.orderup.com.br`)
 - **`VITE_API_URL` em produção** deve apontar para o domínio real da API (ex: `https://back.financeai.orderup.com.br`)
+- **`PAYMENT_SECRET_ENCRYPTION_KEY`** deve ser único por ambiente e nunca compartilhado no frontend
 - **Cookies em produção** usam `secure: true` e `sameSite: 'none'` porque frontend e backend estão em subdomínios diferentes
 - **PostgreSQL não deve ficar exposto publicamente** — mantenha bind apenas em localhost
 - **Firewall**: apenas portas 80 e 443 devem estar abertas publicamente
