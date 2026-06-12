@@ -28,7 +28,7 @@ const FILTER_OPTIONS = [
   { value: 'INCOME', label: 'Receitas' },
   { value: 'EXPENSE', label: 'Despesas' },
   { value: 'PENDING', label: 'Pendentes' },
-  { value: 'RECURRENCE_PREVIEW', label: 'Previsoes' }
+  { value: 'RECURRENCE_PREVIEW', label: 'Previsões' }
 ];
 
 function getMonthName(year, month) {
@@ -55,8 +55,8 @@ function getStatusLabel(status) {
 }
 
 function getKindLabel(kind) {
-  if (kind === 'TRANSACTION') return 'Transacao';
-  if (kind === 'RECURRENCE_PREVIEW') return 'Previsao';
+  if (kind === 'TRANSACTION') return 'Lançamento';
+  if (kind === 'RECURRENCE_PREVIEW') return 'Previsão';
   if (kind === 'CREDIT_CARD_INVOICE') return 'Fatura';
   return kind;
 }
@@ -237,8 +237,8 @@ export default function FinancialCalendarPage() {
     <AppLayout>
       <div className="space-y-8 pb-8">
         <PageHeader
-          title="Calendario financeiro"
-          description="Visualize receitas, despesas e previsoes organizadas por dia."
+          title="Calendário financeiro"
+          description="Visualize receitas, despesas e previsões organizadas por dia."
         />
 
         <div className="flex flex-wrap items-center justify-between gap-4">

@@ -346,6 +346,7 @@ model Transaction {
   installment_number Int?
   installment_total  Int?
   recurrence_id      String?            @db.Uuid
+  recurrence_occurrence_date DateTime?  @map("recurrence_occurrence_date")
   created_at         DateTime           @default(now())
   updated_at         DateTime           @updatedAt
   deleted_at         DateTime?

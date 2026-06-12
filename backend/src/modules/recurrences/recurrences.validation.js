@@ -108,7 +108,7 @@ const recurrenceBodyFields = {
   type: z.enum(RECURRENCE_TYPES, { message: 'Tipo deve ser RECEITA ou DESPESA' }),
   frequency: z.enum(RECURRENCE_FREQUENCIES, { message: 'Frequencia invalida' }),
   startDate: z.preprocess(normalizeOptionalDate, z.date({ message: 'Data inicial invalida' })),
-  nextRunDate: z.preprocess(normalizeOptionalDate, z.date({ message: 'Data da proxima geracao invalida' })),
+  nextRunDate: z.preprocess(normalizeOptionalDate, z.date({ message: 'Data da proxima geracao invalida' }).optional()),
   endDate: z.preprocess(normalizeOptionalDate, z.date({ message: 'Data final invalida' }).nullable().optional()),
   accountId: z.preprocess(normalizeNullableUuid, z.string().uuid('Conta invalida').nullable().optional()),
   creditCardId: z.preprocess(normalizeNullableUuid, z.string().uuid('Cartao invalido').nullable().optional()),

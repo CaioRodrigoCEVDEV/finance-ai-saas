@@ -343,6 +343,12 @@ function RecurrencesPage() {
     .filter((r) => r.type === 'EXPENSE' && r.status === 'ACTIVE')
     .reduce((sum, r) => sum + getMonthlyEstimate(r), 0);
 
+  const handleFormSubmit = async (payload) => {
+    const sanitized = { ...payload };
+    delete sanitized.endDateEnabled;
+    await handleSubmit(sanitized);
+  };
+
   return (
     <AppLayout>
       <div className="space-y-8 pb-8">
@@ -482,7 +488,7 @@ function RecurrencesPage() {
             loading={saving}
             serverError={formError}
             onCancel={handleCancelForm}
-            onSubmit={handleSubmit}
+              onSubmit={handleFormSubmit}
           />
         </Modal>
 
@@ -529,7 +535,7 @@ function RecurrenceMobileCard({ recurrence, isReadonly, loading, onGenerate, onE
           <p className="font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyBRL(recurrence.amount)}</p>
         </div>
         <div>
-          <span className="text-slate-500 dark:text-slate-400">Próxima</span>
+          <span className="text-slate-500 dark:text-slate-400">Próximo lançamento</span>
           <p className="font-semibold text-slate-900 dark:text-slate-100">{formatDateBR(recurrence.nextRunDate)}</p>
         </div>
         <div>
@@ -537,17 +543,19 @@ function RecurrenceMobileCard({ recurrence, isReadonly, loading, onGenerate, onE
           <div className="mt-1"><Badge variant={getStatusVariant(recurrence.status)}>{formatRecurrenceStatus(recurrence.status)}</Badge></div>
         </div>
         <div>
-          <span className="text-slate-500 dark:text-slate-400">Conta/Cartao</span>
+          <span className="text-slate-500 dark:text-slate-400">Conta/Cartão</span>
           <p className="text-slate-900 dark:text-slate-100 truncate">{recurrence.creditCard?.name || recurrence.account?.name || '--'}</p>
         </div>
       </div>
 
-      {recurrence.lastRunDate && (
-        <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">Ultimo lancamento: {formatDateBR(recurrence.lastRunDate)}</p>
+      {recurrence.startDate && (
+        <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">Início: {formatDateBR(recurrence.startDate)}</p>
       )}
-
-      {recurrence.category && (
-        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Categoria: {recurrence.category.name}</p>
+      {recurrence.lastRunDate && (
+        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Último lançamento: {formatDateBR(recurrence.lastRunDate)}</p>
+      )}
+      {recurrence.endDate && (
+        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Término: {formatDateBR(recurrence.endDate)}</p>
       )}
 
       {!isReadonly && (
@@ -601,10 +609,10 @@ function RecurrenceTable({ recurrences, isReadonly, loading, onGenerate, onEdit,
               <th className="w-[85px] px-3 py-3">Tipo</th>
               <th className="w-[105px] px-3 py-3 text-right whitespace-nowrap">Valor</th>
               <th className="w-[90px] px-3 py-3">Frequência</th>
-              <th className="w-[95px] px-3 py-3">Próxima</th>
+              <th className="w-[95px] px-3 py-3">Próximo</th>
               <th className="w-[80px] px-3 py-3">Status</th>
-              <th className="w-[110px] px-3 py-3">Conta/Cartao</th>
-              <th className="w-[200px] px-3 py-3 text-right">Acoes</th>
+              <th className="w-[110px] px-3 py-3">Conta/Cartão</th>
+              <th className="w-[200px] px-3 py-3 text-right">Ações</th>
             </tr>
           </thead>
 
@@ -617,9 +625,17 @@ function RecurrenceTable({ recurrences, isReadonly, loading, onGenerate, onEdit,
                   <td className="px-3 py-3">
                     <div className="min-w-0">
                       <p className="font-semibold text-slate-900 dark:text-slate-100 break-words">{recurrence.description}</p>
-                      {recurrence.category ? (
-                        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{recurrence.category.name}</p>
-                      ) : null}
+                      <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-slate-500 dark:text-slate-400">
+                        {recurrence.category ? (
+                          <span>{recurrence.category.name}</span>
+                        ) : null}
+                        {recurrence.startDate && (
+                          <span>desde {formatDateBR(recurrence.startDate)}</span>
+                        )}
+                        {recurrence.endDate && (
+                          <span>até {formatDateBR(recurrence.endDate)}</span>
+                        )}
+                      </div>
                     </div>
                   </td>
                   <td className="px-3 py-3 whitespace-nowrap">

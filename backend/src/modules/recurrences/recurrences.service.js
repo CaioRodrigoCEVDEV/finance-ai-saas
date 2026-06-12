@@ -94,6 +94,9 @@ function toTransactionResponse(transaction) {
     source: transaction.source,
     notes: transaction.notes,
     recurrenceId: transaction.recurrence_id,
+    recurrenceOccurrenceDate: transaction.recurrence_occurrence_date
+      ? transaction.recurrence_occurrence_date.toISOString()
+      : null,
     category: transaction.category ? {
       id: transaction.category.id,
       name: transaction.category.name,
@@ -320,6 +323,9 @@ async function getRecurrenceById(recurrenceId, tenantId) {
 async function createRecurrence(data, tenantId, userId) {
   await validateRelations(data, tenantId);
 
+  const startDate = data.startDate;
+  const nextRunDate = data.nextRunDate || startDate;
+
   const recurrence = await prisma.recurrence.create({
     data: {
       tenantId,
@@ -331,9 +337,9 @@ async function createRecurrence(data, tenantId, userId) {
       amount: toDecimalString(data.amount),
       frequency: data.frequency,
       status: 'ACTIVE',
-      startDate: data.startDate,
+      startDate,
       endDate: data.endDate || null,
-      nextRunDate: data.nextRunDate,
+      nextRunDate,
       paymentMethod: data.paymentMethod || null,
       notes: data.notes || null,
       autoGenerate: data.autoGenerate || false,
@@ -444,20 +450,14 @@ async function generateTransaction(recurrenceId, tenantId, userId) {
     throw new AppError('A data da proxima geracao ultrapassa a data final da recorrencia', 400);
   }
 
-  const nextRunDate = new Date(existing.nextRunDate);
-  nextRunDate.setHours(0, 0, 0, 0);
-  const nextRunEnd = new Date(nextRunDate);
-  nextRunEnd.setHours(23, 59, 59, 999);
+  const occurrenceDate = getStartOfDay(existing.nextRunDate);
 
   const existingTransaction = await prisma.transaction.findFirst({
     where: {
       recurrence_id: existing.id,
       tenant_id: tenantId,
       deleted_at: null,
-      transaction_date: {
-        gte: nextRunDate,
-        lte: nextRunEnd
-      }
+      recurrence_occurrence_date: occurrenceDate
     }
   });
 
@@ -480,7 +480,8 @@ async function generateTransaction(recurrenceId, tenantId, userId) {
       payment_method: existing.paymentMethod || 'OTHER',
       notes: existing.notes || null,
       source: 'RECURRENCE',
-      recurrence_id: existing.id
+      recurrence_id: existing.id,
+      recurrence_occurrence_date: occurrenceDate
     },
     include: getTransactionInclude()
   });

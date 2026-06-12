@@ -38,6 +38,9 @@ function getTransactionInclude() {
     },
     credit_card: {
       select: { id: true, name: true, brand: true, closing_day: true, due_day: true }
+    },
+    recurrence: {
+      select: { id: true }
     }
   };
 }
@@ -54,14 +57,6 @@ function getRecurrenceInclude() {
       select: { id: true, name: true, color: true, type: true }
     }
   };
-}
-
-function isSameDay(date1, date2) {
-  const d1 = new Date(date1);
-  const d2 = new Date(date2);
-  return d1.getUTCFullYear() === d2.getUTCFullYear()
-    && d1.getUTCMonth() === d2.getUTCMonth()
-    && d1.getUTCDate() === d2.getUTCDate();
 }
 
 function buildEventFromTransaction(transaction) {
@@ -134,7 +129,11 @@ function getRecurringDatesInMonth(recurrence, year, month) {
 
   const monthEndTime = monthEnd.getTime();
 
+  const MAX_ITERATIONS = 1000;
+  let iterations = 0;
+
   while (currentDate.getTime() <= monthEndTime) {
+    if (iterations++ > MAX_ITERATIONS) break;
     if (endDate && currentDate.getTime() > endDate.getTime()) break;
 
     if (currentDate.getTime() >= monthStart.getTime() && currentDate.getTime() <= monthEndTime) {
@@ -146,14 +145,6 @@ function getRecurringDatesInMonth(recurrence, year, month) {
   }
 
   return dates;
-}
-
-const FREQUENCIES_AT_MOST_ONE_PER_MONTH = [
-  'MONTHLY', 'BIMONTHLY', 'QUARTERLY', 'SEMIANNUAL', 'YEARLY'
-];
-
-function getMonthKey(year, month) {
-  return `${year}-${String(month).padStart(2, '0')}`;
 }
 
 async function buildFinancialCalendar({ tenantId, year, month }) {
@@ -183,30 +174,17 @@ async function buildFinancialCalendar({ tenantId, year, month }) {
     include: getRecurrenceInclude()
   });
 
-  const transactionDatesByDay = new Map();
-  const transactionRecurrenceIdsByDay = new Map();
-  const currentMonthKey = getMonthKey(year, month);
-  const generatedRecurrenceIdsThisMonth = new Set();
+  const generatedOccurrenceIds = new Map();
 
   for (const tx of transactions) {
-    const dayKey = tx.transaction_date.toISOString().split('T')[0];
+    if (!tx.recurrence_id) continue;
 
-    if (!transactionDatesByDay.has(dayKey)) {
-      transactionDatesByDay.set(dayKey, []);
-    }
-    transactionDatesByDay.get(dayKey).push(tx);
+    const occurrenceKey = tx.recurrence_occurrence_date
+      ? tx.recurrence_occurrence_date.toISOString().split('T')[0]
+      : tx.transaction_date.toISOString().split('T')[0];
 
-    if (tx.recurrence_id) {
-      if (!transactionRecurrenceIdsByDay.has(dayKey)) {
-        transactionRecurrenceIdsByDay.set(dayKey, new Set());
-      }
-      transactionRecurrenceIdsByDay.get(dayKey).add(tx.recurrence_id);
-
-      const txMonthKey = tx.transaction_date.toISOString().substring(0, 7);
-      if (txMonthKey === currentMonthKey) {
-        generatedRecurrenceIdsThisMonth.add(tx.recurrence_id);
-      }
-    }
+    const compositeKey = `${tx.recurrence_id}::${occurrenceKey}`;
+    generatedOccurrenceIds.set(compositeKey, true);
   }
 
   const eventsByDay = new Map();
@@ -229,18 +207,11 @@ async function buildFinancialCalendar({ tenantId, year, month }) {
   }
 
   for (const recurrence of recurrences) {
-    if (
-      FREQUENCIES_AT_MOST_ONE_PER_MONTH.includes(recurrence.frequency) &&
-      generatedRecurrenceIdsThisMonth.has(recurrence.id)
-    ) {
-      continue;
-    }
-
     const recurringDates = getRecurringDatesInMonth(recurrence, year, month);
 
     for (const dateStr of recurringDates) {
-      const existingTxSet = transactionRecurrenceIdsByDay.get(dateStr);
-      if (existingTxSet && existingTxSet.has(recurrence.id)) {
+      const compositeKey = `${recurrence.id}::${dateStr}`;
+      if (generatedOccurrenceIds.has(compositeKey)) {
         continue;
       }
 
