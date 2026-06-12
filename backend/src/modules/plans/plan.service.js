@@ -8,12 +8,14 @@ async function getTenantPlan(tenantId) {
     select: { plan: true }
   });
 
-  return tenant?.plan || 'FREE';
+  return String(tenant?.plan || 'FREE').toUpperCase();
 }
 
 async function assertCanCreateAccount(tenantId) {
   const plan = await getTenantPlan(tenantId);
   const limits = getPlanLimits(plan);
+
+  console.log('[PLAN_LIMIT]', { tenantId, plan, maxAccounts: limits.maxAccounts });
 
   if (limits.maxAccounts === null) {
     return;
@@ -26,6 +28,8 @@ async function assertCanCreateAccount(tenantId) {
       deleted_at: null
     }
   });
+
+  console.log('[PLAN_LIMIT]', { tenantId, plan, totalAccounts: count, maxAccounts: limits.maxAccounts });
 
   if (count >= limits.maxAccounts) {
     throw new AppError(
@@ -40,6 +44,8 @@ async function assertCanCreateCreditCard(tenantId) {
   const plan = await getTenantPlan(tenantId);
   const limits = getPlanLimits(plan);
 
+  console.log('[PLAN_LIMIT]', { tenantId, plan, maxCreditCards: limits.maxCreditCards });
+
   if (limits.maxCreditCards === null) {
     return;
   }
@@ -51,6 +57,8 @@ async function assertCanCreateCreditCard(tenantId) {
       deleted_at: null
     }
   });
+
+  console.log('[PLAN_LIMIT]', { tenantId, plan, totalCreditCards: count, maxCreditCards: limits.maxCreditCards });
 
   if (count >= limits.maxCreditCards) {
     throw new AppError(

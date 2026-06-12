@@ -100,10 +100,10 @@ async function main() {
       name: 'Finance AI Demo',
       email: 'demo@financeai.com',
       status: 'ACTIVE',
-      plan: 'PREMIUM',
+      plan: 'FREE',
       deleted_at: null
     },
-    { name: 'Finance AI Demo', status: 'ACTIVE', plan: 'PREMIUM', deleted_at: null }
+    { name: 'Finance AI Demo', status: 'ACTIVE', plan: 'FREE', deleted_at: null }
   );
 
   const demoUser = await prisma.user.upsert({

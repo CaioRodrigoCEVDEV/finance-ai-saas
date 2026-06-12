@@ -124,7 +124,7 @@ function buildFormValues(account) {
   };
 }
 
-function AccountForm({ account, loading, onCancel, onSubmit }) {
+function AccountForm({ account, loading, onCancel, onSubmit, serverError }) {
   const [formValues, setFormValues] = useState(initialFormValues);
   const [selectedBank, setSelectedBank] = useState('');
   const [customBankName, setCustomBankName] = useState('');
@@ -294,9 +294,9 @@ function AccountForm({ account, loading, onCancel, onSubmit }) {
           Conta ativa
         </label>
 
-        {error ? (
-          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-            {error}
+        {error || serverError ? (
+          <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-300">
+            {error || serverError}
           </div>
         ) : null}
 

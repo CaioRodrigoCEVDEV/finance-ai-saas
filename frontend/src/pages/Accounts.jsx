@@ -24,6 +24,7 @@ function Accounts() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [formError, setFormError] = useState('');
   const [formVisible, setFormVisible] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState(null);
 
@@ -52,6 +53,7 @@ function Accounts() {
     setSelectedAccount(null);
     setFormVisible(true);
     setError('');
+    setFormError('');
   }
 
   async function handleEdit(account) {
@@ -72,6 +74,7 @@ function Accounts() {
     try {
       setSaving(true);
       setError('');
+      setFormError('');
 
       if (selectedAccount) {
         await updateAccount(selectedAccount.id, payload);
@@ -86,7 +89,7 @@ function Accounts() {
       const code = requestError.response?.data?.code;
 
       if (code === 'PLAN_LIMIT_REACHED') {
-        setError(
+        setFormError(
           <>
             {requestError.response?.data?.message || 'Limite do plano atingido.'}
             {' '}
@@ -94,7 +97,7 @@ function Accounts() {
           </>
         );
       } else {
-        setError(requestError.response?.data?.message || 'Não foi possível salvar a conta.');
+        setFormError(requestError.response?.data?.message || 'Não foi possível salvar a conta.');
       }
     } finally {
       setSaving(false);
@@ -129,6 +132,7 @@ function Accounts() {
   function handleCancelForm() {
     setFormVisible(false);
     setSelectedAccount(null);
+    setFormError('');
   }
 
   return (
@@ -190,7 +194,7 @@ function Accounts() {
         </div>
 
         <Modal isOpen={formVisible} title={selectedAccount ? 'Editar conta' : 'Nova conta'} onClose={handleCancelForm}>
-          <AccountForm account={selectedAccount} loading={saving} onCancel={handleCancelForm} onSubmit={handleSubmit} />
+          <AccountForm account={selectedAccount} loading={saving} serverError={formError} onCancel={handleCancelForm} onSubmit={handleSubmit} />
         </Modal>
       </div>
     </AppLayout>
