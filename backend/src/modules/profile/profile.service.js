@@ -131,7 +131,17 @@ async function updateAvatar(userId, file) {
     throw new AppError('Usuário não encontrado', 404);
   }
 
-  const filename = `user-${userId}.webp`;
+  if (user.avatar_url) {
+    const oldFilename = path.basename(user.avatar_url);
+    const oldFilePath = path.join(AVATARS_DIR, oldFilename);
+    try {
+      await fs.unlink(oldFilePath);
+    } catch (_error) {
+      // arquivo pode não existir mais
+    }
+  }
+
+  const filename = `user-${userId}-${Date.now()}.webp`;
   const filePath = path.join(AVATARS_DIR, filename);
 
   await sharp(file.buffer)
