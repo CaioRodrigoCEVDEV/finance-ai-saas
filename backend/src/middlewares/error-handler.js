@@ -83,6 +83,11 @@ function errorHandler(error, request, _response, next) {
     : buildDevError(error);
 
   body.statusCode = statusCode;
+
+  if (error.code) {
+    body.code = error.code;
+  }
+
   return _response.status(statusCode).json(body);
 }
 

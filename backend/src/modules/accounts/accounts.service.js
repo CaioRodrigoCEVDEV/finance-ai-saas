@@ -1,5 +1,6 @@
 const prisma = require('../../config/prisma');
 const AppError = require('../../utils/app-error');
+const planService = require('../plans/plan.service');
 
 function toDecimalString(value) {
   return Number(value || 0).toFixed(2);
@@ -111,6 +112,8 @@ async function getAccountById(accountId, tenantId) {
 }
 
 async function createAccount(data, tenantId, userId) {
+  await planService.assertCanCreateAccount(tenantId);
+
   const initialBalance = data.initialBalance ?? data.currentBalance ?? 0;
   const currentBalance = data.currentBalance ?? initialBalance;
 

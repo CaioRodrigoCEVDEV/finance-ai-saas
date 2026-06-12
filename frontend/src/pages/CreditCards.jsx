@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { AlertCircle, CreditCard as CreditCardIcon, Plus } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 import CreditCardCard from '../components/creditCards/CreditCardCard';
 import CreditCardForm from '../components/creditCards/CreditCardForm';
@@ -106,7 +107,19 @@ function CreditCards() {
       setSelectedCreditCard(null);
       await loadCreditCards();
     } catch (requestError) {
-      setFormError(requestError.response?.data?.message || 'Não foi possível salvar o cartão.');
+      const code = requestError.response?.data?.code;
+
+      if (code === 'PLAN_LIMIT_REACHED') {
+        setFormError(
+          <>
+            {requestError.response?.data?.message || 'Limite do plano atingido.'}
+            {' '}
+            <Link to="/plans" className="font-semibold text-emerald-600 underline hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300">Ver planos</Link>
+          </>
+        );
+      } else {
+        setFormError(requestError.response?.data?.message || 'Não foi possível salvar o cartão.');
+      }
     } finally {
       setSaving(false);
     }

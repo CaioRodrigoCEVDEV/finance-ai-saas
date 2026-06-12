@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useState } from 'react';
 
 import * as authService from '../services/authService';
 
@@ -7,10 +7,13 @@ const AuthContext = createContext(null);
 function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [tenant, setTenant] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [initialized, setInitialized] = useState(false);
 
-  async function loadUser() {
+  const loadUser = useCallback(async () => {
     try {
+      setLoading(true);
+
       const response = await authService.getMe();
 
       setUser(response.user);
@@ -21,13 +24,23 @@ function AuthProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
+
+  const ensureAuth = useCallback(async () => {
+    if (initialized) {
+      return;
+    }
+
+    await loadUser();
+    setInitialized(true);
+  }, [initialized, loadUser]);
 
   async function login(email, password) {
     const response = await authService.login(email, password);
 
     setUser(response.user);
     setTenant(response.tenant);
+    setInitialized(true);
 
     return response;
   }
@@ -38,6 +51,7 @@ function AuthProvider({ children }) {
     } finally {
       setUser(null);
       setTenant(null);
+      setInitialized(false);
     }
   }
 
@@ -45,19 +59,17 @@ function AuthProvider({ children }) {
     setTenant((prev) => (prev ? { ...prev, ...updates } : prev));
   }
 
-  useEffect(() => {
-    loadUser();
-  }, []);
-
   return (
     <AuthContext.Provider
       value={{
         login,
         logout,
         loadUser,
+        ensureAuth,
         updateTenant,
         user,
         tenant,
+        initialized,
         isAuthenticated: Boolean(user && tenant),
         loading
       }}

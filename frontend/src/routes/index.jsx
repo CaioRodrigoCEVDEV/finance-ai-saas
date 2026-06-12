@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { useEffect } from 'react';
 
 import { useAuth } from '../contexts/AuthContext';
 import Accounts from '../pages/Accounts';
@@ -20,11 +21,16 @@ import RecurrencesPage from '../pages/RecurrencesPage';
 import FinancialCalendarPage from '../pages/FinancialCalendarPage';
 import InvitesPage from '../pages/InvitesPage';
 import InvoicesPage from '../pages/InvoicesPage';
+import Plans from '../pages/Plans';
 
 function ProtectedRoute({ children }) {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, initialized, ensureAuth } = useAuth();
 
-  if (loading) {
+  useEffect(() => {
+    ensureAuth();
+  }, [ensureAuth]);
+
+  if (!initialized || loading) {
     return null;
   }
 
@@ -36,11 +42,7 @@ function ProtectedRoute({ children }) {
 }
 
 function GuestRoute({ children }) {
-  const { isAuthenticated, loading } = useAuth();
-
-  if (loading) {
-    return null;
-  }
+  const { isAuthenticated } = useAuth();
 
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
@@ -195,6 +197,14 @@ function AppRoutes() {
           element={(
             <ProtectedRoute>
               <InvoicesPage />
+            </ProtectedRoute>
+          )}
+        />
+        <Route
+          path="/plans"
+          element={(
+            <ProtectedRoute>
+              <Plans />
             </ProtectedRoute>
           )}
         />

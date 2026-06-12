@@ -4,6 +4,7 @@ import {
   Bell,
   CalendarDays,
   CreditCard,
+  Crown,
   FileUp,
   FolderKanban,
   Landmark,
@@ -37,7 +38,8 @@ const navigationItems = [
   { to: '/notifications', label: 'Notificacoes', icon: Bell },
   { to: '/reports', label: 'Relatórios', icon: BarChart3 },
   { to: '/imports', label: 'Importar', icon: FileUp },
-  { to: '/invites', label: 'Convites', icon: Share2 }
+  { to: '/invites', label: 'Convites', icon: Share2 },
+  { to: '/plans', label: 'Planos', icon: Crown }
 ];
 
 function Sidebar({ mobile = false, onNavigate }) {

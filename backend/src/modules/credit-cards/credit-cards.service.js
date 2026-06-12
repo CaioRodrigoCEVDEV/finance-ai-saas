@@ -1,5 +1,6 @@
 const prisma = require('../../config/prisma');
 const AppError = require('../../utils/app-error');
+const planService = require('../plans/plan.service');
 
 function toDecimalString(value) {
   return Number(value || 0).toFixed(2);
@@ -185,6 +186,7 @@ async function getCreditCardById(creditCardId, tenantId) {
 }
 
 async function createCreditCard(data, tenantId, userId) {
+  await planService.assertCanCreateCreditCard(tenantId);
   await validateAccount(data.accountId, tenantId);
 
   const creditCard = await prisma.creditCard.create({

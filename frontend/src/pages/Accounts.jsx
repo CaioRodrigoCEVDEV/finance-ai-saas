@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { AlertCircle, Plus, WalletCards } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 import AccountCard from '../components/accounts/AccountCard';
 import AccountForm from '../components/accounts/AccountForm';
@@ -82,7 +83,19 @@ function Accounts() {
       setSelectedAccount(null);
       await loadAccounts();
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Não foi possível salvar a conta.');
+      const code = requestError.response?.data?.code;
+
+      if (code === 'PLAN_LIMIT_REACHED') {
+        setError(
+          <>
+            {requestError.response?.data?.message || 'Limite do plano atingido.'}
+            {' '}
+            <Link to="/plans" className="font-semibold text-emerald-600 underline hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300">Ver planos</Link>
+          </>
+        );
+      } else {
+        setError(requestError.response?.data?.message || 'Não foi possível salvar a conta.');
+      }
     } finally {
       setSaving(false);
     }
