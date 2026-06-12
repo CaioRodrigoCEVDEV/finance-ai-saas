@@ -359,22 +359,23 @@ function ProfilePage() {
               </div>
               <div className="flex flex-col items-center gap-2 sm:items-start">
                 <p className="text-base font-semibold text-slate-900 dark:text-slate-100">{profile?.user?.name}</p>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2 w-full">
                   <Button
                     type="button"
                     variant="secondary"
                     size="sm"
+                    className="w-full sm:w-auto whitespace-nowrap"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={avatarUploading}
                   >
                     {avatarUploading ? (
                       <>
-                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
                         Enviando...
                       </>
                     ) : (
                       <>
-                        <Camera className="mr-1.5 h-3.5 w-3.5" />
+                        <Camera className="h-3.5 w-3.5" />
                         Alterar foto
                       </>
                     )}
@@ -384,10 +385,11 @@ function ProfilePage() {
                       type="button"
                       variant="secondary"
                       size="sm"
+                      className="w-full sm:w-auto whitespace-nowrap"
                       onClick={handleRemoveAvatar}
                       disabled={avatarUploading}
                     >
-                      <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                      <Trash2 className="h-3.5 w-3.5" />
                       Remover foto
                     </Button>
                   ) : null}
