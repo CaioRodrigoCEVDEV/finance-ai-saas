@@ -23,8 +23,8 @@ function CreditCardReport({ data, loading }) {
     return (
       <EmptyState
         icon={CreditCard}
-        title="Nenhum cartao encontrado"
-        description="Ajuste os filtros para visualizar dados por cartao de credito."
+        title="Nenhum cartão encontrado"
+        description="Ajuste os filtros para visualizar dados por cartão de crédito."
       />
     );
   }

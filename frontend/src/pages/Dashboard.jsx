@@ -95,8 +95,8 @@ function Dashboard() {
 
         setError(
           requestError.response?.status === 401
-            ? 'Sua sessao expirou. Entre novamente para continuar.'
-            : 'Nao foi possivel carregar o dashboard agora. Verifique se a API backend esta ativa e tente novamente.'
+            ? 'Sua sessão expirou. Entre novamente para continuar.'
+            : 'Não foi possível carregar o dashboard agora. Verifique se a API backend está ativa e tente novamente.'
         );
       } finally {
         if (isMounted) setLoading(false);

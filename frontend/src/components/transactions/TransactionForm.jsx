@@ -20,8 +20,8 @@ const STATUS_OPTIONS = [
 
 const PAYMENT_METHOD_OPTIONS = [
   { value: 'PIX', label: 'Pix' },
-  { value: 'DEBIT_CARD', label: 'Cartao de debito' },
-  { value: 'CREDIT_CARD', label: 'Cartao de credito' },
+  { value: 'DEBIT_CARD', label: 'Cartao de débito' },
+  { value: 'CREDIT_CARD', label: 'Cartao de crédito' },
   { value: 'CASH', label: 'Dinheiro' },
   { value: 'BANK_SLIP', label: 'Boleto' },
   { value: 'TRANSFER', label: 'Transferencia' },
@@ -111,7 +111,7 @@ function TransactionForm({ transaction, accounts, categories, creditCards, loadi
     event.preventDefault();
 
     if (formValues.description.trim().length < 2) {
-      setError('Informe uma descricao com pelo menos 2 caracteres.');
+      setError('Informe uma descrição com pelo menos 2 caracteres.');
       return;
     }
 
@@ -123,17 +123,17 @@ function TransactionForm({ transaction, accounts, categories, creditCards, loadi
     }
 
     if (!formValues.transactionDate) {
-      setError('Informe a data da transacao.');
+      setError('Informe a data da transação.');
       return;
     }
 
     if (isCreditCardPayment && !formValues.creditCardId && !formValues.accountId) {
-      setError('Informe um cartao de credito ou uma conta para pagamentos no credito.');
+      setError('Informe um cartão de crédito ou uma conta para pagamentos no crédito.');
       return;
     }
 
     if (!isCreditCardPayment && !formValues.accountId) {
-      setError('Informe a conta da transacao.');
+      setError('Informe a conta da transação.');
       return;
     }
 
@@ -176,9 +176,9 @@ function TransactionForm({ transaction, accounts, categories, creditCards, loadi
   return (
     <section>
       <div>
-        <p className="text-sm uppercase tracking-[0.28em] text-emerald-600 dark:text-emerald-400">{transaction ? 'Editar transacao' : 'Nova transacao'}</p>
+        <p className="text-sm uppercase tracking-[0.28em] text-emerald-600 dark:text-emerald-400">{transaction ? 'Editar transação' : 'Nova transação'}</p>
         <h2 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">
-          {transaction ? 'Atualize os dados da transacao' : 'Cadastre uma nova movimentacao financeira'}
+          {transaction ? 'Atualize os dados da transação' : 'Cadastre uma nova movimentacao financeira'}
         </h2>
       </div>
 
@@ -226,17 +226,17 @@ function TransactionForm({ transaction, accounts, categories, creditCards, loadi
                 <option key={account.id} value={account.id}>{account.name}</option>
               ))}
             </Select>
-            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">Obrigatoria para pagamentos fora do credito.</p>
+            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">Obrigatoria para pagamentos fora do crédito.</p>
           </div>
 
           <div className={cn('rounded-[24px] border p-4 transition', isCreditCardPayment ? 'border-emerald-200 bg-emerald-50/70 dark:border-emerald-800 dark:bg-emerald-900/30' : 'border-slate-200 bg-slate-50 dark:border-slate-600 dark:bg-slate-800/50')}>
-            <Select label="Cartao de credito" name="creditCardId" value={formValues.creditCardId} onChange={handleChange} disabled={!creditCards.length}>
-              <option value="">{creditCards.length ? 'Selecione um cartao' : 'Nenhum cartao disponivel'}</option>
+            <Select label="Cartao de crédito" name="creditCardId" value={formValues.creditCardId} onChange={handleChange} disabled={!creditCards.length}>
+              <option value="">{creditCards.length ? 'Selecione um cartão' : 'Nenhum cartão disponivel'}</option>
               {creditCards.map((creditCard) => (
                 <option key={creditCard.id} value={creditCard.id}>{creditCard.name}</option>
               ))}
             </Select>
-            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">Destacado quando o metodo for cartao de credito.</p>
+            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">Destacado quando o metodo for cartão de crédito.</p>
           </div>
         </div>
 
@@ -248,7 +248,7 @@ function TransactionForm({ transaction, accounts, categories, creditCards, loadi
             value={formValues.notes}
             onChange={handleChange}
             className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30"
-            placeholder="Detalhes adicionais da transacao"
+            placeholder="Detalhes adicionais da transação"
           />
         </label>
 
@@ -279,7 +279,7 @@ function TransactionForm({ transaction, accounts, categories, creditCards, loadi
 
         <div className="flex flex-wrap gap-3">
           <Button type="submit" disabled={loading}>
-            {loading ? 'Salvando...' : transaction ? 'Salvar alteracoes' : 'Criar transacao'}
+            {loading ? 'Salvando...' : transaction ? 'Salvar alterações' : 'Criar transação'}
           </Button>
           <Button type="button" variant="secondary" onClick={onCancel}>Cancelar</Button>
         </div>

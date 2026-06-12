@@ -49,7 +49,7 @@ function ImportPreviewTable({
             onClick={onConfirm}
             disabled={validTransactions.length === 0 || loading}
           >
-            {loading ? 'Confirmando...' : 'Confirmar importacao'}
+            {loading ? 'Confirmando...' : 'Confirmar importação'}
           </Button>
         </div>
 
@@ -69,12 +69,12 @@ function ImportPreviewTable({
             <thead>
               <tr className="border-b border-slate-200 text-slate-500 dark:border-slate-700 dark:text-slate-400">
                 <th className="pb-3 pr-4 font-medium">Data</th>
-                <th className="pb-3 pr-4 font-medium">Descricao</th>
+                <th className="pb-3 pr-4 font-medium">Descrição</th>
                 <th className="pb-3 pr-4 font-medium">Valor</th>
                 <th className="pb-3 pr-4 font-medium">Tipo</th>
                 <th className="pb-3 pr-4 font-medium">Categoria</th>
                 <th className="pb-3 pr-4 font-medium">Status</th>
-                <th className="pb-3 pr-4 font-medium text-right">Acoes</th>
+                <th className="pb-3 pr-4 font-medium text-right">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
@@ -139,13 +139,13 @@ function ImportPreviewTable({
                     </select>
                     {transaction.suggestedCategoryName && !transaction.categoryId && (
                       <div className="mt-1 text-xs text-emerald-600">
-                        Sugestao: {transaction.suggestedCategoryName}
+                        Sugestão: {transaction.suggestedCategoryName}
                       </div>
                     )}
                   </td>
                   <td className="py-3 pr-4">
                     <Badge variant={transaction.isValid === false ? 'danger' : 'success'}>
-                      {transaction.isValid === false ? 'Invalido' : 'Valido'}
+                      {transaction.isValid === false ? 'Inválido' : 'Válido'}
                     </Badge>
                   </td>
                   <td className="py-3 pr-4 text-right">
@@ -165,7 +165,7 @@ function ImportPreviewTable({
 
           {transactions.length === 0 && (
             <div className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
-              Nenhuma transacao detectada no arquivo.
+              Nenhuma transação detectada no arquivo.
             </div>
           )}
         </div>

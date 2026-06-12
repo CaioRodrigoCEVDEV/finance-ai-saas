@@ -31,7 +31,7 @@ function CategorizationRuleTester() {
     <Card className="rounded-[28px] p-6">
       <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Testar regra</h3>
       <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-        Digite uma descricao de transacao para simular qual regra seria aplicada.
+        Digite uma descrição de transação para simular qual regra seria aplicada.
       </p>
 
       <div className="mt-4 flex items-start gap-3">
@@ -71,7 +71,7 @@ function CategorizationRuleTester() {
             </div>
           ) : (
             <p className="text-sm text-slate-600 dark:text-slate-400">
-              Nenhuma regra ativa corresponde a essa descricao.
+              Nenhuma regra ativa corresponde a essa descrição.
             </p>
           )}
         </div>

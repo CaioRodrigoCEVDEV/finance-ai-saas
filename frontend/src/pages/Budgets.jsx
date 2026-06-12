@@ -83,8 +83,8 @@ function Budgets() {
     } catch (requestError) {
       setError(
         requestError.response?.status === 401
-          ? 'Sua sessao expirou. Entre novamente para continuar.'
-          : 'Nao foi possivel carregar os orcamentos agora. Tente novamente em instantes.'
+          ? 'Sua sessão expirou. Entre novamente para continuar.'
+          : 'Não foi possível carregar os orçamentos agora. Tente novamente em instantes.'
       );
     } finally {
       setLoading(false);
@@ -118,7 +118,7 @@ function Budgets() {
         loadSummary(nextFilters)
       ]);
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Nao foi possivel carregar os dados da tela de orcamentos.');
+      setError(requestError.response?.data?.message || 'Não foi possível carregar os dados da tela de orçamentos.');
     }
   }
 
@@ -165,7 +165,7 @@ function Budgets() {
       setSelectedBudget(data);
       setFormVisible(true);
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Nao foi possivel carregar o orcamento para edicao.');
+      setError(requestError.response?.data?.message || 'Não foi possível carregar o orçamento para edição.');
     } finally {
       setSaving(false);
     }
@@ -190,14 +190,14 @@ function Budgets() {
         loadSummary(filters)
       ]);
     } catch (requestError) {
-      setFormError(requestError.response?.data?.message || 'Nao foi possivel salvar o orcamento.');
+      setFormError(requestError.response?.data?.message || 'Não foi possível salvar o orçamento.');
     } finally {
       setSaving(false);
     }
   }
 
   async function handleDelete(budget) {
-    const confirmed = window.confirm(`Deseja realmente excluir o orcamento "${budget.name}"?`);
+    const confirmed = window.confirm(`Deseja realmente excluir o orçamento "${budget.name}"?`);
 
     if (!confirmed) {
       return;
@@ -218,7 +218,7 @@ function Budgets() {
         loadSummary(filters)
       ]);
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Nao foi possivel excluir o orcamento.');
+      setError(requestError.response?.data?.message || 'Não foi possível excluir o orçamento.');
     } finally {
       setSaving(false);
     }
@@ -247,7 +247,7 @@ function Budgets() {
           action={(
             <Button onClick={handleCreateClick}>
               <Plus className="h-4 w-4" />
-              Novo orcamento
+              Novo orçamento
             </Button>
           )}
         />
@@ -282,7 +282,7 @@ function Budgets() {
                   <AlertCircle className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-lg font-medium text-slate-900">Falha ao processar orcamentos</p>
+                  <p className="text-lg font-medium text-slate-900">Falha ao processar orçamentos</p>
                   <p className="mt-2 text-sm text-rose-700">{error}</p>
                   <div className="mt-4">
                     <Button variant="secondary" onClick={() => loadPageData(filters)}>Tentar novamente</Button>
@@ -295,9 +295,9 @@ function Budgets() {
           {!loading && !error && budgets.length === 0 ? (
             <EmptyState
               icon={PiggyBank}
-              title="Nenhum orcamento encontrado"
-              description="Crie o primeiro orcamento do mes selecionado para acompanhar consumo por categoria com calculo baseado nas transacoes confirmadas."
-              action={<Button onClick={handleCreateClick}>Criar orcamento</Button>}
+              title="Nenhum orçamento encontrado"
+              description="Crie o primeiro orçamento do mes selecionado para acompanhar consumo por categoria com calculo baseado nas transacoes confirmadas."
+              action={<Button onClick={handleCreateClick}>Criar orçamento</Button>}
             />
           ) : null}
 
@@ -310,7 +310,7 @@ function Budgets() {
           ) : null}
         </div>
 
-        <Modal isOpen={formVisible} title={selectedBudget ? 'Editar orcamento' : 'Novo orcamento'} onClose={handleCancelForm}>
+        <Modal isOpen={formVisible} title={selectedBudget ? 'Editar orçamento' : 'Novo orçamento'} onClose={handleCancelForm}>
           <BudgetForm
             budget={selectedBudget}
             categories={categories}

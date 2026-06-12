@@ -8,7 +8,7 @@ import { formatCurrencyBRL, formatPercentage } from '../../utils/formatters';
 function getStatusLabel(status) {
   const labels = {
     SAFE: 'Seguro',
-    WARNING: 'Atencao',
+      WARNING: 'Atenção',
     EXCEEDED: 'Excedido'
   };
 
@@ -42,9 +42,9 @@ function BudgetCard({ budget, onEdit, onDelete, loading }) {
     <Card className="rounded-[30px] border-slate-200/80 bg-white/95 p-6 dark:border-slate-700 dark:bg-slate-800">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.24em] text-slate-400 dark:text-slate-500">Orcamento mensal</p>
+          <p className="text-xs uppercase tracking-[0.24em] text-slate-400 dark:text-slate-500">Orçamento mensal</p>
           <h3 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">{budget.name}</h3>
-          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{budget.category?.name || 'Categoria nao informada'}</p>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{budget.category?.name || 'Categoria não informada'}</p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -75,7 +75,7 @@ function BudgetCard({ budget, onEdit, onDelete, loading }) {
 
       <div className="mt-6">
         <div className="mb-2 flex items-center justify-between gap-3 text-sm text-slate-500 dark:text-slate-400">
-          <span>Uso do orcamento</span>
+          <span>Uso do orçamento</span>
           <span className="font-medium text-slate-800 dark:text-slate-200">{formatPercentage(budget.usedPercentage)}</span>
         </div>
         <div className="h-3 rounded-full bg-slate-100 dark:bg-slate-700">

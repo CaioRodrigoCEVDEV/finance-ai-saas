@@ -4,7 +4,7 @@ import { formatCurrencyBRL, formatDateBR } from '../../utils/formatters';
 
 function RecentTransactions({ transactions }) {
   if (!transactions.length) {
-    return <p className="text-sm text-slate-500 dark:text-slate-400">Nenhuma transacao recente encontrada.</p>;
+    return <p className="text-sm text-slate-500 dark:text-slate-400">Nenhuma transação recente encontrada.</p>;
   }
 
   return (

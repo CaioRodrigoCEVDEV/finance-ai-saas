@@ -28,7 +28,7 @@ import { cn } from '../utils/cn';
 const typeConfig = {
   BUDGET_WARNING: {
     icon: TrendingDown,
-    label: 'Orcamento',
+    label: 'Orçamento',
     color: 'text-amber-600 dark:text-amber-400',
     bg: 'bg-amber-50 dark:bg-amber-900/30',
     badge: 'warning'
@@ -42,7 +42,7 @@ const typeConfig = {
   },
   UNCATEGORIZED_TRANSACTIONS: {
     icon: Tag,
-    label: 'Categorizacao',
+    label: 'Categorização',
     color: 'text-sky-600 dark:text-sky-400',
     bg: 'bg-sky-50 dark:bg-sky-900/30',
     badge: 'info'
@@ -56,7 +56,7 @@ const typeConfig = {
   },
   CREDIT_CARD_LIMIT: {
     icon: CreditCard,
-    label: 'Cartao',
+    label: 'Cartão',
     color: 'text-violet-600 dark:text-violet-400',
     bg: 'bg-violet-50 dark:bg-violet-900/30',
     badge: 'neutral'
@@ -127,7 +127,7 @@ function NotificationCard({ notification, onRead, onDelete }) {
           variant="ghost"
           size="sm"
           onClick={() => onDelete(notification.id)}
-          aria-label="Excluir notificacao"
+          aria-label="Excluir notificação"
         >
           <Trash2 className="h-4 w-4" />
         </Button>
@@ -138,18 +138,18 @@ function NotificationCard({ notification, onRead, onDelete }) {
 
 const FILTER_OPTIONS = [
   { value: '', label: 'Todas' },
-  { value: 'false', label: 'Nao lidas' },
+   { value: 'false', label: 'Não lidas' },
   { value: 'true', label: 'Lidas' },
-  { value: 'BUDGET_WARNING', label: 'Orcamento' },
+   { value: 'BUDGET_WARNING', label: 'Orçamento' },
   { value: 'BUDGET_EXCEEDED', label: 'Excedido' },
   { value: 'UNCATEGORIZED_TRANSACTIONS', label: 'Sem categoria' },
   { value: 'GOAL_COMPLETED', label: 'Metas' },
-  { value: 'CREDIT_CARD_LIMIT', label: 'Cartoes' }
+  { value: 'CREDIT_CARD_LIMIT', label: 'Cartões' }
 ];
 
 function Notifications() {
   const [notifications, setNotifications] = useState([]);
-  const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, totalPages: 0 });
+  const [pagination, setPágination] = useState({ page: 1, limit: 20, total: 0, totalPages: 0 });
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
   const [page, setPage] = useState(1);
@@ -172,7 +172,7 @@ function Notifications() {
 
       const data = await getNotifications(params);
       setNotifications(data.data);
-      setPagination(data.pagination);
+      setPágination(data.pagination);
     } catch {
       // handled by interceptor
     } finally {
@@ -216,8 +216,8 @@ function Notifications() {
   return (
     <AppLayout>
       <PageHeader
-        title="Notificacoes"
-        description="Acompanhe seus alertas e notificacoes financeiras"
+        title="Notificações"
+        description="Acompanhe seus alertas e notificações financeiras"
         action={
           unreadCount > 0 ? (
             <Button variant="secondary" size="sm" onClick={handleMarkAllRead}>
@@ -266,8 +266,8 @@ function Notifications() {
         ) : notifications.length === 0 ? (
           <EmptyState
             icon={Bell}
-            title="Nenhuma notificacao"
-            description="Voce nao possui notificacoes no momento. Os alertas financeiros serao gerados automaticamente conforme seus dados."
+            title="Nenhuma notificação"
+            description="Você não possui notificações no momento. Os alertas financeiros serão gerados automaticamente conforme seus dados."
           />
         ) : (
           <>
@@ -293,7 +293,7 @@ function Notifications() {
                   Anterior
                 </Button>
                 <span className="text-sm text-slate-500 dark:text-slate-400">
-                  Pagina {pagination.page} de {pagination.totalPages}
+                  Página {pagination.page} de {pagination.totalPages}
                 </span>
                 <Button
                   variant="secondary"
@@ -301,7 +301,7 @@ function Notifications() {
                   disabled={page >= pagination.totalPages}
                   onClick={() => setPage((p) => p + 1)}
                 >
-                  Proximo
+                  Próximo
                 </Button>
               </div>
             )}

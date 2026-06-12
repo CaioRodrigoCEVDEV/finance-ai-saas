@@ -119,7 +119,7 @@ function BudgetForm({ budget, categories, loading, serverError, onCancel, onSubm
   return (
     <section>
       <div>
-        <p className="text-sm uppercase tracking-[0.28em] text-emerald-600">{budget ? 'Editar orcamento' : 'Novo orcamento'}</p>
+        <p className="text-sm uppercase tracking-[0.28em] text-emerald-600">{budget ? 'Editar orçamento' : 'Novo orçamento'}</p>
         <h2 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">
           {budget ? 'Atualize o limite mensal da categoria' : 'Defina um teto mensal para controlar seus gastos'}
         </h2>
@@ -140,7 +140,7 @@ function BudgetForm({ budget, categories, loading, serverError, onCancel, onSubm
 
           <Input label="Valor limite" name="amount" type="number" step="0.01" min="0" value={formValues.amount} onChange={handleChange} />
 
-          <Select label="Mes" name="month" value={formValues.month} onChange={handleChange}>
+          <Select label="Mês" name="month" value={formValues.month} onChange={handleChange}>
             {monthOptions.map((option) => (
               <option key={option.value} value={option.value}>{option.label}</option>
             ))}
@@ -161,7 +161,7 @@ function BudgetForm({ budget, categories, loading, serverError, onCancel, onSubm
 
         <div className="flex flex-wrap gap-3">
           <Button type="submit" disabled={loading}>
-            {loading ? 'Salvando...' : budget ? 'Salvar alteracoes' : 'Criar orcamento'}
+            {loading ? 'Salvando...' : budget ? 'Salvar alterações' : 'Criar orçamento'}
           </Button>
           <Button type="button" variant="secondary" onClick={onCancel}>Cancelar</Button>
         </div>

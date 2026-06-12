@@ -57,7 +57,7 @@ function AccountCard({ account, onEdit, onDelete }) {
             {AccountIcon ? <AccountIcon className="h-5 w-5 text-slate-400 dark:text-slate-500" /> : null}
             <h3 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{account.name}</h3>
           </div>
-          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{account.bankName || 'Instituicao nao informada'}</p>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{account.bankName || 'Instituição não informada'}</p>
         </div>
 
         <Badge variant={account.isActive ? 'success' : 'neutral'}>{account.isActive ? 'Ativa' : 'Inativa'}</Badge>

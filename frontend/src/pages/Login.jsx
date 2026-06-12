@@ -99,7 +99,7 @@ function Login() {
             {/* feature bullets */}
             <div className="mt-10 grid gap-3.5">
               <FeatureBullet icon={BarChart3} label="Dashboard inteligente" />
-              <FeatureBullet icon={Layers} label="Multi-tenant seguro" />
+              <FeatureBullet icon={Layers} label="Seus dados protegidos" />
               <FeatureBullet icon={FileDown} label="Importação CSV/OFX" />
               <FeatureBullet icon={Globe} label="Open Finance em breve" />
             </div>

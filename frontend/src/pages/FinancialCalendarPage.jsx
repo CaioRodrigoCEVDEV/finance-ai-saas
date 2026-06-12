@@ -82,8 +82,8 @@ export default function FinancialCalendarPage() {
     } catch (requestError) {
       setError(
         requestError.response?.status === 401
-          ? 'Sua sessao expirou. Entre novamente para continuar.'
-          : 'Nao foi possivel carregar o calendario financeiro. Tente novamente em instantes.'
+          ? 'Sua sessão expirou. Entre novamente para continuar.'
+          : 'Não foi possível carregar o calendário financeiro. Tente novamente em instantes.'
       );
     } finally {
       setLoading(false);
@@ -282,7 +282,7 @@ export default function FinancialCalendarPage() {
                 <XCircle className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-lg font-medium text-slate-900 dark:text-slate-100">Falha ao carregar calendario</p>
+                <p className="text-lg font-medium text-slate-900 dark:text-slate-100">Falha ao carregar calendário</p>
                 <p className="mt-2 text-sm text-rose-700 dark:text-rose-300">{error}</p>
                 <div className="mt-4">
                   <Button variant="secondary" onClick={() => loadCalendar(currentYear, currentMonth)}>Tentar novamente</Button>
@@ -293,16 +293,16 @@ export default function FinancialCalendarPage() {
         ) : !summary ? (
           <EmptyState
             icon={CalendarDays}
-            title="Nenhum lancamento neste mes"
-            description="Cadastre transacoes ou recorrencias para visualizar sua agenda financeira."
+            title="Nenhum lançamento neste mês"
+            description="Cadastre transações ou recorrências para visualizar sua agenda financeira."
             action={(
               <div className="flex flex-wrap justify-center gap-3">
                 <Button as="a" href="/transactions" onClick={(e) => { e.preventDefault(); navigate('/transactions'); }}>
                   <Plus className="h-4 w-4" />
-                  Nova transacao
+                  Nova transação
                 </Button>
                 <Button variant="secondary" as="a" href="/recurrences" onClick={(e) => { e.preventDefault(); navigate('/recurrences'); }}>
-                  Nova recorrencia
+                  Nova recorrência
                 </Button>
               </div>
             )}

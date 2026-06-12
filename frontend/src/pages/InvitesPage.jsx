@@ -59,7 +59,7 @@ function InvitesPage() {
       const data = await listInvites();
       setInvites(data);
     } catch (err) {
-      setError(err.response?.status === 401 ? 'Sua sessao expirou. Faca login novamente.' : 'Nao foi possivel carregar os convites.');
+      setError(err.response?.status === 401 ? 'Sua sessão expirou. Faça login novamente.' : 'Não foi possível carregar os convites.');
     } finally {
       setLoading(false);
     }

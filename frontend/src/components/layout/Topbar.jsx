@@ -96,12 +96,12 @@ function Topbar({ onMenuClick }) {
               'hover:bg-slate-50 dark:hover:bg-slate-700/50',
               open && 'bg-slate-50 dark:bg-slate-700/50'
             )}
-            aria-label="Menu do usuario"
+            aria-label="Menu do usuário"
             aria-expanded={open}
             aria-haspopup="true"
           >
             <div className="hidden text-right sm:block">
-              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{user?.name || 'Usuario autenticado'}</p>
+              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{user?.name || 'Usuário autenticado'}</p>
               <p className="text-sm text-slate-500 dark:text-slate-400">{user?.email || tenant?.plan || 'Conta ativa'}</p>
             </div>
             <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-emerald-50 text-sm font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 overflow-hidden">

@@ -7,7 +7,7 @@ import Select from '../ui/Select';
 const CATEGORY_TYPES = [
   { value: 'INCOME', label: 'Receita' },
   { value: 'EXPENSE', label: 'Despesa' },
-  { value: 'TRANSFER', label: 'Transferencia' },
+  { value: 'TRANSFER', label: 'Transferência' },
   { value: 'INVESTMENT', label: 'Investimento' }
 ];
 
@@ -85,7 +85,7 @@ function CategoryForm({ category, categories, loading, onCancel, onSubmit }) {
       <div>
         <p className="text-sm uppercase tracking-[0.28em] text-emerald-600">{category ? 'Editar categoria' : 'Nova categoria'}</p>
         <h2 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">
-          {category ? 'Atualize a categoria personalizada' : 'Cadastre uma nova categoria para este tenant'}
+          {category ? 'Atualize a categoria personalizada' : 'Cadastre uma nova categoria para este workspace'}
         </h2>
       </div>
 
@@ -127,7 +127,7 @@ function CategoryForm({ category, categories, loading, onCancel, onSubmit }) {
 
         <div className="flex flex-wrap gap-3">
           <Button type="submit" disabled={loading}>
-            {loading ? 'Salvando...' : category ? 'Salvar alteracoes' : 'Criar categoria'}
+            {loading ? 'Salvando...' : category ? 'Salvar alterações' : 'Criar categoria'}
           </Button>
           <Button type="button" variant="secondary" onClick={onCancel}>
             Cancelar

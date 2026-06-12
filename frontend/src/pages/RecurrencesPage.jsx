@@ -43,7 +43,7 @@ const STATUS_OPTIONS = [
 
 const FREQUENCY_OPTIONS = [
   { value: '', label: 'Todas as frequencias' },
-  { value: 'DAILY', label: 'Diaria' },
+  { value: 'DAILY', label: 'Diária' },
   { value: 'WEEKLY', label: 'Semanal' },
   { value: 'BIWEEKLY', label: 'Quinzenal' },
   { value: 'MONTHLY', label: 'Mensal' },
@@ -76,7 +76,7 @@ function formatRecurrenceStatus(status) {
 
 function formatFrequency(frequency) {
   const labels = {
-    DAILY: 'Diaria',
+    DAILY: 'Diária',
     WEEKLY: 'Semanal',
     BIWEEKLY: 'Quinzenal',
     MONTHLY: 'Mensal',
@@ -156,8 +156,8 @@ function RecurrencesPage() {
     } catch (requestError) {
       setError(
         requestError.response?.status === 401
-          ? 'Sua sessao expirou. Entre novamente para continuar.'
-          : 'Nao foi possivel carregar as recorrencias agora. Tente novamente em instantes.'
+          ? 'Sua sessão expirou. Entre novamente para continuar.'
+          : 'Não foi possível carregar as recorrências agora. Tente novamente em instantes.'
       );
     } finally {
       setLoading(false);
@@ -208,7 +208,7 @@ function RecurrencesPage() {
       setFormVisible(true);
       setFormError('');
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Nao foi possivel carregar a recorrencia para edicao.');
+      setError(requestError.response?.data?.message || 'Não foi possível carregar a recorrência para edição.');
     } finally {
       setSaving(false);
     }
@@ -230,7 +230,7 @@ function RecurrencesPage() {
       setFormError('');
       await loadRecurrences(filters);
     } catch (requestError) {
-      setFormError(requestError.response?.data?.message || 'Nao foi possivel salvar a recorrencia.');
+      setFormError(requestError.response?.data?.message || 'Não foi possível salvar a recorrência.');
     } finally {
       setSaving(false);
     }
@@ -246,14 +246,14 @@ function RecurrencesPage() {
       setToast(recurrence.status === 'ACTIVE' ? 'Recorrencia pausada com sucesso' : 'Recorrencia ativada com sucesso');
       setTimeout(() => setToast(''), 3000);
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Nao foi possivel atualizar o status da recorrencia.');
+      setError(requestError.response?.data?.message || 'Não foi possível atualizar o status da recorrência.');
     } finally {
       setSaving(false);
     }
   }
 
   async function handleFinish(recurrence) {
-    const confirmed = window.confirm(`Deseja finalizar a recorrencia "${recurrence.description}"?`);
+    const confirmed = window.confirm(`Deseja finalizar a recorrência "${recurrence.description}"?`);
     if (!confirmed) return;
 
     try {
@@ -264,14 +264,14 @@ function RecurrencesPage() {
       setToast('Recorrencia finalizada com sucesso');
       setTimeout(() => setToast(''), 3000);
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Nao foi possivel finalizar a recorrencia.');
+      setError(requestError.response?.data?.message || 'Não foi possível finalizar a recorrência.');
     } finally {
       setSaving(false);
     }
   }
 
   async function handleDelete(recurrence) {
-    const confirmed = window.confirm(`Deseja realmente excluir a recorrencia "${recurrence.description}"?`);
+    const confirmed = window.confirm(`Deseja realmente excluir a recorrência "${recurrence.description}"?`);
     if (!confirmed) return;
 
     try {
@@ -282,7 +282,7 @@ function RecurrencesPage() {
       setToast('Recorrencia excluida com sucesso');
       setTimeout(() => setToast(''), 3000);
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Nao foi possivel excluir a recorrencia.');
+      setError(requestError.response?.data?.message || 'Não foi possível excluir a recorrência.');
     } finally {
       setSaving(false);
     }
@@ -302,10 +302,10 @@ function RecurrencesPage() {
       setGenerateModalOpen(false);
       setGenerateTarget(null);
       await loadRecurrences(filters);
-      setToast('Lancamento gerado com sucesso');
+      setToast('Lançamento gerado com sucesso');
       setTimeout(() => setToast(''), 3000);
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Nao foi possivel gerar o lancamento.');
+      setError(requestError.response?.data?.message || 'Não foi possível gerar o lancamento.');
       setGenerateModalOpen(false);
     } finally {
       setSaving(false);
@@ -347,19 +347,19 @@ function RecurrencesPage() {
     <AppLayout>
       <div className="space-y-8 pb-8">
         <PageHeader
-          title="Recorrencias"
-          description="Automatize receitas e despesas fixas do seu mes."
+          title="Recorrências"
+          description="Automatize receitas e despesas fixas do seu mês."
           action={isReadonly ? null : (
             <Button onClick={handleCreateClick}>
               <Plus className="h-4 w-4" />
-              Nova recorrencia
+              Nova recorrência
             </Button>
           )}
         />
 
         {isReadonly && (
           <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-400">
-            Voce possui acesso somente leitura. As acoes de criacao, edicao e exclusao estao desabilitadas.
+            Você possui acesso somente leitura. As ações de criação, edição e exclusão estão desabilitadas.
           </div>
         )}
 
@@ -370,8 +370,8 @@ function RecurrencesPage() {
         )}
 
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-          <MetricCard title="Recorrencias ativas" value={activeCount} description={`${pausedCount} pausadas`} />
-          <MetricCard title="Proximos lancamentos" value={nextSevenDaysCount} description="Nos proximos 7 dias" />
+          <MetricCard title="Recorrências ativas" value={activeCount} description={`${pausedCount} pausadas`} />
+          <MetricCard title="Próximos lancamentos" value={nextSevenDaysCount} description="Nos proximos 7 dias" />
           <MetricCard title="Receitas mensais estimadas" value={formatCurrencyBRL(monthlyIncomeEstimate)} description="Valor estimado mensal" />
           <MetricCard title="Despesas mensais estimadas" value={formatCurrencyBRL(monthlyExpenseEstimate)} description="Valor estimado mensal" />
         </div>
@@ -379,7 +379,7 @@ function RecurrencesPage() {
         <Card className="rounded-[28px] p-5">
           <div className="grid gap-4 md:grid-cols-5">
             <div className="md:col-span-2">
-              <Input label="Buscar" name="search" value={filters.search} onChange={handleFilterChange} placeholder="Buscar por descricao..." />
+              <Input label="Buscar" name="search" value={filters.search} onChange={handleFilterChange} placeholder="Buscar por descrição..." />
             </div>
 
             <Select label="Tipo" name="type" value={filters.type} onChange={handleFilterChange}>
@@ -394,7 +394,7 @@ function RecurrencesPage() {
               ))}
             </Select>
 
-            <Select label="Frequencia" name="frequency" value={filters.frequency} onChange={handleFilterChange}>
+            <Select label="Frequência" name="frequency" value={filters.frequency} onChange={handleFilterChange}>
               {FREQUENCY_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>{option.label}</option>
               ))}
@@ -422,7 +422,7 @@ function RecurrencesPage() {
                   <XCircle className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-lg font-medium text-slate-900">Falha ao processar recorrencias</p>
+                  <p className="text-lg font-medium text-slate-900">Falha ao processar recorrências</p>
                   <p className="mt-2 text-sm text-rose-700">{error}</p>
                   <div className="mt-4">
                     <Button variant="secondary" onClick={() => loadRecurrences(filters)}>Tentar novamente</Button>
@@ -435,9 +435,9 @@ function RecurrencesPage() {
           {!loading && !error && recurrences.length === 0 ? (
             <EmptyState
               icon={Repeat}
-              title="Nenhuma recorrencia cadastrada"
+              title="Nenhuma recorrência cadastrada"
               description="Cadastre despesas e receitas fixas para automatizar sua rotina financeira."
-              action={isReadonly ? null : <Button onClick={handleCreateClick}>Criar primeira recorrencia</Button>}
+              action={isReadonly ? null : <Button onClick={handleCreateClick}>Criar primeira recorrência</Button>}
             />
           ) : null}
 
@@ -473,7 +473,7 @@ function RecurrencesPage() {
           ) : null}
         </div>
 
-        <Modal isOpen={formVisible} title={selectedRecurrence ? 'Editar recorrencia' : 'Nova recorrencia'} onClose={handleCancelForm}>
+        <Modal isOpen={formVisible} title={selectedRecurrence ? 'Editar recorrência' : 'Nova recorrência'} onClose={handleCancelForm}>
           <RecurrenceForm
             recurrence={selectedRecurrence}
             accounts={accounts}
@@ -489,13 +489,13 @@ function RecurrencesPage() {
         <Modal isOpen={generateModalOpen} title="Gerar lancamento" onClose={() => { setGenerateModalOpen(false); setGenerateTarget(null); }}>
           <div className="space-y-4">
             <p className="text-slate-700 dark:text-slate-300">
-              Deseja gerar agora o lancamento desta recorrencia?
+              Deseja gerar agora o lancamento desta recorrência?
             </p>
             {generateTarget && (
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-600 dark:bg-slate-800/50">
                 <p className="font-semibold text-slate-900 dark:text-slate-100">{generateTarget.description}</p>
                 <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                  {formatCurrencyBRL(generateTarget.amount)} • {formatRecurrenceType(generateTarget.type)} • Proxima: {formatDateBR(generateTarget.nextRunDate)}
+                  {formatCurrencyBRL(generateTarget.amount)} • {formatRecurrenceType(generateTarget.type)} • Próxima: {formatDateBR(generateTarget.nextRunDate)}
                 </p>
               </div>
             )}
@@ -529,7 +529,7 @@ function RecurrenceMobileCard({ recurrence, isReadonly, loading, onGenerate, onE
           <p className="font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyBRL(recurrence.amount)}</p>
         </div>
         <div>
-          <span className="text-slate-500 dark:text-slate-400">Proxima</span>
+          <span className="text-slate-500 dark:text-slate-400">Próxima</span>
           <p className="font-semibold text-slate-900 dark:text-slate-100">{formatDateBR(recurrence.nextRunDate)}</p>
         </div>
         <div>
@@ -597,11 +597,11 @@ function RecurrenceTable({ recurrences, isReadonly, loading, onGenerate, onEdit,
         <table className="w-full divide-y divide-slate-200 dark:divide-slate-700">
           <thead className="bg-slate-50 dark:bg-slate-800/50">
             <tr className="text-left text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-              <th className="px-3 py-3">Descricao</th>
+              <th className="px-3 py-3">Descrição</th>
               <th className="w-[85px] px-3 py-3">Tipo</th>
               <th className="w-[105px] px-3 py-3 text-right whitespace-nowrap">Valor</th>
-              <th className="w-[90px] px-3 py-3">Frequencia</th>
-              <th className="w-[95px] px-3 py-3">Proxima</th>
+              <th className="w-[90px] px-3 py-3">Frequência</th>
+              <th className="w-[95px] px-3 py-3">Próxima</th>
               <th className="w-[80px] px-3 py-3">Status</th>
               <th className="w-[110px] px-3 py-3">Conta/Cartao</th>
               <th className="w-[200px] px-3 py-3 text-right">Acoes</th>

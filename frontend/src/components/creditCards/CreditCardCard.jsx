@@ -32,7 +32,7 @@ function CreditCardCard({ creditCard, onEdit, onDelete, loading }) {
       <div className="relative space-y-6 p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.28em] text-white/70">Cartao de credito</p>
+            <p className="text-xs uppercase tracking-[0.28em] text-white/70">Cartão de crédito</p>
             <h3 className="mt-3 text-2xl font-semibold tracking-tight">{creditCard.name}</h3>
           </div>
           <div className="flex gap-2">

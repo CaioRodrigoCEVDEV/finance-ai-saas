@@ -35,8 +35,8 @@ function Accounts() {
     } catch (requestError) {
       setError(
         requestError.response?.status === 401
-          ? 'Sua sessao expirou. Entre novamente para continuar.'
-          : 'Nao foi possivel carregar suas contas agora. Tente novamente em instantes.'
+          ? 'Sua sessão expirou. Entre novamente para continuar.'
+          : 'Não foi possível carregar suas contas agora. Tente novamente em instantes.'
       );
     } finally {
       setLoading(false);
@@ -61,7 +61,7 @@ function Accounts() {
       setSelectedAccount(data);
       setFormVisible(true);
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Nao foi possivel carregar a conta para edicao.');
+      setError(requestError.response?.data?.message || 'Não foi possível carregar a conta para edição.');
     } finally {
       setSaving(false);
     }
@@ -82,7 +82,7 @@ function Accounts() {
       setSelectedAccount(null);
       await loadAccounts();
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Nao foi possivel salvar a conta.');
+      setError(requestError.response?.data?.message || 'Não foi possível salvar a conta.');
     } finally {
       setSaving(false);
     }
@@ -107,7 +107,7 @@ function Accounts() {
 
       await loadAccounts();
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Nao foi possivel excluir a conta.');
+      setError(requestError.response?.data?.message || 'Não foi possível excluir a conta.');
     } finally {
       setSaving(false);
     }
@@ -123,7 +123,7 @@ function Accounts() {
       <div className="space-y-8 pb-8">
         <PageHeader
           title="Contas financeiras"
-          description="Organize saldo, instituicoes e status das contas do tenant atual em um unico painel, com formulario em modal e visual consistente."
+          description="Organize saldo, instituições e status das contas do workspace atual em um único painel, com formulário em modal e visual consistente."
           action={(
             <Button onClick={handleCreateClick}>
               <Plus className="h-4 w-4" />
@@ -157,7 +157,7 @@ function Accounts() {
               <EmptyState
                 icon={WalletCards}
                 title="Nenhuma conta cadastrada"
-                description="Crie a primeira conta financeira deste tenant para acompanhar os saldos com a nova interface premium."
+                description="Crie a primeira conta financeira deste workspace para acompanhar os saldos com a nova interface premium."
                 action={<Button onClick={handleCreateClick}>Criar primeira conta</Button>}
               />
             ) : null}

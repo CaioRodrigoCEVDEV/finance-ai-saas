@@ -31,7 +31,7 @@ function CategorizationRuleForm({ rule, loading, onCancel, onSubmit }) {
         const data = await getCategories({ includeInactive: true });
         setCategories(data);
       } catch {
-        setFormError('Nao foi possivel carregar as categorias.');
+        setFormError('Não foi possível carregar as categorias.');
       } finally {
         setCategoriesLoading(false);
       }

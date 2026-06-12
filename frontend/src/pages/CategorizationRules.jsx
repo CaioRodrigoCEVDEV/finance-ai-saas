@@ -39,8 +39,8 @@ function CategorizationRules() {
     } catch (requestError) {
       setError(
         requestError.response?.status === 401
-          ? 'Sua sessao expirou. Entre novamente para continuar.'
-          : 'Nao foi possivel carregar as regras agora. Tente novamente em instantes.'
+          ? 'Sua sessão expirou. Entre novamente para continuar.'
+          : 'Não foi possível carregar as regras agora. Tente novamente em instantes.'
       );
     } finally {
       setLoading(false);
@@ -82,7 +82,7 @@ function CategorizationRules() {
       setSelectedRule(data);
       setFormVisible(true);
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Nao foi possivel carregar a regra para edicao.');
+      setError(requestError.response?.data?.message || 'Não foi possível carregar a regra para edição.');
     } finally {
       setSaving(false);
     }
@@ -103,7 +103,7 @@ function CategorizationRules() {
       setSelectedRule(null);
       await loadRules();
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Nao foi possivel salvar a regra.');
+      setError(requestError.response?.data?.message || 'Não foi possível salvar a regra.');
     } finally {
       setSaving(false);
     }
@@ -125,7 +125,7 @@ function CategorizationRules() {
 
       await loadRules();
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Nao foi possivel excluir a regra.');
+      setError(requestError.response?.data?.message || 'Não foi possível excluir a regra.');
     } finally {
       setSaving(false);
     }
@@ -140,13 +140,13 @@ function CategorizationRules() {
     <AppLayout>
       <div className="space-y-8 pb-8">
         <PageHeader
-          title="Regras de categorizacao"
-          description="Automatize a classificacao dos seus gastos por descricao."
+          title="Regras de categorização"
+          description="Automatize a classificação dos seus gastos por descrição."
           action={(
             <div className="flex flex-wrap gap-3">
               <Button variant="secondary" onClick={() => setApplyVisible(true)}>
                 <Play className="h-4 w-4" />
-                Aplicar em transacoes
+                Aplicar em transações
               </Button>
               <Button onClick={handleCreateClick}>
                 <Plus className="h-4 w-4" />
@@ -231,7 +231,7 @@ function CategorizationRules() {
             <EmptyState
               icon={Wand2}
               title="Nenhuma regra encontrada"
-              description="Crie sua primeira regra de categorizacao automatica para agilizar a classificacao de transacoes."
+              description="Crie sua primeira regra de categorização automatica para agilizar a classificação de transações."
               action={<Button onClick={handleCreateClick}>Criar regra</Button>}
             />
           ) : null}

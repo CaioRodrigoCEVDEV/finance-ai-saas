@@ -35,7 +35,7 @@ function Imports() {
       setCategories(categoryData);
       setCreditCards(creditCardData);
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Nao foi possivel carregar os dados de referencia.');
+      setError(requestError.response?.data?.message || 'Não foi possível carregar os dados de referencia.');
     }
   }
 
@@ -58,7 +58,7 @@ function Imports() {
       setSelectedCreditCardId(cc || '');
     } catch (requestError) {
       setError(
-        requestError.response?.data?.message || 'Nao foi possivel processar o arquivo. Verifique o formato e tente novamente.'
+        requestError.response?.data?.message || 'Não foi possível processar o arquivo. Verifique o formato e tente novamente.'
       );
     } finally {
       setLoading(false);
@@ -72,7 +72,7 @@ function Imports() {
 
       const validTransactions = (preview?.transactions || []).filter((t) => t.isValid !== false);
       if (validTransactions.length === 0) {
-        setError('Nao ha transacoes validas para confirmar.');
+        setError('Não há transações válidas para confirmar.');
         setLoading(false);
         return;
       }
@@ -97,7 +97,7 @@ function Imports() {
       const data = await confirmImport(payload);
       setResult(data);
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Nao foi possivel confirmar a importacao.');
+      setError(requestError.response?.data?.message || 'Não foi possível confirmar a importação.');
     } finally {
       setLoading(false);
     }
@@ -134,7 +134,7 @@ function Imports() {
     <AppLayout>
       <div className="space-y-8 pb-8">
         <PageHeader
-          title="Importacao de extratos"
+          title="Importação de extratos"
           description="Importe arquivos CSV ou OFX e revise antes de salvar."
           action={(
             <Button variant="secondary" onClick={handleReset}>
@@ -151,7 +151,7 @@ function Imports() {
                 <AlertCircle className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-lg font-medium text-slate-900">Falha ao processar importacao</p>
+                <p className="text-lg font-medium text-slate-900">Falha ao processar importação</p>
                 <p className="mt-2 text-sm text-rose-700">{error}</p>
               </div>
             </div>

@@ -44,7 +44,7 @@ function MainLayout({ children }) {
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:justify-end">
             <div className="text-sm text-slate-400 sm:text-right">
-              <p className="font-semibold text-white">{user?.name || 'Usuario autenticado'}</p>
+              <p className="font-semibold text-white">{user?.name || 'Usuário autenticado'}</p>
               <p>{tenant?.name || 'Finance AI'}</p>
             </div>
 

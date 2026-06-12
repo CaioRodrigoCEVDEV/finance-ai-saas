@@ -20,42 +20,42 @@ import { trackInvite } from '../services/inviteService';
 const features = [
   {
     title: 'Dashboard inteligente',
-    description: 'Resumo financeiro com leitura rapida de saldo, fluxo mensal e ultimas movimentacoes em um painel premium.',
+    description: 'Resumo financeiro com leitura rápida de saldo, fluxo mensal e últimas movimentações em um painel premium.',
     icon: LayoutDashboard
   },
   {
-    title: 'Controle de transacoes',
-    description: 'Registre receitas, despesas, transferencias e investimentos com categorizacao automatica inteligente.',
+    title: 'Controle de transações',
+    description: 'Registre receitas, despesas, transferências e investimentos com categorização automática inteligente.',
     icon: TrendingUp
   },
   {
-    title: 'Orcamentos e metas',
+    title: 'Orçamentos e metas',
     description: 'Defina limites por categoria e acompanhe metas financeiras com alertas de progresso em tempo real.',
     icon: Target
   },
   {
-    title: 'Importacao CSV/OFX',
-    description: 'Importe extratos bancarios em CSV ou OFX com preview interativo e regras de categorizacao configurativeis.',
+    title: 'Importação CSV/OFX',
+    description: 'Importe extratos bancários em CSV ou OFX com preview interativo e regras de categorização configuráveis.',
     icon: Download
   },
   {
-    title: 'Multi-contas e cartoes',
-    description: 'Gerencie contas correntes, poupancas, investimentos e cartoes de credito em uma base unificada.',
+    title: 'Multi-contas e cartões',
+    description: 'Gerencie contas correntes, poupanças, investimentos e cartões de crédito em uma base unificada.',
     icon: PiggyBank
   },
   {
     title: 'Open Finance em breve',
-    description: 'Infraestrutura preparada para conexoes futuras com instituicoes financeiras via Open Finance.',
+    description: 'Infraestrutura preparada para conexões futuras com instituições financeiras via Open Finance.',
     icon: Sparkles
   },
   {
-    title: 'Relatorios detalhados',
-    description: 'Exporte dados, acompanhe evolucao mensal e analise gastos por categoria, conta ou cartao.',
+    title: 'Relatórios detalhados',
+    description: 'Exporte dados, acompanhe evolução mensal e analise gastos por categoria, conta ou cartão.',
     icon: BarChart3
   },
   {
-    title: 'Multi-tenant seguro',
-    description: 'Cada tenant opera com isolamento completo de dados. Perfeito para empresas e uso pessoal.',
+    title: 'Seus dados protegidos',
+    description: 'Isolamento completo de dados por workspace. Perfeito para uso pessoal e familiar.',
     icon: LineChart
   }
 ];
@@ -77,7 +77,7 @@ function HomePage() {
     trackInvite(refCode)
       .then((result) => {
         if (result.valid) {
-          setReferralMessage('Voce acessou por um convite. Conheca o Finance AI.');
+          setReferralMessage('Você acessou por um convite. Conheça o Finance AI.');
         }
       })
       .catch(() => {
@@ -97,7 +97,7 @@ function HomePage() {
                 Seu copiloto financeiro pessoal
               </h1>
               <p className="mt-2 max-w-2xl text-base leading-7 text-slate-500 dark:text-slate-400">
-                Controle contas, cartoes, transacoes, metas e orcamentos em um painel financeiro premium.
+                Controle contas, cartões, transações, metas e orçamentos em um painel financeiro premium.
               </p>
             </div>
             <div className="flex flex-col gap-2 sm:flex-row">
@@ -133,9 +133,9 @@ function HomePage() {
               Finance AI
             </h2>
             <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-600 dark:text-slate-300">
-              Centralize contas, acompanhe indicadores e evolua sua operacao financeira em
-              uma interface clara, premium e confiavel. Tudo isolado por tenant com
-              autenticacao segura.
+              Centralize contas, acompanhe indicadores e evolua sua operação financeira em
+              uma interface clara, premium e confiável. Tudo isolado por workspace com
+              autenticação segura.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button as={Link} to="/login" size="lg">
@@ -152,13 +152,13 @@ function HomePage() {
 
           <Card className="rounded-[32px] p-8">
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">
-              Visao rapida
+              Visão rápida
             </p>
             <div className="mt-6 space-y-5">
               {[
                 ['Saldo consolidado', 'R$ 24.580,90'],
-                ['Receitas do mes', 'R$ 12.430,00'],
-                ['Despesas do mes', 'R$ 7.890,30'],
+                ['Receitas do mês', 'R$ 12.430,00'],
+                ['Despesas do mês', 'R$ 7.890,30'],
                 ['Economia projetada', 'R$ 4.539,70']
               ].map(([label, value]) => (
                 <div
@@ -180,7 +180,7 @@ function HomePage() {
               Funcionalidades
             </p>
             <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
-              Tudo que voce precisa em um so lugar
+              Tudo que você precisa em um só lugar
             </h2>
           </div>
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
@@ -206,7 +206,7 @@ function HomePage() {
               Finance AI
             </p>
             <p className="mt-3 text-sm leading-6 text-slate-500 dark:text-slate-400">
-              Seu copiloto financeiro pessoal — seguro, premium e pronto para producao.
+              Seu copiloto financeiro pessoal — seguro, premium e pronto para produção.
             </p>
             <div className="mt-5">
               {isAuthenticated ? (

@@ -40,8 +40,8 @@ function CreditCards() {
     } catch (requestError) {
       setError(
         requestError.response?.status === 401
-          ? 'Sua sessao expirou. Entre novamente para continuar.'
-          : 'Nao foi possivel carregar seus cartoes agora. Tente novamente em instantes.'
+          ? 'Sua sessão expirou. Entre novamente para continuar.'
+          : 'Não foi possível carregar seus cartões agora. Tente novamente em instantes.'
       );
     } finally {
       setLoading(false);
@@ -84,7 +84,7 @@ function CreditCards() {
       setSelectedCreditCard(data);
       setFormVisible(true);
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Nao foi possivel carregar o cartao para edicao.');
+      setError(requestError.response?.data?.message || 'Não foi possível carregar o cartão para edição.');
     } finally {
       setSaving(false);
     }
@@ -106,14 +106,14 @@ function CreditCards() {
       setSelectedCreditCard(null);
       await loadCreditCards();
     } catch (requestError) {
-      setFormError(requestError.response?.data?.message || 'Nao foi possivel salvar o cartao.');
+      setFormError(requestError.response?.data?.message || 'Não foi possível salvar o cartão.');
     } finally {
       setSaving(false);
     }
   }
 
   async function handleDelete(creditCard) {
-    const confirmed = window.confirm(`Deseja realmente excluir o cartao "${creditCard.name}"?`);
+    const confirmed = window.confirm(`Deseja realmente excluir o cartão "${creditCard.name}"?`);
 
     if (!confirmed) {
       return;
@@ -131,7 +131,7 @@ function CreditCards() {
 
       await loadCreditCards();
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Nao foi possivel excluir o cartao.');
+      setError(requestError.response?.data?.message || 'Não foi possível excluir o cartão.');
     } finally {
       setSaving(false);
     }
@@ -147,12 +147,12 @@ function CreditCards() {
     <AppLayout>
       <div className="space-y-8 pb-8">
         <PageHeader
-          title="Cartoes de credito"
-          description="Gerencie limites, vencimentos e gastos dos seus cartoes."
+          title="Cartões de crédito"
+          description="Gerencie limites, vencimentos e gastos dos seus cartões."
           action={(
             <Button onClick={handleCreateClick}>
               <Plus className="h-4 w-4" />
-              Novo cartao
+              Novo cartão
             </Button>
           )}
         />
@@ -178,7 +178,7 @@ function CreditCards() {
                   <AlertCircle className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-lg font-medium text-slate-900">Falha ao processar cartoes</p>
+                  <p className="text-lg font-medium text-slate-900">Falha ao processar cartões</p>
                   <p className="mt-2 text-sm text-rose-700">{error}</p>
                   <div className="mt-4">
                     <Button variant="secondary" onClick={loadPageData}>Tentar novamente</Button>
@@ -191,9 +191,9 @@ function CreditCards() {
           {!loading && !error && creditCards.length === 0 ? (
             <EmptyState
               icon={CreditCardIcon}
-              title="Nenhum cartao cadastrado"
-              description="Crie o primeiro cartao do tenant atual para acompanhar limite, fechamento e consumo mensal em um painel premium."
-              action={<Button onClick={handleCreateClick}>Criar primeiro cartao</Button>}
+              title="Nenhum cartão cadastrado"
+              description="Crie o primeiro cartão do workspace atual para acompanhar limite, fechamento e consumo mensal em um painel premium."
+              action={<Button onClick={handleCreateClick}>Criar primeiro cartão</Button>}
             />
           ) : null}
 
@@ -212,7 +212,7 @@ function CreditCards() {
           ) : null}
         </div>
 
-        <Modal isOpen={formVisible} title={selectedCreditCard ? 'Editar cartao' : 'Novo cartao'} onClose={handleCancelForm}>
+        <Modal isOpen={formVisible} title={selectedCreditCard ? 'Editar cartão' : 'Novo cartão'} onClose={handleCancelForm}>
           <CreditCardForm
             creditCard={selectedCreditCard}
             accounts={accounts}

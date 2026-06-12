@@ -70,7 +70,7 @@ function GoalForm({ goal, loading, serverError, onCancel, onSubmit }) {
     const currentAmount = Number(formValues.currentAmount || 0);
 
     if (!Number.isFinite(currentAmount) || currentAmount < 0) {
-      setError('Valor atual nao pode ser negativo.');
+      setError('Valor atual não pode ser negativo.');
       return;
     }
 
@@ -127,7 +127,7 @@ function GoalForm({ goal, loading, serverError, onCancel, onSubmit }) {
 
         <div className="flex flex-wrap gap-3">
           <Button type="submit" disabled={loading}>
-            {loading ? 'Salvando...' : goal ? 'Salvar alteracoes' : 'Criar meta'}
+            {loading ? 'Salvando...' : goal ? 'Salvar alterações' : 'Criar meta'}
           </Button>
           <Button type="button" variant="secondary" onClick={onCancel}>Cancelar</Button>
         </div>

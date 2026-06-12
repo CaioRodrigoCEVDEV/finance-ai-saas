@@ -75,8 +75,8 @@ function Goals() {
     } catch (requestError) {
       setError(
         requestError.response?.status === 401
-          ? 'Sua sessao expirou. Entre novamente para continuar.'
-          : 'Nao foi possivel carregar as metas agora. Tente novamente em instantes.'
+          ? 'Sua sessão expirou. Entre novamente para continuar.'
+          : 'Não foi possível carregar as metas agora. Tente novamente em instantes.'
       );
     } finally {
       setLoading(false);
@@ -110,7 +110,7 @@ function Goals() {
         loadSummary()
       ]);
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Nao foi possivel carregar os dados da tela de metas.');
+      setError(requestError.response?.data?.message || 'Não foi possível carregar os dados da tela de metas.');
     }
   }
 
@@ -156,7 +156,7 @@ function Goals() {
       setSelectedGoal(data);
       setFormVisible(true);
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Nao foi possivel carregar a meta para edicao.');
+      setError(requestError.response?.data?.message || 'Não foi possível carregar a meta para edição.');
     } finally {
       setSaving(false);
     }
@@ -181,7 +181,7 @@ function Goals() {
         loadSummary()
       ]);
     } catch (requestError) {
-      setFormError(requestError.response?.data?.message || 'Nao foi possivel salvar a meta.');
+      setFormError(requestError.response?.data?.message || 'Não foi possível salvar a meta.');
     } finally {
       setSaving(false);
     }
@@ -214,7 +214,7 @@ function Goals() {
         loadSummary()
       ]);
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Nao foi possivel excluir a meta.');
+      setError(requestError.response?.data?.message || 'Não foi possível excluir a meta.');
     } finally {
       setSaving(false);
     }
@@ -238,7 +238,7 @@ function Goals() {
         loadSummary()
       ]);
     } catch (requestError) {
-      setProgressError(requestError.response?.data?.message || 'Nao foi possivel atualizar o progresso.');
+      setProgressError(requestError.response?.data?.message || 'Não foi possível atualizar o progresso.');
     } finally {
       setSaving(false);
     }

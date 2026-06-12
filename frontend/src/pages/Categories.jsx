@@ -52,8 +52,8 @@ function Categories() {
     } catch (requestError) {
       setError(
         requestError.response?.status === 401
-          ? 'Sua sessao expirou. Entre novamente para continuar.'
-          : 'Nao foi possivel carregar as categorias agora. Tente novamente em instantes.'
+          ? 'Sua sessão expirou. Entre novamente para continuar.'
+          : 'Não foi possível carregar as categorias agora. Tente novamente em instantes.'
       );
     } finally {
       setLoading(false);
@@ -78,7 +78,7 @@ function Categories() {
       setSelectedCategory(data);
       setFormVisible(true);
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Nao foi possivel carregar a categoria para edicao.');
+      setError(requestError.response?.data?.message || 'Não foi possível carregar a categoria para edição.');
     } finally {
       setSaving(false);
     }
@@ -99,7 +99,7 @@ function Categories() {
       setSelectedCategory(null);
       await loadCategories(activeType);
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Nao foi possivel salvar a categoria.');
+      setError(requestError.response?.data?.message || 'Não foi possível salvar a categoria.');
     } finally {
       setSaving(false);
     }
@@ -124,7 +124,7 @@ function Categories() {
 
       await loadCategories(activeType);
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Nao foi possivel excluir a categoria.');
+      setError(requestError.response?.data?.message || 'Não foi possível excluir a categoria.');
     } finally {
       setSaving(false);
     }
@@ -140,7 +140,7 @@ function Categories() {
       <div className="space-y-8 pb-8">
         <PageHeader
           title="Categorias"
-          description="Organize receitas, despesas, transferencias e investimentos em uma estrutura clara, com filtros modernos e regras atuais preservadas."
+          description="Organize receitas, despesas, transferências e investimentos em uma estrutura clara, com filtros modernos e regras atuais preservadas."
           action={(
             <Button onClick={handleCreateClick}>
               <Plus className="h-4 w-4" />
@@ -178,7 +178,7 @@ function Categories() {
               <EmptyState
                 icon={FolderTree}
                 title="Nenhuma categoria encontrada"
-                description="Ajuste o filtro atual ou crie uma categoria personalizada para este tenant sem alterar as categorias padrao existentes."
+                description="Ajuste o filtro atual ou crie uma categoria personalizada para este workspace sem alterar as categorias padrão existentes."
                 action={<Button onClick={handleCreateClick}>Criar categoria</Button>}
               />
             ) : null}

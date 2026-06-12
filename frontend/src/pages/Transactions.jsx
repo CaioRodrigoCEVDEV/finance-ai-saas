@@ -110,8 +110,8 @@ function Transactions() {
     } catch (requestError) {
       setError(
         requestError.response?.status === 401
-          ? 'Sua sessao expirou. Entre novamente para continuar.'
-          : 'Nao foi possivel carregar as transacoes agora. Tente novamente em instantes.'
+          ? 'Sua sessão expirou. Entre novamente para continuar.'
+          : 'Não foi possível carregar as transações agora. Tente novamente em instantes.'
       );
     } finally {
       setLoading(false);
@@ -138,7 +138,7 @@ function Transactions() {
         loadSummary()
       ]);
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Nao foi possivel carregar os dados da tela de transacoes.');
+      setError(requestError.response?.data?.message || 'Não foi possível carregar os dados da tela de transações.');
     }
   }
 
@@ -198,7 +198,7 @@ function Transactions() {
       setFormVisible(true);
       setFormError('');
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Nao foi possivel carregar a transacao para edicao.');
+      setError(requestError.response?.data?.message || 'Não foi possível carregar a transação para edição.');
     } finally {
       setSaving(false);
     }
@@ -223,14 +223,14 @@ function Transactions() {
         loadSummary()
       ]);
     } catch (requestError) {
-      setFormError(requestError.response?.data?.message || 'Nao foi possivel salvar a transacao.');
+      setFormError(requestError.response?.data?.message || 'Não foi possível salvar a transação.');
     } finally {
       setSaving(false);
     }
   }
 
   async function handleDelete(transaction) {
-    const confirmed = window.confirm(`Deseja realmente excluir a transacao "${transaction.description}"?`);
+    const confirmed = window.confirm(`Deseja realmente excluir a transação "${transaction.description}"?`);
 
     if (!confirmed) {
       return;
@@ -251,7 +251,7 @@ function Transactions() {
         loadSummary()
       ]);
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Nao foi possivel excluir a transacao.');
+      setError(requestError.response?.data?.message || 'Não foi possível excluir a transação.');
     } finally {
       setSaving(false);
     }
@@ -273,12 +273,12 @@ function Transactions() {
     <AppLayout>
       <div className="space-y-8 pb-8">
         <PageHeader
-          title="Transacoes"
-          description="Acompanhe receitas, despesas, investimentos e transferencias."
+          title="Transações"
+          description="Acompanhe receitas, despesas, investimentos e transferências."
           action={(
             <Button onClick={handleCreateClick}>
               <Plus className="h-4 w-4" />
-              Nova transacao
+              Nova transação
             </Button>
           )}
         />
@@ -314,7 +314,7 @@ function Transactions() {
                   <AlertCircle className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-lg font-medium text-slate-900">Falha ao processar transacoes</p>
+                  <p className="text-lg font-medium text-slate-900">Falha ao processar transações</p>
                   <p className="mt-2 text-sm text-rose-700">{error}</p>
                   <div className="mt-4">
                     <Button variant="secondary" onClick={() => loadPageData(filters, page)}>Tentar novamente</Button>
@@ -327,9 +327,9 @@ function Transactions() {
           {!loading && !error && transactions.length === 0 ? (
             <EmptyState
               icon={ArrowLeftRight}
-              title="Nenhuma transacao encontrada"
-              description="Crie a primeira transacao do tenant atual ou ajuste os filtros para localizar movimentacoes existentes."
-              action={<Button onClick={handleCreateClick}>Criar transacao</Button>}
+              title="Nenhuma transação encontrada"
+              description="Crie a primeira transação do workspace atual ou ajuste os filtros para localizar movimentações existentes."
+              action={<Button onClick={handleCreateClick}>Criar transação</Button>}
             />
           ) : null}
 
@@ -344,10 +344,10 @@ function Transactions() {
               <div className="lg:hidden">
                 <Card className="rounded-[28px] p-4">
                   <div className="flex items-center justify-between gap-3 text-sm text-slate-500">
-                    <span>Pagina {pagination.page} de {pagination.totalPages}</span>
+                    <span>Página {pagination.page} de {pagination.totalPages}</span>
                     <div className="flex gap-3">
                       <Button variant="secondary" size="sm" onClick={() => handlePageChange(page - 1)} disabled={loading || page <= 1}>Anterior</Button>
-                      <Button variant="secondary" size="sm" onClick={() => handlePageChange(page + 1)} disabled={loading || page >= pagination.totalPages}>Proxima</Button>
+                      <Button variant="secondary" size="sm" onClick={() => handlePageChange(page + 1)} disabled={loading || page >= pagination.totalPages}>Próxima</Button>
                     </div>
                   </div>
                 </Card>
@@ -365,7 +365,7 @@ function Transactions() {
           ) : null}
         </div>
 
-        <Modal isOpen={formVisible} title={selectedTransaction ? 'Editar transacao' : 'Nova transacao'} onClose={handleCancelForm}>
+        <Modal isOpen={formVisible} title={selectedTransaction ? 'Editar transação' : 'Nova transação'} onClose={handleCancelForm}>
           <TransactionForm
             transaction={selectedTransaction}
             accounts={accounts}

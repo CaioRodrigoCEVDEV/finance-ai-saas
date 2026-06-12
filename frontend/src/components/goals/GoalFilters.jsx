@@ -18,7 +18,7 @@ function GoalFilters({ filters, onChange, onClear, loading }) {
         <Input
           label="Buscar"
           name="search"
-          placeholder="Nome ou descricao"
+          placeholder="Nome ou descrição"
           value={filters.search}
           onChange={onChange}
           icon={Search}

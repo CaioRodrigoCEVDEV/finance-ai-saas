@@ -95,8 +95,8 @@ function Reports() {
     } catch (requestError) {
       setError(
         requestError.response?.status === 401
-          ? 'Sua sessao expirou. Entre novamente para continuar.'
-          : 'Nao foi possivel carregar os relatórios agora. Tente novamente em instantes.'
+          ? 'Sua sessão expirou. Entre novamente para continuar.'
+          : 'Não foi possível carregar os relatórios agora. Tente novamente em instantes.'
       );
     } finally {
       setLoading(false);
@@ -107,7 +107,7 @@ function Reports() {
     try {
       await Promise.all([loadReferences(), loadReports(initialFilters)]);
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Nao foi possivel carregar os dados da tela de relatórios.');
+      setError(requestError.response?.data?.message || 'Não foi possível carregar os dados da tela de relatórios.');
     }
   }
 
@@ -137,8 +137,8 @@ function Reports() {
     } catch (requestError) {
       setError(
         requestError.response?.status === 401
-          ? 'Sua sessao expirou. Entre novamente para continuar.'
-          : 'Nao foi possivel exportar o CSV agora. Tente novamente em instantes.'
+          ? 'Sua sessão expirou. Entre novamente para continuar.'
+          : 'Não foi possível exportar o CSV agora. Tente novamente em instantes.'
       );
     } finally {
       setExporting(false);
@@ -216,12 +216,12 @@ function Reports() {
           </section>
 
           <section>
-            <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-slate-100">Por cartao de credito</h2>
+            <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-slate-100">Por cartão de crédito</h2>
             <CreditCardReport data={creditCardReport} loading={loading} />
           </section>
 
           <section>
-            <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-slate-100">Evolucao mensal</h2>
+            <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-slate-100">Evolução mensal</h2>
             <MonthlyEvolutionReport data={monthlyEvolution} loading={loading} />
           </section>
 

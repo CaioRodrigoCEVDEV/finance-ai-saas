@@ -116,9 +116,9 @@ function CreditCardForm({ creditCard, accounts, loadingAccounts, loading, server
   return (
     <section>
       <div>
-        <p className="text-sm uppercase tracking-[0.28em] text-emerald-600">{creditCard ? 'Editar cartao' : 'Novo cartao'}</p>
+        <p className="text-sm uppercase tracking-[0.28em] text-emerald-600">{creditCard ? 'Editar cartão' : 'Novo cartão'}</p>
         <h2 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">
-          {creditCard ? 'Atualize os dados do cartao' : 'Cadastre um novo cartao de credito'}
+          {creditCard ? 'Atualize os dados do cartão' : 'Cadastre um novo cartão de crédito'}
         </h2>
       </div>
 
@@ -144,7 +144,7 @@ function CreditCardForm({ creditCard, accounts, loadingAccounts, loading, server
           </Select>
 
           <div>
-            <span className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Cor do cartao</span>
+            <span className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Cor do cartão</span>
             <div className="flex flex-wrap gap-2">
               {(() => {
                 const currentColorInList = COLORS.some(
@@ -202,7 +202,7 @@ function CreditCardForm({ creditCard, accounts, loadingAccounts, loading, server
 
         <div className="flex flex-wrap gap-3">
           <Button type="submit" disabled={loading}>
-            {loading ? 'Salvando...' : creditCard ? 'Salvar alteracoes' : 'Criar cartao'}
+            {loading ? 'Salvando...' : creditCard ? 'Salvar alterações' : 'Criar cartão'}
           </Button>
           <Button type="button" variant="secondary" onClick={onCancel}>Cancelar</Button>
         </div>

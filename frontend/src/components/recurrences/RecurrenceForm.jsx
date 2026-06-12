@@ -103,7 +103,7 @@ function RecurrenceForm({ recurrence, accounts, categories, creditCards, loading
     event.preventDefault();
 
     if (formValues.description.trim().length < 2) {
-      setError('Informe uma descricao com pelo menos 2 caracteres.');
+      setError('Informe uma descrição com pelo menos 2 caracteres.');
       return;
     }
 
@@ -130,7 +130,7 @@ function RecurrenceForm({ recurrence, accounts, categories, creditCards, loading
     }
 
     if (formValues.accountId && formValues.creditCardId) {
-      setError('Informe apenas uma conta ou um cartao de credito, nao ambos.');
+      setError('Informe apenas uma conta ou um cartão de crédito, não ambos.');
       return;
     }
 
@@ -158,9 +158,9 @@ function RecurrenceForm({ recurrence, accounts, categories, creditCards, loading
   return (
     <section>
       <div>
-        <p className="text-sm uppercase tracking-[0.28em] text-emerald-600 dark:text-emerald-400">{recurrence ? 'Editar recorrencia' : 'Nova recorrencia'}</p>
+        <p className="text-sm uppercase tracking-[0.28em] text-emerald-600 dark:text-emerald-400">{recurrence ? 'Editar recorrência' : 'Nova recorrência'}</p>
         <h2 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">
-          {recurrence ? 'Atualize os dados da recorrencia' : 'Cadastre uma nova recorrencia financeira'}
+          {recurrence ? 'Atualize os dados da recorrência' : 'Cadastre uma nova recorrência financeira'}
         </h2>
       </div>
 
@@ -200,8 +200,8 @@ function RecurrenceForm({ recurrence, accounts, categories, creditCards, loading
           <Select label="Forma de pagamento" name="paymentMethod" value={formValues.paymentMethod} onChange={handleChange}>
             <option value="">Nao informado</option>
             <option value="PIX">Pix</option>
-            <option value="DEBIT_CARD">Cartao de debito</option>
-            <option value="CREDIT_CARD">Cartao de credito</option>
+            <option value="DEBIT_CARD">Cartao de débito</option>
+            <option value="CREDIT_CARD">Cartao de crédito</option>
             <option value="CASH">Dinheiro</option>
             <option value="BANK_SLIP">Boleto</option>
             <option value="TRANSFER">Transferencia</option>
@@ -220,8 +220,8 @@ function RecurrenceForm({ recurrence, accounts, categories, creditCards, loading
           </div>
 
           <div className={cn('rounded-[24px] border p-4 transition', isIncome ? 'border-slate-200 bg-slate-50 opacity-50 dark:border-slate-600 dark:bg-slate-800/50' : formValues.creditCardId ? 'border-emerald-200 bg-emerald-50/70 dark:border-emerald-800 dark:bg-emerald-900/30' : 'border-slate-200 bg-slate-50 dark:border-slate-600 dark:bg-slate-800/50')}>
-            <Select label="Cartao de credito" name="creditCardId" value={formValues.creditCardId} onChange={handleChange} disabled={isIncome || !creditCards.length}>
-              <option value="">{creditCards.length ? 'Selecione um cartao' : (isIncome ? 'Nao disponivel para receitas' : 'Nenhum cartao disponivel')}</option>
+            <Select label="Cartao de crédito" name="creditCardId" value={formValues.creditCardId} onChange={handleChange} disabled={isIncome || !creditCards.length}>
+              <option value="">{creditCards.length ? 'Selecione um cartão' : (isIncome ? 'Nao disponivel para receitas' : 'Nenhum cartão disponivel')}</option>
               {creditCards.map((creditCard) => (
                 <option key={creditCard.id} value={creditCard.id}>{creditCard.name}</option>
               ))}
@@ -230,14 +230,14 @@ function RecurrenceForm({ recurrence, accounts, categories, creditCards, loading
         </div>
 
         <label className="block">
-          <span className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Observacoes</span>
+          <span className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Observações</span>
           <textarea
             name="notes"
             rows="4"
             value={formValues.notes}
             onChange={handleChange}
             className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30"
-            placeholder="Detalhes adicionais sobre a recorrencia"
+            placeholder="Detalhes adicionais sobre a recorrência"
           />
         </label>
 
@@ -261,7 +261,7 @@ function RecurrenceForm({ recurrence, accounts, categories, creditCards, loading
 
         <div className="flex flex-wrap gap-3">
           <Button type="submit" disabled={loading}>
-            {loading ? 'Salvando...' : recurrence ? 'Salvar alteracoes' : 'Criar recorrencia'}
+            {loading ? 'Salvando...' : recurrence ? 'Salvar alterações' : 'Criar recorrência'}
           </Button>
           <Button type="button" variant="secondary" onClick={onCancel}>Cancelar</Button>
         </div>

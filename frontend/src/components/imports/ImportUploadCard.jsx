@@ -70,11 +70,11 @@ function ImportUploadCard({
           </Select>
 
           <Select
-            label="Cartao de credito (opcional)"
+            label="Cartão de crédito (opcional)"
             value={creditCardId}
             onChange={(e) => { setCreditCardId(e.target.value); setAccountId(''); }}
           >
-            <option value="">Selecione um cartao</option>
+            <option value="">Selecione um cartão</option>
             {creditCards.map((card) => (
               <option key={card.id} value={card.id}>{card.name}</option>
             ))}

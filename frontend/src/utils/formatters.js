@@ -34,7 +34,7 @@ export function formatTransactionType(type) {
   const labels = {
     INCOME: 'Receita',
     EXPENSE: 'Despesa',
-    TRANSFER: 'Transferencia',
+    TRANSFER: 'Transferência',
     INVESTMENT: 'Investimento'
   };
 
@@ -54,11 +54,11 @@ export function formatTransactionStatus(status) {
 export function formatPaymentMethod(method) {
   const labels = {
     PIX: 'Pix',
-    DEBIT_CARD: 'Cartao de debito',
-    CREDIT_CARD: 'Cartao de credito',
+    DEBIT_CARD: 'Cartão de débito',
+    CREDIT_CARD: 'Cartão de crédito',
     CASH: 'Dinheiro',
     BANK_SLIP: 'Boleto',
-    TRANSFER: 'Transferencia',
+    TRANSFER: 'Transferência',
     OTHER: 'Outro'
   };
 
