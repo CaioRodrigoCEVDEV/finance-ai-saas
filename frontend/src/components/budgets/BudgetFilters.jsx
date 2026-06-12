@@ -32,9 +32,9 @@ function BudgetFilters({ filters, categories, onChange, onClear, loading }) {
   const yearOptions = getYearOptions();
 
   return (
-    <Card className="rounded-[28px] border-slate-200/80 bg-white/95 p-6 dark:border-slate-700 dark:bg-slate-800">
+    <Card className="w-full max-w-full overflow-hidden rounded-[28px] border-slate-200/80 bg-white/95 p-6 dark:border-slate-700 dark:bg-slate-800">
       <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
-        <div className="grid flex-1 gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3 flex-1">
           <Select label="Mes" name="month" value={filters.month} onChange={onChange} disabled={loading}>
             {monthOptions.map((option) => (
               <option key={option.value} value={option.value}>{option.label}</option>
@@ -55,8 +55,8 @@ function BudgetFilters({ filters, categories, onChange, onClear, loading }) {
           </Select>
         </div>
 
-        <div className="flex gap-3">
-          <Button variant="secondary" onClick={onClear} disabled={loading}>Limpar filtros</Button>
+        <div className="flex shrink-0 gap-3">
+          <Button variant="secondary" onClick={onClear} disabled={loading} className="w-full sm:w-auto">Limpar filtros</Button>
         </div>
       </div>
     </Card>

@@ -39,15 +39,15 @@ function BudgetCard({ budget, onEdit, onDelete, loading }) {
   const progressWidth = `${Math.min(Math.max(budget.usedPercentage, 0), 100)}%`;
 
   return (
-    <Card className="rounded-[30px] border-slate-200/80 bg-white/95 p-6 dark:border-slate-700 dark:bg-slate-800">
-      <div className="flex items-start justify-between gap-4">
-        <div>
+    <Card className="w-full max-w-full overflow-hidden rounded-[30px] border-slate-200/80 bg-white/95 p-6 dark:border-slate-700 dark:bg-slate-800">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
           <p className="text-xs uppercase tracking-[0.24em] text-slate-400 dark:text-slate-500">Orçamento mensal</p>
-          <h3 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">{budget.name}</h3>
-          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{budget.category?.name || 'Categoria não informada'}</p>
+          <h3 className="mt-2 break-words text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">{budget.name}</h3>
+          <p className="mt-2 truncate text-sm text-slate-500 dark:text-slate-400">{budget.category?.name || 'Categoria não informada'}</p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3 shrink-0">
           <Badge variant={getStatusVariant(budget.status)}>{getStatusLabel(budget.status)}</Badge>
           <Button variant="ghost" size="sm" onClick={() => onEdit(budget)} disabled={loading}>
             <Pencil className="h-4 w-4" />
@@ -58,7 +58,7 @@ function BudgetCard({ budget, onEdit, onDelete, loading }) {
         </div>
       </div>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <div>
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Limite</p>
           <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyBRL(budget.amount)}</p>
@@ -78,8 +78,8 @@ function BudgetCard({ budget, onEdit, onDelete, loading }) {
           <span>Uso do orçamento</span>
           <span className="font-medium text-slate-800 dark:text-slate-200">{formatPercentage(budget.usedPercentage)}</span>
         </div>
-        <div className="h-3 rounded-full bg-slate-100 dark:bg-slate-700">
-          <div className={`h-3 rounded-full ${getProgressColor(budget.status)}`} style={{ width: progressWidth }} />
+        <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
+          <div className={`h-3 max-w-full rounded-full ${getProgressColor(budget.status)}`} style={{ width: progressWidth }} />
         </div>
       </div>
     </Card>

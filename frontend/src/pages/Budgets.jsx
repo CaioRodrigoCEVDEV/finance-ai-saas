@@ -240,7 +240,7 @@ function Budgets() {
 
   return (
     <AppLayout>
-      <div className="space-y-8 pb-8">
+      <div className="max-w-full space-y-8 overflow-x-hidden pb-8">
         <PageHeader
           title="Orcamentos"
           description="Defina limites mensais e acompanhe seus gastos por categoria."
