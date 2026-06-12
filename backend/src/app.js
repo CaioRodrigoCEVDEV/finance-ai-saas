@@ -24,7 +24,7 @@ const cspDisabled = env.nodeEnv === 'development'
           scriptSrc: ["'self'"],
           styleSrc: ["'self'", "'unsafe-inline'"],
           imgSrc: ["'self'", 'data:'],
-          connectSrc: ["'self'", env.frontendUrl]
+          connectSrc: ["'self'"]
         }
       }
     };
@@ -47,12 +47,19 @@ app.use(cookieParser());
 
 app.use(apiLimiter);
 
-app.use(routes);
-
 app.use('/uploads', express.static(path.resolve(__dirname, '..', 'uploads'), {
   maxAge: '7d',
   immutable: true
 }));
+
+app.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+  next();
+});
+
+app.use(routes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

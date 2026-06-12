@@ -58,6 +58,35 @@ function Dashboard() {
         setLoading(true);
         setError('');
 
+        const endpoints = [
+          { name: 'overview', fn: getDashboardOverview },
+          { name: 'alerts', fn: getDashboardAlerts },
+          { name: 'expensesByCategory', fn: getExpensesByCategory },
+          { name: 'topExpenses', fn: getTopExpenses },
+          { name: 'budgetStatus', fn: getBudgetStatus },
+          { name: 'goalsProgress', fn: getGoalsProgress },
+          { name: 'recentTransactions', fn: getRecentTransactions },
+          { name: 'monthlyFlow', fn: getMonthlyFlow }
+        ];
+
+        const results = await Promise.allSettled(endpoints.map(e => e.fn()));
+
+        if (!isMounted) return;
+
+        const failed = [];
+        results.forEach((result, index) => {
+          if (result.status === 'rejected') {
+            const err = result.reason;
+            const status = err?.response?.status || 'Network/CORS';
+            console.error(`Dashboard: falha em ${endpoints[index].name} (${status})`, err);
+            failed.push(`${endpoints[index].name} (${status})`);
+          }
+        });
+
+        if (failed.length > 0) {
+          throw { failedEndpoints: failed, firstError: results.find(r => r.status === 'rejected')?.reason };
+        }
+
         const [
           overviewRes,
           alertsRes,
@@ -67,18 +96,7 @@ function Dashboard() {
           goalsProgressRes,
           transactionsRes,
           monthlyFlowRes
-        ] = await Promise.all([
-          getDashboardOverview(),
-          getDashboardAlerts(),
-          getExpensesByCategory(),
-          getTopExpenses(),
-          getBudgetStatus(),
-          getGoalsProgress(),
-          getRecentTransactions(),
-          getMonthlyFlow()
-        ]);
-
-        if (!isMounted) return;
+        ] = results.map(r => r.value);
 
         setData({
           overview: overviewRes,
@@ -93,10 +111,22 @@ function Dashboard() {
       } catch (requestError) {
         if (!isMounted) return;
 
+        if (requestError.failedEndpoints) {
+          const joined = requestError.failedEndpoints.join(', ');
+          const firstErr = requestError.firstError;
+          const isCors = !firstErr?.response;
+          setError(
+            isCors
+              ? `Bloqueio de CORS detectado — a origem ${window.location.origin} não está autorizada no backend. Verifique ALLOWED_ORIGINS no servidor.`
+              : `Falha nos endpoints: ${joined}. Verifique o console para detalhes.`
+          );
+          return;
+        }
+
         setError(
           requestError.response?.status === 401
             ? 'Sua sessão expirou. Entre novamente para continuar.'
-            : 'Não foi possível carregar o dashboard agora. Verifique se a API backend está ativa e tente novamente.'
+            : `Erro inesperado: ${requestError.message || 'Verifique se a API backend está ativa.'}`
         );
       } finally {
         if (isMounted) setLoading(false);
