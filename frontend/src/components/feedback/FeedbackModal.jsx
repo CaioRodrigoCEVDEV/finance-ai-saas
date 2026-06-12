@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { MessageSquareText, AlertCircle, CheckCircle2, X } from 'lucide-react';
+import { MessageSquareText, AlertCircle, X } from 'lucide-react';
 
 import Button from '../ui/Button';
 import * as feedbackService from '../../services/feedbackService';
+import { useToast } from '../../contexts/ToastContext';
 
 const MAX_LENGTH = 1000;
 const MIN_LENGTH = 5;
@@ -12,7 +13,7 @@ function FeedbackModal({ isOpen, onClose }) {
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
-  const [toast, setToast] = useState('');
+  const toast = useToast();
 
   const charCount = message.length;
 
@@ -34,20 +35,9 @@ function FeedbackModal({ isOpen, onClose }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, handleClose]);
 
-  useEffect(() => {
-    if (toast) {
-      const timer = setTimeout(() => {
-        setToast('');
-        onClose();
-      }, 1800);
-      return () => clearTimeout(timer);
-    }
-  }, [toast, onClose]);
-
   async function handleSubmit(event) {
     event.preventDefault();
     setError('');
-    setToast('');
 
     const trimmed = message.trim();
 
@@ -60,7 +50,8 @@ function FeedbackModal({ isOpen, onClose }) {
       setSending(true);
       await feedbackService.createFeedback({ message: trimmed });
       setMessage('');
-      setToast('Feedback enviado com sucesso. Obrigado!');
+      toast.success('Feedback enviado com sucesso. Obrigado!');
+      handleClose();
     } catch (err) {
       const msg = err.response?.data?.message || 'Erro ao enviar feedback. Tente novamente.';
       setError(msg);
@@ -125,14 +116,6 @@ function FeedbackModal({ isOpen, onClose }) {
                 <span>{error}</span>
               </div>
             )}
-
-            {toast && (
-              <div className="flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-400">
-                <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
-                <span>{toast}</span>
-              </div>
-            )}
-
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <Button variant="secondary" onClick={handleClose} type="button" disabled={sending}>
                 Cancelar

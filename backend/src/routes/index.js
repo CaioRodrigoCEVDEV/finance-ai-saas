@@ -21,6 +21,7 @@ const invitesRoutes = require('../modules/invites/invites.routes');
 const invoicesRoutes = require('../modules/invoices/invoices.routes');
 const tenantsRoutes = require('../modules/tenants/tenants.routes');
 const feedbacksRoutes = require('../modules/feedbacks/feedbacks.routes');
+const adminRoutes = require('../modules/admin/admin.routes');
 
 const router = Router();
 
@@ -45,5 +46,6 @@ router.use(invitesRoutes);
 router.use(invoicesRoutes);
 router.use(tenantsRoutes);
 router.use(feedbacksRoutes);
+router.use(adminRoutes);
 
 module.exports = router;

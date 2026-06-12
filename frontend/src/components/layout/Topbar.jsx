@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { ChevronDown, CircleUser, LogOut, Menu, MessageSquareText, Settings } from 'lucide-react';
+import { ChevronDown, CircleUser, LogOut, Menu, MessageSquareText, Settings, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { useAuth } from '../../contexts/AuthContext';
@@ -24,7 +24,7 @@ function getInitials(name) {
 
 function Topbar({ onMenuClick }) {
   const navigate = useNavigate();
-  const { logout, tenant, user } = useAuth();
+  const { logout, tenant, user, isSuperAdmin } = useAuth();
   const [open, setOpen] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const containerRef = useRef(null);
@@ -153,6 +153,16 @@ function Topbar({ onMenuClick }) {
                 <Settings className="h-4 w-4" />
                 Configurações
               </button>
+              {isSuperAdmin ? (
+                <button
+                  type="button"
+                  onClick={() => handleNavigate('/admin/dashboard')}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-amber-50 hover:text-amber-700 dark:text-slate-400 dark:hover:bg-amber-900/20 dark:hover:text-amber-400"
+                >
+                  <Shield className="h-4 w-4" />
+                  Admin SaaS
+                </button>
+              ) : null}
               <div className="my-1 border-t border-slate-200 dark:border-slate-600" />
               <button
                 type="button"

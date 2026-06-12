@@ -47,6 +47,7 @@ SaaS multi-tenant de finanças pessoais, com dashboard, contas, cartões, catego
 
 - **Autenticação**: login, logout, sessão via cookie httpOnly com JWT, endpoint `/auth/me`
 - **Multi-tenant**: isolamento completo por `tenant_id`, RBAC com papéis OWNER, ADMIN, MEMBER, READONLY
+- **Admin SaaS**: área `/admin` separada do app principal, protegida por `SUPER_ADMIN`, com dashboard global, gestão de workspaces, usuários, limites de planos, feedbacks e auditoria
 - **Dashboard**: visão consolidada com saldo, receitas, despesas, economia, alertas, top despesas, status de orçamentos, progresso de metas, fluxo mensal, distribuição por categoria e transações recentes
 - **Contas**: CRUD de contas bancárias, carteiras e investimentos com saldo e soft delete
 - **Cartões de crédito**: CRUD com limite, dia de fechamento, dia de vencimento, conta vinculada e valor da fatura atual
@@ -91,7 +92,7 @@ finance-ai-saas/
 │   │   ├── services/           # token-service
 │   │   ├── utils/              # app-error, cookie-options, validate-request
 │   │   ├── validators/         # common.schema
-│   │   └── modules/            # 20 módulos de domínio (ver abaixo)
+│   │   └── modules/            # módulos de domínio (inclui admin e feedbacks)
 │   ├── uploads/avatars/        # Avatares enviados
 │   ├── .env.example
 │   ├── .env.production.example
@@ -101,10 +102,10 @@ finance-ai-saas/
 │   ├── src/
 │   │   ├── App.jsx
 │   │   ├── main.jsx
-│   │   ├── contexts/           # AuthContext, ThemeContext
+│   │   ├── contexts/           # AuthContext, ThemeContext, ToastContext
 │   │   ├── routes/             # Definição de rotas com proteção
-│   │   ├── layouts/            # MainLayout, AppLayout
-│   │   ├── pages/              # 19 páginas
+│   │   ├── layouts/            # MainLayout, AppLayout, admin/AdminLayout
+│   │   ├── pages/              # páginas do app e do admin
 │   │   ├── components/         # ~55 componentes (ui, layout, domain)
 │   │   ├── services/           # 20 serviços de API
 │   │   ├── hooks/
@@ -150,6 +151,8 @@ finance-ai-saas/
 | invites | `/invites` |
 | invoices | `/invoices` |
 | tenants | `/tenants` |
+| feedbacks | `/feedbacks` |
+| admin | `/admin` |
 
 ## Variáveis de ambiente
 
@@ -232,16 +235,29 @@ O Prisma gerencia o schema, migrations e seed do projeto.
 | `npx prisma db seed` | Popula o banco com dados demo |
 | `npx prisma studio` | Abre o Prisma Studio (interface visual para o banco) |
 
-O schema está em `backend/prisma/schema.prisma` e contém 17 tabelas, 14 enums, com suporte a multi-tenant, soft delete, hierarquia de categorias e auditoria.
+O schema está em `backend/prisma/schema.prisma` e contém os modelos centrais do SaaS com suporte a multi-tenant, soft delete, hierarquia de categorias, auditoria e administração global.
 
-## Usuário demo
+Com o painel administrativo, o schema também inclui:
 
-O seed cria dois usuários vinculados ao tenant **Finance AI Demo** (plano PREMIUM):
+- `User.global_role` com valores `USER` e `SUPER_ADMIN`
+- `PlanLimit` para limites e features por plano
+
+## Usuário demo e admin
+
+O seed cria dois usuários vinculados ao tenant **Finance AI Demo**:
 
 | Email | Senha | Papel |
 |-------|-------|-------|
-| `demo@financeai.com` | `123456` | OWNER |
-| `admin@financeai.com` | `123456` | OWNER |
+| `demo@financeai.com` | `123456` | OWNER de tenant, usuário comum |
+| `admin@financeai.com` | `123456` | OWNER de tenant + `SUPER_ADMIN` |
+
+### Acesso ao painel admin
+
+- URL: `http://localhost:5173/admin`
+- Requisito: usuário autenticado com `globalRole === SUPER_ADMIN`
+- Usuários OWNER/ADMIN/MEMBER/READONLY de tenant não acessam `/admin` por padrão
+
+O frontend redireciona usuários sem permissão para `/dashboard` e o backend protege todas as rotas `/admin/*` com `requireAuth` + `requireSuperAdmin`.
 
 O seed também cria:
 
@@ -251,6 +267,64 @@ O seed também cria:
 - 5 metas financeiras
 - 10 regras de categorização
 - Configurações padrão do tenant
+- Limites padrão para os planos `FREE`, `PRO`, `PREMIUM` e `FAMILY`
+
+## Planos e limites
+
+Os limites editáveis do SaaS ficam na tabela `PlanLimit` e são gerenciados em `/admin/plans`.
+
+Campos suportados:
+
+- `maxAccounts`
+- `maxCreditCards`
+- `maxUsers`
+- `maxTransactionsPerMonth`
+- `canImport`
+- `canExportReports`
+- `canUseAi`
+- `canUseOpenFinance`
+
+## Rotas administrativas
+
+Todas as rotas abaixo exigem autenticação e permissão global `SUPER_ADMIN`.
+
+### Dashboard
+
+- `GET /admin/dashboard`
+
+### Workspaces
+
+- `GET /admin/tenants`
+- `GET /admin/tenants/:id`
+- `PATCH /admin/tenants/:id`
+- `POST /admin/tenants/:id/suspend`
+- `POST /admin/tenants/:id/reactivate`
+
+### Usuários
+
+- `GET /admin/users`
+- `GET /admin/users/:id`
+- `PATCH /admin/users/:id`
+- `POST /admin/users/:id/block`
+- `POST /admin/users/:id/unblock`
+- `POST /admin/users/:id/reset-password`
+
+### Planos
+
+- `GET /admin/plans`
+- `GET /admin/plans/:plan`
+- `PATCH /admin/plans/:plan`
+
+### Feedbacks
+
+- `POST /feedbacks` (usuário autenticado)
+- `GET /admin/feedbacks`
+- `GET /admin/feedbacks/:id`
+- `PATCH /admin/feedbacks/:id`
+
+### Auditoria
+
+- `GET /admin/audit-logs`
 
 ## Scripts úteis
 

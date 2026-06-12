@@ -132,16 +132,18 @@ async function main() {
   const adminUser = await prisma.user.upsert({
     where: { email: 'admin@financeai.com' },
     create: {
-      name: 'Admin Demo',
+      name: 'Admin SaaS',
       email: 'admin@financeai.com',
       password_hash: passwordHash,
       status: 'ACTIVE',
+      global_role: 'SUPER_ADMIN',
       deleted_at: null
     },
     update: {
-      name: 'Admin Demo',
+      name: 'Admin SaaS',
       password_hash: passwordHash,
       status: 'ACTIVE',
+      global_role: 'SUPER_ADMIN',
       deleted_at: null
     }
   });
@@ -595,10 +597,27 @@ async function main() {
     }
   );
 
+  // Plan Limits
+  const planLimits = [
+    { plan: 'FREE', max_accounts: 1, max_credit_cards: 1, max_users: 1, max_transactions_per_month: 200, can_import: false, can_export_reports: false, can_use_ai: false, can_use_open_finance: false },
+    { plan: 'PRO', max_accounts: 5, max_credit_cards: 3, max_users: 3, max_transactions_per_month: 1000, can_import: true, can_export_reports: true, can_use_ai: true, can_use_open_finance: true },
+    { plan: 'PREMIUM', max_accounts: 10, max_credit_cards: 5, max_users: 5, max_transactions_per_month: 5000, can_import: true, can_export_reports: true, can_use_ai: true, can_use_open_finance: true },
+    { plan: 'FAMILY', max_accounts: 15, max_credit_cards: 10, max_users: 10, max_transactions_per_month: 10000, can_import: true, can_export_reports: true, can_use_ai: true, can_use_open_finance: true }
+  ];
+
+  for (const pl of planLimits) {
+    await upsertByLookup(
+      prisma.planLimit,
+      { plan: pl.plan },
+      pl,
+      pl
+    );
+  }
+
   console.log('Seed concluido com sucesso.');
   console.log(`Tenant: ${tenant.name} (${tenant.email})`);
   console.log(`Usuario demo: ${demoUser.email}`);
-  console.log(`Usuario admin: ${adminUser.email}`);
+  console.log(`Usuario admin (SUPER_ADMIN): ${adminUser.email}`);
   console.log(`Categorias globais: ${CATEGORY_DEFINITIONS.length}`);
   console.log('Contas demo: Conta Corrente Nubank, Conta Inter, Carteira, Reserva CDB');
   console.log('Cartoes demo: Cartão Nubank, Cartão Inter, Cartão Mercado Pago');

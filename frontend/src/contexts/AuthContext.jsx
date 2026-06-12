@@ -82,6 +82,7 @@ function AuthProvider({ children }) {
         tenant,
         initialized,
         isAuthenticated: Boolean(user && tenant),
+        isSuperAdmin: user?.globalRole === 'SUPER_ADMIN',
         loading
       }}
     >

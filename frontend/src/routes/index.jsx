@@ -23,6 +23,14 @@ import FinancialCalendarPage from '../pages/FinancialCalendarPage';
 import InvitesPage from '../pages/InvitesPage';
 import InvoicesPage from '../pages/InvoicesPage';
 import Plans from '../pages/Plans';
+import AdminDashboard from '../pages/admin/AdminDashboard';
+import AdminTenants from '../pages/admin/AdminTenants';
+import AdminTenantDetails from '../pages/admin/AdminTenantDetails';
+import AdminUsers from '../pages/admin/AdminUsers';
+import AdminUserDetails from '../pages/admin/AdminUserDetails';
+import AdminPlans from '../pages/admin/AdminPlans';
+import AdminFeedbacks from '../pages/admin/AdminFeedbacks';
+import AdminAuditLogs from '../pages/admin/AdminAuditLogs';
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading, initialized, ensureAuth } = useAuth();
@@ -46,6 +54,28 @@ function GuestRoute({ children }) {
   const { isAuthenticated } = useAuth();
 
   if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return children;
+}
+
+function AdminRoute({ children }) {
+  const { isAuthenticated, isSuperAdmin, loading, initialized, ensureAuth } = useAuth();
+
+  useEffect(() => {
+    ensureAuth();
+  }, [ensureAuth]);
+
+  if (!initialized || loading) {
+    return null;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!isSuperAdmin) {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -223,6 +253,71 @@ function AppRoutes() {
             <ProtectedRoute>
               <Plans />
             </ProtectedRoute>
+          )}
+        />
+        <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+        <Route
+          path="/admin/dashboard"
+          element={(
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
+          )}
+        />
+        <Route
+          path="/admin/tenants"
+          element={(
+            <AdminRoute>
+              <AdminTenants />
+            </AdminRoute>
+          )}
+        />
+        <Route
+          path="/admin/tenants/:id"
+          element={(
+            <AdminRoute>
+              <AdminTenantDetails />
+            </AdminRoute>
+          )}
+        />
+        <Route
+          path="/admin/users"
+          element={(
+            <AdminRoute>
+              <AdminUsers />
+            </AdminRoute>
+          )}
+        />
+        <Route
+          path="/admin/users/:id"
+          element={(
+            <AdminRoute>
+              <AdminUserDetails />
+            </AdminRoute>
+          )}
+        />
+        <Route
+          path="/admin/plans"
+          element={(
+            <AdminRoute>
+              <AdminPlans />
+            </AdminRoute>
+          )}
+        />
+        <Route
+          path="/admin/feedbacks"
+          element={(
+            <AdminRoute>
+              <AdminFeedbacks />
+            </AdminRoute>
+          )}
+        />
+        <Route
+          path="/admin/audit-logs"
+          element={(
+            <AdminRoute>
+              <AdminAuditLogs />
+            </AdminRoute>
           )}
         />
       </Routes>
