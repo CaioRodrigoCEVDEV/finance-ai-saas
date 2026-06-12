@@ -266,7 +266,7 @@ function Goals() {
 
   return (
     <AppLayout>
-      <div className="space-y-8 pb-8">
+      <div className="space-y-8 pb-8 w-full max-w-full">
         <PageHeader
           title="Metas financeiras"
           description="Planeje objetivos e acompanhe seu progresso financeiro."

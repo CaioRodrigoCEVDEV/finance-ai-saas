@@ -45,16 +45,18 @@ function GoalCard({ goal, onEdit, onDelete, onUpdateProgress, loading }) {
   const progressWidth = `${Math.min(Math.max(goal.progressPercentage, 0), 100)}%`;
 
   return (
-    <Card className="rounded-[30px] border-slate-200/80 bg-white/95 p-6 dark:border-slate-700 dark:bg-slate-800">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-xs uppercase tracking-[0.24em] text-slate-400 dark:text-slate-500">Meta financeira</p>
-          <h3 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">{goal.name}</h3>
-          {goal.description ? <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{goal.description}</p> : null}
+    <Card className="rounded-[30px] border-slate-200/80 bg-white/95 p-6 w-full max-w-full min-w-0 overflow-hidden dark:border-slate-700 dark:bg-slate-800">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-xs uppercase tracking-[0.24em] text-slate-400 dark:text-slate-500">Meta financeira</p>
+            <Badge variant={getStatusVariant(goal.status)}>{getStatusLabel(goal.status)}</Badge>
+          </div>
+          <h3 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 break-words whitespace-normal leading-tight min-w-0 max-w-full">{goal.name}</h3>
+          {goal.description ? <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 break-words whitespace-normal">{goal.description}</p> : null}
         </div>
 
-        <div className="flex items-center gap-2">
-          <Badge variant={getStatusVariant(goal.status)}>{getStatusLabel(goal.status)}</Badge>
+        <div className="flex flex-wrap items-center gap-3 sm:justify-end shrink-0">
           <Button variant="ghost" size="sm" onClick={() => onUpdateProgress(goal)} disabled={loading} title="Atualizar progresso">
             <TrendingUp className="h-4 w-4" />
           </Button>

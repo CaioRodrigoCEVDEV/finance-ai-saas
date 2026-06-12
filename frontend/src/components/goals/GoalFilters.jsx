@@ -13,8 +13,8 @@ const statusOptions = [
 
 function GoalFilters({ filters, onChange, onClear, loading }) {
   return (
-    <div className="flex flex-wrap items-end gap-3">
-      <div className="w-full sm:w-auto sm:min-w-[200px]">
+    <div className="flex flex-wrap items-end gap-3 w-full max-w-full">
+      <div className="w-full sm:w-auto sm:flex-1 sm:min-w-0">
         <Input
           label="Buscar"
           name="search"
@@ -25,7 +25,7 @@ function GoalFilters({ filters, onChange, onClear, loading }) {
         />
       </div>
 
-      <div className="w-full sm:w-auto sm:min-w-[180px]">
+      <div className="w-full sm:w-auto sm:flex-1 sm:min-w-0">
         <Select label="Status" name="status" value={filters.status} onChange={onChange}>
           {statusOptions.map((option) => (
             <option key={option.value} value={option.value}>{option.label}</option>
@@ -33,7 +33,7 @@ function GoalFilters({ filters, onChange, onClear, loading }) {
         </Select>
       </div>
 
-      <Button variant="secondary" onClick={onClear} disabled={loading}>
+      <Button variant="secondary" onClick={onClear} disabled={loading} className="w-full sm:w-auto">
         <X className="h-4 w-4" />
         Limpar
       </Button>
