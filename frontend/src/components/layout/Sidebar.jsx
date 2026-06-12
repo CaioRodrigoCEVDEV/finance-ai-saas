@@ -23,23 +23,52 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { cn } from '../../utils/cn';
 
-const navigationItems = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/accounts', label: 'Contas', icon: Landmark },
-  { to: '/credit-cards', label: 'Cartões', icon: CreditCard },
-  { to: '/invoices', label: 'Faturas', icon: WalletCards },
-  { to: '/budgets', label: 'Orçamentos', icon: BadgeDollarSign },
-  { to: '/goals', label: 'Metas', icon: Target },
-  { to: '/calendar', label: 'Calendario', icon: CalendarDays },
-  { to: '/recurrences', label: 'Recorrencias', icon: Repeat },
-  { to: '/transactions', label: 'Transações', icon: Receipt },
-  { to: '/categories', label: 'Categorias', icon: FolderKanban },
-  { to: '/categorization-rules', label: 'Regras', icon: Wand2 },
-  { to: '/notifications', label: 'Notificacoes', icon: Bell },
-  { to: '/reports', label: 'Relatórios', icon: BarChart3 },
-  { to: '/imports', label: 'Importar', icon: FileUp },
-  { to: '/invites', label: 'Convites', icon: Share2 },
-  { to: '/plans', label: 'Planos', icon: Crown }
+const navigationGroups = [
+  {
+    title: 'Visão Geral',
+    items: [
+      { to: '/calendar', label: 'Calendário', icon: CalendarDays },
+      { to: '/notifications', label: 'Notificações', icon: Bell }
+    ]
+  },
+  {
+    title: 'Financeiro',
+    items: [
+      { to: '/transactions', label: 'Transações', icon: Receipt },
+      { to: '/accounts', label: 'Contas', icon: Landmark },
+      { to: '/credit-cards', label: 'Cartões', icon: CreditCard },
+      { to: '/invoices', label: 'Faturas', icon: WalletCards },
+      { to: '/categories', label: 'Categorias', icon: FolderKanban }
+    ]
+  },
+  {
+    title: 'Planejamento',
+    items: [
+      { to: '/budgets', label: 'Orçamentos', icon: BadgeDollarSign },
+      { to: '/goals', label: 'Metas', icon: Target },
+      { to: '/recurrences', label: 'Recorrências', icon: Repeat }
+    ]
+  },
+  {
+    title: 'Automação',
+    items: [
+      { to: '/imports', label: 'Importar', icon: FileUp },
+      { to: '/categorization-rules', label: 'Regras', icon: Wand2 }
+    ]
+  },
+  {
+    title: 'Análises',
+    items: [
+      { to: '/reports', label: 'Relatórios', icon: BarChart3 }
+    ]
+  },
+  {
+    title: 'Conta',
+    items: [
+      { to: '/invites', label: 'Convites', icon: Share2 },
+      { to: '/plans', label: 'Planos', icon: Crown }
+    ]
+  }
 ];
 
 function Sidebar({ mobile = false, onNavigate }) {
@@ -52,6 +81,17 @@ function Sidebar({ mobile = false, onNavigate }) {
     navigate('/login', { replace: true });
     onNavigate?.();
   }
+
+  const linkClass = (active) =>
+    cn(
+      'flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition',
+      active
+        ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:ring-emerald-800'
+        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200'
+    );
+
+  const sectionTitleClass =
+    'px-3 pt-4 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500';
 
   return (
     <aside className={cn('flex flex-col', mobile ? 'h-full w-full' : 'sticky top-4')}>
@@ -73,28 +113,39 @@ function Sidebar({ mobile = false, onNavigate }) {
           </Link>
         </div>
 
-        <nav className="flex-1 overflow-y-auto p-5 pt-4 space-y-2">
-          {navigationItems.map((item) => {
-            const isActive = location.pathname === item.to;
-            const Icon = item.icon;
+        <nav className="flex-1 overflow-y-auto p-5 pt-4">
+          <Link
+            to="/dashboard"
+            onClick={onNavigate}
+            className={linkClass(location.pathname === '/dashboard')}
+          >
+            <LayoutDashboard className="h-4 w-4" />
+            Dashboard
+          </Link>
 
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                onClick={onNavigate}
-                className={cn(
-                  'flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition',
-                  isActive
-                    ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:ring-emerald-800'
-                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200'
-                )}
-              >
-                <Icon className="h-4 w-4" />
-                {item.label}
-              </Link>
-            );
-          })}
+          {navigationGroups.map((group) => (
+            <div key={group.title}>
+              <h3 className={sectionTitleClass}>{group.title}</h3>
+              <div className="space-y-1">
+                {group.items.map((item) => {
+                  const isActive = location.pathname === item.to;
+                  const Icon = item.icon;
+
+                  return (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      onClick={onNavigate}
+                      className={linkClass(isActive)}
+                    >
+                      <Icon className="h-4 w-4" />
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
         <div className="shrink-0 border-t border-slate-200 p-5 dark:border-slate-700">
