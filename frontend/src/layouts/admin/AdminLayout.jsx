@@ -10,13 +10,13 @@ function AdminLayout({ children }) {
   const { user } = useAuth();
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors">
-      <div className="mx-auto flex min-h-screen w-full max-w-content gap-6 px-4 py-4 sm:px-6 lg:px-8">
-        <div className="hidden w-72 shrink-0 lg:block">
+    <div className="min-h-screen overflow-x-hidden bg-slate-50 dark:bg-slate-950 transition-colors">
+      <div className="mx-auto flex min-h-screen w-full max-w-content flex-col gap-4 px-4 py-4 sm:px-6 lg:h-screen lg:flex-row lg:overflow-hidden lg:px-8">
+        <div className="hidden w-72 shrink-0 lg:block lg:self-stretch">
           <AdminSidebar />
         </div>
 
-        <div className="flex min-w-0 flex-1 flex-col gap-6">
+        <div className="flex min-w-0 flex-1 flex-col gap-4 lg:min-h-0 lg:overflow-hidden lg:py-4">
           <header className="flex items-center justify-between rounded-[28px] border border-amber-200 bg-white px-4 py-4 shadow-soft dark:border-amber-800 dark:bg-slate-800">
             <div className="flex items-center gap-3">
               <button
@@ -36,7 +36,7 @@ function AdminLayout({ children }) {
             </div>
           </header>
 
-          <main className="flex-1">{children}</main>
+          <main className="flex-1 min-w-0 lg:min-h-0 lg:overflow-y-auto">{children}</main>
         </div>
       </div>
 
@@ -46,7 +46,7 @@ function AdminLayout({ children }) {
           onClick={() => setMobileMenuOpen(false)}
         >
           <div
-            className="flex h-full max-w-xs flex-col p-4"
+            className="flex h-full max-w-xs flex-col overflow-hidden p-4"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="mb-4 flex shrink-0 justify-end">
@@ -55,7 +55,7 @@ function AdminLayout({ children }) {
                 Fechar
               </Button>
             </div>
-            <div className="min-h-0 flex-1">
+            <div className="min-h-0 flex-1 overflow-hidden">
               <AdminSidebar mobile onNavigate={() => setMobileMenuOpen(false)} />
             </div>
           </div>

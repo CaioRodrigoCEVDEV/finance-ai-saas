@@ -94,11 +94,15 @@ function Sidebar({ mobile = false, onNavigate }) {
     'px-3 pt-4 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500';
 
   return (
-    <aside className={cn('flex flex-col', mobile ? 'h-full w-full' : 'sticky top-4')}>
+    <aside
+      className={cn(
+        'flex h-screen max-h-screen flex-col overflow-hidden',
+        mobile ? 'h-full w-full max-h-full' : 'w-full'
+      )}
+    >
       <div
         className={cn(
-          'flex flex-col rounded-[28px] border border-slate-200 bg-white shadow-soft dark:border-slate-700 dark:bg-slate-800',
-          mobile && 'h-full'
+          'flex h-full min-h-0 flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-soft dark:border-slate-700 dark:bg-slate-800'
         )}
       >
         <div className="shrink-0 p-5 pb-0">
@@ -113,7 +117,7 @@ function Sidebar({ mobile = false, onNavigate }) {
           </Link>
         </div>
 
-        <nav className="flex-1 overflow-y-auto p-5 pt-4">
+        <nav className="flex-1 overflow-y-auto overscroll-contain p-5 pt-4">
           <Link
             to="/dashboard"
             onClick={onNavigate}
