@@ -2,6 +2,7 @@ import { Filter, RotateCcw } from 'lucide-react';
 
 import Button from '../ui/Button';
 import Card from '../ui/Card';
+import Select from '../ui/Select';
 
 function ReportFilters({
   filters,
@@ -39,69 +40,69 @@ function ReportFilters({
           />
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-700 dark:text-slate-300" htmlFor="accountId">Conta</label>
-          <select
+        <div>
+          <Select
+            className="h-11 py-0 text-sm"
             id="accountId"
+            label="Conta"
             name="accountId"
             value={filters.accountId}
             onChange={onChange}
-            className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30"
           >
             <option value="">Todas as contas</option>
             {accounts.map((account) => (
               <option key={account.id} value={account.id}>{account.name}</option>
             ))}
-          </select>
+          </Select>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-700 dark:text-slate-300" htmlFor="creditCardId">Cartao</label>
-          <select
+        <div>
+          <Select
+            className="h-11 py-0 text-sm"
             id="creditCardId"
+            label="Cartao"
             name="creditCardId"
             value={filters.creditCardId}
             onChange={onChange}
-            className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30"
           >
             <option value="">Todos os cartoes</option>
             {creditCards.map((card) => (
               <option key={card.id} value={card.id}>{card.name}</option>
             ))}
-          </select>
+          </Select>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-700 dark:text-slate-300" htmlFor="categoryId">Categoria</label>
-          <select
+        <div>
+          <Select
+            className="h-11 py-0 text-sm"
             id="categoryId"
+            label="Categoria"
             name="categoryId"
             value={filters.categoryId}
             onChange={onChange}
-            className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30"
           >
             <option value="">Todas as categorias</option>
             {categories.map((category) => (
               <option key={category.id} value={category.id}>{category.name}</option>
             ))}
-          </select>
+          </Select>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-700 dark:text-slate-300" htmlFor="type">Tipo</label>
-          <select
+        <div>
+          <Select
+            className="h-11 py-0 text-sm"
             id="type"
+            label="Tipo"
             name="type"
             value={filters.type}
             onChange={onChange}
-            className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30"
           >
             <option value="">Todos os tipos</option>
             <option value="INCOME">Receita</option>
             <option value="EXPENSE">Despesa</option>
             <option value="INVESTMENT">Investimento</option>
             <option value="TRANSFER">Transferencia</option>
-          </select>
+          </Select>
         </div>
 
         <div className="flex items-end gap-3 sm:col-span-2 lg:col-span-2">

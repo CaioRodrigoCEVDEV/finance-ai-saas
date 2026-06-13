@@ -110,8 +110,8 @@ function ImportPreviewTable({
                     />
                   </td>
                   <td className="py-3 pr-4">
-                    <select
-                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30"
+                    <Select
+                      className="rounded-xl px-3 py-2 text-sm"
                       value={transaction.type || 'EXPENSE'}
                       onChange={(e) => handleFieldChange(index, 'type', e.target.value)}
                     >
@@ -119,11 +119,11 @@ function ImportPreviewTable({
                       <option value="INCOME">Receita</option>
                       <option value="TRANSFER">Transferencia</option>
                       <option value="INVESTMENT">Investimento</option>
-                    </select>
+                    </Select>
                   </td>
                   <td className="py-3 pr-4">
-                    <select
-                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30"
+                    <Select
+                      className="rounded-xl px-3 py-2 text-sm"
                       value={transaction.categoryId || transaction.suggestedCategoryId || ''}
                       onChange={(e) => handleFieldChange(index, 'categoryId', e.target.value || null)}
                     >
@@ -131,7 +131,7 @@ function ImportPreviewTable({
                       {categories.map((cat) => (
                         <option key={cat.id} value={cat.id}>{cat.name}</option>
                       ))}
-                    </select>
+                    </Select>
                     {transaction.suggestedCategoryName && !transaction.categoryId && (
                       <div className="mt-1 text-xs text-emerald-600">
                         Sugestão: {transaction.suggestedCategoryName}

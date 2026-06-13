@@ -239,21 +239,20 @@ function SettingsPage() {
                   ))}
                 </Select>
 
-                <label className="block">
-                  <span className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Dia inicial do mês financeiro</span>
-                  <select
-                    className="w-full appearance-none rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-10 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30"
+                <div>
+                  <Select
+                    label="Dia inicial do mês financeiro"
                     value={financialMonthStartDay}
                     onChange={(e) => setFinancialMonthStartDay(Number(e.target.value))}
                   >
                     {Array.from({ length: 28 }, (_, i) => i + 1).map((day) => (
                       <option key={day} value={day}>Dia {day}</option>
                     ))}
-                  </select>
+                  </Select>
                   <span className="mt-2 block text-xs text-slate-500 dark:text-slate-400">
                     Use esta opção caso seu mês financeiro comece no dia do pagamento.
                   </span>
-                </label>
+                </div>
 
                 <Select
                   label="Conta padrão para lançamentos"

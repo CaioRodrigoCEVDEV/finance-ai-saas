@@ -6,6 +6,7 @@ import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import PageHeader from '../components/ui/PageHeader';
+import Select from '../components/ui/Select';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { createBillingCheckout, createCustomerPortal, getBillingCurrent, getBillingPlans } from '../services/billingService';
@@ -237,14 +238,11 @@ function Plans() {
                     </div>
                   </div>
                   {(catalog.plans.find((item) => item.billingCycle === billingCycle)?.allowProviderSelection ?? true) ? (
-                    <label className="block">
-                      <span className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Gateway</span>
-                      <select className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100" value={provider} onChange={(event) => setProvider(event.target.value)}>
-                        {catalog.gateways.map((gateway) => (
-                          <option key={gateway.provider} value={gateway.provider}>{gateway.provider}</option>
-                        ))}
-                      </select>
-                    </label>
+                    <Select label="Gateway" value={provider} onChange={(event) => setProvider(event.target.value)}>
+                      {catalog.gateways.map((gateway) => (
+                        <option key={gateway.provider} value={gateway.provider}>{gateway.provider}</option>
+                      ))}
+                    </Select>
                   ) : null}
                 </div>
               </div>
