@@ -4,6 +4,7 @@ const {
   getCurrentMonthRange,
   getLastMonths
 } = require('./dashboard-date-helper');
+const { getCreditCardExpenseAmountMap } = require('../../utils/credit-card-limit');
 const { computeAccountBalances } = require('../accounts/accounts.service');
 
 const UNCATEGORIZED_LABEL = 'Sem categoria';
@@ -301,30 +302,23 @@ async function getOverview(tenantId) {
   });
 
   const creditCardIds = creditCards.map((c) => c.id);
-  let ccTransactionMap = new Map();
+  let currentInvoiceMap = new Map();
+  let usedLimitMap = new Map();
 
   if (creditCardIds.length > 0) {
-    const creditCardTransactions = await prisma.transaction.groupBy({
-      by: ['credit_card_id'],
-      where: {
-        tenant_id: tenantId,
-        deleted_at: null,
-        status: 'CONFIRMED',
-        type: 'EXPENSE',
-        transaction_date: { gte: currentMonth.start, lte: currentMonth.end },
-        credit_card_id: { in: creditCardIds }
-      },
-      _sum: { amount: true }
-    });
-    ccTransactionMap = new Map(creditCardTransactions.map((t) => [t.credit_card_id, toNumber(t._sum.amount)]));
+    [currentInvoiceMap, usedLimitMap] = await Promise.all([
+      getCreditCardExpenseAmountMap(prisma, tenantId, creditCardIds, { range: currentMonth }),
+      getCreditCardExpenseAmountMap(prisma, tenantId, creditCardIds, { excludePaidInvoices: true })
+    ]);
   }
 
   const totalCards = creditCards.length;
   const activeCards = creditCards.filter((c) => c.is_active).length;
   const totalLimit = creditCards.reduce((sum, c) => sum + toNumber(c.limit_amount), 0);
-  const currentInvoiceAmount = creditCards.reduce((sum, c) => sum + (ccTransactionMap.get(c.id) || 0), 0);
-  const availableLimit = Math.max(totalLimit - currentInvoiceAmount, 0);
-  const usagePercentage = totalLimit > 0 ? Number(((currentInvoiceAmount / totalLimit) * 100).toFixed(2)) : 0;
+  const currentInvoiceAmount = creditCards.reduce((sum, c) => sum + (currentInvoiceMap.get(c.id) || 0), 0);
+  const usedLimitAmount = creditCards.reduce((sum, c) => sum + (usedLimitMap.get(c.id) || 0), 0);
+  const availableLimit = Math.max(totalLimit - usedLimitAmount, 0);
+  const usagePercentage = totalLimit > 0 ? Number(((usedLimitAmount / totalLimit) * 100).toFixed(2)) : 0;
 
   const budgetsList = await prisma.budget.findMany({
     where: {
@@ -491,19 +485,7 @@ async function getAlerts(tenantId) {
   let ccTransactionMap = new Map();
 
   if (ccIds.length > 0) {
-    const ccTransactions = await prisma.transaction.groupBy({
-      by: ['credit_card_id'],
-      where: {
-        tenant_id: tenantId,
-        deleted_at: null,
-        status: 'CONFIRMED',
-        type: 'EXPENSE',
-        transaction_date: { gte: currentMonth.start, lte: currentMonth.end },
-        credit_card_id: { in: ccIds }
-      },
-      _sum: { amount: true }
-    });
-    ccTransactionMap = new Map(ccTransactions.map((t) => [t.credit_card_id, toNumber(t._sum.amount)]));
+    ccTransactionMap = await getCreditCardExpenseAmountMap(prisma, tenantId, ccIds, { excludePaidInvoices: true });
   }
 
   creditCards.forEach((c) => {

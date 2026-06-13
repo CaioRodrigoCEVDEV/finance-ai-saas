@@ -1,5 +1,9 @@
 const prisma = require('../../config/prisma');
 const AppError = require('../../utils/app-error');
+const {
+  buildCreditCardExpenseWhere,
+  getCreditCardExpenseAmountMap
+} = require('../../utils/credit-card-limit');
 const planService = require('../plans/plan.service');
 
 function toDecimalString(value) {
@@ -51,36 +55,15 @@ async function findCreditCardByTenant(creditCardId, tenantId) {
   });
 }
 
-function buildInvoiceWhere(tenantId, creditCardIds, range) {
-  return {
-    tenant_id: tenantId,
-    deleted_at: null,
-    status: 'CONFIRMED',
-    type: 'EXPENSE',
-    transaction_date: {
-      gte: range.start,
-      lte: range.end
-    },
-    credit_card_id: Array.isArray(creditCardIds)
-      ? { in: creditCardIds }
-      : creditCardIds
-  };
-}
-
-function getInvoiceAmountMap(summaryRows) {
-  return summaryRows.reduce((accumulator, item) => {
-    accumulator[item.credit_card_id] = toNumber(item._sum.amount);
-    return accumulator;
-  }, {});
-}
-
-function getAvailableLimit(limitAmount, currentInvoiceAmount) {
-  return Math.max(limitAmount - currentInvoiceAmount, 0);
+function getAvailableLimit(limitAmount, usedAmount) {
+  return Math.max(limitAmount - usedAmount, 0);
 }
 
 function toCreditCardResponse(creditCard, summary = {}) {
   const limitAmount = toNumber(creditCard.limit_amount);
   const currentInvoiceAmount = toNumber(summary.currentInvoiceAmount);
+  const usedAmount = toNumber(summary.usedAmount);
+  const usagePercentage = limitAmount > 0 ? Number(((usedAmount / limitAmount) * 100).toFixed(2)) : 0;
 
   return {
     id: creditCard.id,
@@ -96,7 +79,9 @@ function toCreditCardResponse(creditCard, summary = {}) {
       name: creditCard.account.name
     } : null,
     currentInvoiceAmount,
-    availableLimit: getAvailableLimit(limitAmount, currentInvoiceAmount),
+    usedAmount,
+    availableLimit: getAvailableLimit(limitAmount, usedAmount),
+    usagePercentage,
     expenseCountCurrentMonth: summary.expenseCountCurrentMonth ?? 0,
     createdAt: creditCard.created_at.toISOString(),
     updatedAt: creditCard.updated_at.toISOString()
@@ -145,17 +130,14 @@ async function listCreditCards(tenantId) {
 
   const range = getCurrentMonthRange();
   const creditCardIds = creditCards.map((creditCard) => creditCard.id);
-  const invoiceSummary = await prisma.transaction.groupBy({
-    by: ['credit_card_id'],
-    where: buildInvoiceWhere(tenantId, creditCardIds, range),
-    _sum: {
-      amount: true
-    }
-  });
-  const invoiceAmountMap = getInvoiceAmountMap(invoiceSummary);
+  const [invoiceAmountMap, usedAmountMap] = await Promise.all([
+    getCreditCardExpenseAmountMap(prisma, tenantId, creditCardIds, { range }),
+    getCreditCardExpenseAmountMap(prisma, tenantId, creditCardIds, { excludePaidInvoices: true })
+  ]);
 
   return creditCards.map((creditCard) => toCreditCardResponse(creditCard, {
-    currentInvoiceAmount: invoiceAmountMap[creditCard.id] || 0
+    currentInvoiceAmount: invoiceAmountMap.get(creditCard.id) || 0,
+    usedAmount: usedAmountMap.get(creditCard.id) || 0
   }));
 }
 
@@ -167,20 +149,17 @@ async function getCreditCardById(creditCardId, tenantId) {
   }
 
   const range = getCurrentMonthRange();
-  const [invoiceSummary, expenseCountCurrentMonth] = await Promise.all([
-    prisma.transaction.aggregate({
-      where: buildInvoiceWhere(tenantId, creditCard.id, range),
-      _sum: {
-        amount: true
-      }
-    }),
+  const [invoiceAmountMap, usedAmountMap, expenseCountCurrentMonth] = await Promise.all([
+    getCreditCardExpenseAmountMap(prisma, tenantId, creditCard.id, { range }),
+    getCreditCardExpenseAmountMap(prisma, tenantId, creditCard.id, { excludePaidInvoices: true }),
     prisma.transaction.count({
-      where: buildInvoiceWhere(tenantId, creditCard.id, range)
+      where: buildCreditCardExpenseWhere(tenantId, creditCard.id, range)
     })
   ]);
 
   return toCreditCardResponse(creditCard, {
-    currentInvoiceAmount: toNumber(invoiceSummary._sum.amount),
+    currentInvoiceAmount: invoiceAmountMap.get(creditCard.id) || 0,
+    usedAmount: usedAmountMap.get(creditCard.id) || 0,
     expenseCountCurrentMonth
   });
 }
@@ -274,15 +253,14 @@ async function updateCreditCard(creditCardId, tenantId, data) {
   });
 
   const range = getCurrentMonthRange();
-  const invoiceSummary = await prisma.transaction.aggregate({
-    where: buildInvoiceWhere(tenantId, creditCard.id, range),
-    _sum: {
-      amount: true
-    }
-  });
+  const [invoiceAmountMap, usedAmountMap] = await Promise.all([
+    getCreditCardExpenseAmountMap(prisma, tenantId, creditCard.id, { range }),
+    getCreditCardExpenseAmountMap(prisma, tenantId, creditCard.id, { excludePaidInvoices: true })
+  ]);
 
   return toCreditCardResponse(creditCard, {
-    currentInvoiceAmount: toNumber(invoiceSummary._sum.amount)
+    currentInvoiceAmount: invoiceAmountMap.get(creditCard.id) || 0,
+    usedAmount: usedAmountMap.get(creditCard.id) || 0
   });
 }
 

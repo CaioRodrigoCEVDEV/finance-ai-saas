@@ -21,9 +21,12 @@ function getBrandLabel(brand) {
 
 function CreditCardCard({ creditCard, onEdit, onDelete, loading }) {
   const { formatCurrencyPrivacy } = usePrivacy();
-  const usagePercentage = creditCard.limitAmount > 0
-    ? Math.min((creditCard.currentInvoiceAmount / creditCard.limitAmount) * 100, 100)
-    : 0;
+  const usedAmount = Number(creditCard.usedAmount ?? creditCard.currentInvoiceAmount ?? 0);
+  const usagePercentage = Number.isFinite(Number(creditCard.usagePercentage))
+    ? Number(creditCard.usagePercentage)
+    : creditCard.limitAmount > 0
+      ? (usedAmount / creditCard.limitAmount) * 100
+      : 0;
 
   return (
     <Card
@@ -89,7 +92,7 @@ function CreditCardCard({ creditCard, onEdit, onDelete, loading }) {
             <span>{formatPercentage(usagePercentage)}</span>
           </div>
           <div className="h-2 rounded-full bg-white/15">
-            <div className="h-2 rounded-full bg-white" style={{ width: `${usagePercentage}%` }} />
+            <div className="h-2 rounded-full bg-white" style={{ width: `${Math.min(usagePercentage, 100)}%` }} />
           </div>
         </div>
 

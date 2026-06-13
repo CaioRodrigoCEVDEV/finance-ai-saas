@@ -1,4 +1,5 @@
 const prisma = require('../../config/prisma');
+const { getCreditCardExpenseAmountMap } = require('../../utils/credit-card-limit');
 const notificationsService = require('./notifications.service');
 
 function toNumber(value) {
@@ -174,7 +175,6 @@ async function generateGoalCompletedAlerts(tenantId) {
 async function generateCreditCardLimitAlerts(tenantId) {
   let created = 0;
   const { month, year } = getCurrentMonthYear();
-  const range = getMonthRange(month, year);
 
   const creditCards = await prisma.creditCard.findMany({
     where: {
@@ -188,26 +188,7 @@ async function generateCreditCardLimitAlerts(tenantId) {
 
   const creditCardIds = creditCards.map((c) => c.id);
 
-  const groupedTransactions = await prisma.transaction.groupBy({
-    by: ['credit_card_id'],
-    where: {
-      tenant_id: tenantId,
-      deleted_at: null,
-      type: 'EXPENSE',
-      status: 'CONFIRMED',
-      credit_card_id: { in: creditCardIds },
-      transaction_date: {
-        gte: range.start,
-        lte: range.end
-      }
-    },
-    _sum: { amount: true }
-  });
-
-  const usedByCard = new Map();
-  for (const item of groupedTransactions) {
-    usedByCard.set(item.credit_card_id, toNumber(item._sum.amount));
-  }
+  const usedByCard = await getCreditCardExpenseAmountMap(prisma, tenantId, creditCardIds, { excludePaidInvoices: true });
 
   for (const card of creditCards) {
     const limitAmount = toNumber(card.limit_amount);
@@ -218,11 +199,11 @@ async function generateCreditCardLimitAlerts(tenantId) {
       const result = await notificationsService.createNotificationIfNotExists(
         {
           title: 'Limite do cartao proximo',
-          message: `O cartao "${card.name}" atingiu ${usedPercentage.toFixed(1)}% do limite. Fatura atual: ${formatCurrency(used)} de ${formatCurrency(limitAmount)}.`,
+          message: `O cartao "${card.name}" atingiu ${usedPercentage.toFixed(1)}% do limite. Uso em aberto: ${formatCurrency(used)} de ${formatCurrency(limitAmount)}.`,
           type: 'CREDIT_CARD_LIMIT',
           referenceId: card.id,
           referenceType: 'credit-card',
-          metadata: { month, year, usedPercentage, currentInvoice: used, limitAmount }
+          metadata: { month, year, usedPercentage, usedAmount: used, limitAmount }
         },
         tenantId
       );
