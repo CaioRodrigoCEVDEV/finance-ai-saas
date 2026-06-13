@@ -96,8 +96,8 @@ function Sidebar({ mobile = false, onNavigate }) {
   return (
     <aside
       className={cn(
-        'flex h-screen max-h-screen flex-col overflow-hidden',
-        mobile ? 'h-full w-full max-h-full' : 'w-full'
+        'flex flex-col overflow-hidden',
+        mobile ? 'h-full w-full max-h-full' : 'sticky top-4 h-[calc(100vh-2rem)] w-full'
       )}
     >
       <div

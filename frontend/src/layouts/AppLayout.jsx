@@ -10,21 +10,21 @@ function AppLayout({ children }) {
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-slate-50 dark:bg-slate-950 transition-colors">
-      <div className="mx-auto flex min-h-screen w-full max-w-content flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8">
-        <div className="hidden lg:fixed lg:top-0 lg:z-30 lg:block lg:h-screen lg:w-72 lg:py-4 xl:left-[max(2rem,calc((100vw-80rem)/2+2rem))]">
+      <div className="mx-auto grid min-h-screen w-full max-w-content grid-cols-1 gap-4 px-4 py-4 sm:px-6 lg:grid-cols-[18rem_minmax(0,1fr)] lg:gap-6 lg:px-8">
+        <div className="hidden lg:block">
           <Sidebar />
         </div>
 
-        <div className="flex min-w-0 flex-1 flex-col gap-4 lg:ml-[19.5rem]">
+        <div className="flex min-w-0 flex-col gap-4 lg:gap-5">
           <div className="sticky top-0 z-20 lg:hidden">
             <Topbar onMenuClick={() => setMobileMenuOpen(true)} />
           </div>
 
-          <div className="sticky top-4 z-20 hidden lg:block">
+          <div className="sticky top-4 z-40 hidden lg:block">
             <Topbar />
           </div>
 
-          <main className="min-w-0 flex-1">{children}</main>
+          <main className="min-w-0 pb-8">{children}</main>
         </div>
       </div>
 
