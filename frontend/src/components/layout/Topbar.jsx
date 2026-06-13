@@ -64,7 +64,7 @@ function Topbar({ onMenuClick }) {
   }
 
   return (
-    <header className="flex items-center justify-between gap-2 rounded-[28px] border border-slate-200 bg-white px-4 py-4 shadow-soft dark:border-slate-700 dark:bg-slate-800">
+    <header className="flex items-center justify-between gap-2 rounded-[28px] border border-slate-200/80 bg-white/85 px-4 py-4 shadow-soft backdrop-blur-xl dark:border-slate-700/80 dark:bg-slate-800/80">
       <div className="flex min-w-0 items-center gap-2">
         {onMenuClick ? (
           <button

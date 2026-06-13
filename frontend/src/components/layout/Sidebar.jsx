@@ -117,7 +117,7 @@ function Sidebar({ mobile = false, onNavigate }) {
           </Link>
         </div>
 
-        <nav className="flex-1 overflow-y-auto overscroll-contain p-5 pt-4">
+        <nav className="scrollbar-hide flex-1 overflow-y-auto overscroll-contain p-5 pt-4">
           <Link
             to="/dashboard"
             onClick={onNavigate}
