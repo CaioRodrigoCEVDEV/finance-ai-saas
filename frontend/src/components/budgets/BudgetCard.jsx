@@ -3,7 +3,8 @@ import { Pencil, Trash2 } from 'lucide-react';
 import Badge from '../ui/Badge';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
-import { formatCurrencyBRL, formatPercentage } from '../../utils/formatters';
+import { usePrivacy } from '../../contexts/PrivacyContext';
+import { formatPercentage } from '../../utils/formatters';
 
 function getStatusLabel(status) {
   const labels = {
@@ -36,6 +37,7 @@ function getProgressColor(status) {
 }
 
 function BudgetCard({ budget, onEdit, onDelete, loading }) {
+  const { formatCurrencyPrivacy } = usePrivacy();
   const progressWidth = `${Math.min(Math.max(budget.usedPercentage, 0), 100)}%`;
 
   return (
@@ -61,15 +63,15 @@ function BudgetCard({ budget, onEdit, onDelete, loading }) {
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <div>
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Limite</p>
-          <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyBRL(budget.amount)}</p>
+          <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyPrivacy(budget.amount)}</p>
         </div>
         <div>
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Utilizado</p>
-          <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyBRL(budget.usedAmount)}</p>
+          <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyPrivacy(budget.usedAmount)}</p>
         </div>
         <div>
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Restante</p>
-          <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyBRL(budget.remainingAmount)}</p>
+          <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyPrivacy(budget.remainingAmount)}</p>
         </div>
       </div>
 

@@ -1,8 +1,11 @@
 import Badge from '../ui/Badge';
 
-import { formatCurrencyBRL, formatPercentage } from '../../utils/formatters';
+import { usePrivacy } from '../../contexts/PrivacyContext';
+import { formatPercentage } from '../../utils/formatters';
 
 function ExpenseCategoryList({ items }) {
+  const { formatCurrencyPrivacy } = usePrivacy();
+
   if (!items.length) {
     return <p className="text-sm text-slate-500 dark:text-slate-400">Nenhuma despesa encontrada no mes atual.</p>;
   }
@@ -19,7 +22,7 @@ function ExpenseCategoryList({ items }) {
               </div>
               <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">do total de despesas</p>
             </div>
-            <p className="text-sm font-semibold text-rose-600 dark:text-rose-400">{formatCurrencyBRL(item.amount)}</p>
+            <p className="text-sm font-semibold text-rose-600 dark:text-rose-400">{formatCurrencyPrivacy(item.amount)}</p>
           </div>
           <div className="mt-3 h-2 rounded-full bg-slate-200 dark:bg-slate-700">
             <div

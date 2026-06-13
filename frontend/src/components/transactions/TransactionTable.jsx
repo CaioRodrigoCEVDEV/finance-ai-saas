@@ -3,9 +3,9 @@ import { Pencil, Trash2 } from 'lucide-react';
 import Badge from '../ui/Badge';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
+import { usePrivacy } from '../../contexts/PrivacyContext';
 
 import {
-  formatCurrencyBRL,
   formatDateBR,
   formatTransactionStatus,
   formatTransactionType
@@ -40,6 +40,8 @@ function getStatusVariant(status) {
 }
 
 function TransactionTable({ transactions, pagination, loading, onEdit, onDelete, onPageChange }) {
+  const { formatCurrencyPrivacy } = usePrivacy();
+
   return (
     <Card className="hidden overflow-hidden rounded-[28px] p-0 lg:block">
       <div className="w-full overflow-hidden">
@@ -78,7 +80,7 @@ function TransactionTable({ transactions, pagination, loading, onEdit, onDelete,
                   <td className="px-3 py-3 whitespace-nowrap"><Badge variant={getTypeVariant(transaction.type)}>{formatTransactionType(transaction.type)}</Badge></td>
                   <td className="px-3 py-3 whitespace-nowrap"><Badge variant={getStatusVariant(transaction.status)}>{formatTransactionStatus(transaction.status)}</Badge></td>
                   <td className={`px-3 py-3 text-right font-semibold whitespace-nowrap ${amountColor}`}>
-                    {amountPrefix}{formatCurrencyBRL(transaction.amount)}
+                    {amountPrefix}{formatCurrencyPrivacy(transaction.amount)}
                   </td>
                   <td className="px-3 py-3">
                     <div className="flex justify-end gap-2 whitespace-nowrap">

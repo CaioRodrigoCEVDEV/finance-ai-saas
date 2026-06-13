@@ -3,7 +3,8 @@ import { Pencil, Trash2, TrendingUp } from 'lucide-react';
 import Badge from '../ui/Badge';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
-import { formatCurrencyBRL, formatPercentage, formatDateBR } from '../../utils/formatters';
+import { usePrivacy } from '../../contexts/PrivacyContext';
+import { formatPercentage, formatDateBR } from '../../utils/formatters';
 
 function getStatusLabel(status) {
   const labels = {
@@ -42,6 +43,7 @@ function getProgressColor(progressPercentage) {
 }
 
 function GoalCard({ goal, onEdit, onDelete, onUpdateProgress, loading }) {
+  const { formatCurrencyPrivacy } = usePrivacy();
   const progressWidth = `${Math.min(Math.max(goal.progressPercentage, 0), 100)}%`;
 
   return (
@@ -72,15 +74,15 @@ function GoalCard({ goal, onEdit, onDelete, onUpdateProgress, loading }) {
       <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <div>
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Valor alvo</p>
-          <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyBRL(goal.targetAmount)}</p>
+          <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyPrivacy(goal.targetAmount)}</p>
         </div>
         <div>
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Valor atual</p>
-          <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyBRL(goal.currentAmount)}</p>
+          <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyPrivacy(goal.currentAmount)}</p>
         </div>
         <div>
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Restante</p>
-          <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyBRL(goal.remainingAmount)}</p>
+          <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyPrivacy(goal.remainingAmount)}</p>
         </div>
       </div>
 
@@ -110,7 +112,7 @@ function GoalCard({ goal, onEdit, onDelete, onUpdateProgress, loading }) {
       {goal.suggestedMonthlyContribution !== null ? (
         <div className="mt-4 rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-700/50">
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Contribuicao mensal sugerida</p>
-          <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyBRL(goal.suggestedMonthlyContribution)} / mes</p>
+          <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyPrivacy(goal.suggestedMonthlyContribution)} / mes</p>
         </div>
       ) : null}
     </Card>

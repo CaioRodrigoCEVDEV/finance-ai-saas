@@ -1,8 +1,11 @@
 import Badge from '../ui/Badge';
 
-import { formatCurrencyBRL, formatDateBR } from '../../utils/formatters';
+import { usePrivacy } from '../../contexts/PrivacyContext';
+import { formatDateBR } from '../../utils/formatters';
 
 function RecentTransactions({ transactions }) {
+  const { formatCurrencyPrivacy } = usePrivacy();
+
   if (!transactions.length) {
     return <p className="text-sm text-slate-500 dark:text-slate-400">Nenhuma transação recente encontrada.</p>;
   }
@@ -30,7 +33,7 @@ function RecentTransactions({ transactions }) {
               </div>
 
               <p className={`text-base font-semibold ${isExpense ? 'text-rose-600' : 'text-emerald-600'}`}>
-                {isExpense ? '-' : '+'}{formatCurrencyBRL(transaction.amount)}
+                {isExpense ? '-' : '+'}{formatCurrencyPrivacy(transaction.amount)}
               </p>
             </article>
         );

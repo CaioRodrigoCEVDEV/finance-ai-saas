@@ -20,10 +20,11 @@ import { useSearchParams } from 'react-router-dom';
 
 import AppLayout from '../layouts/AppLayout';
 import { useAuth } from '../contexts/AuthContext';
+import { usePrivacy } from '../contexts/PrivacyContext';
 import * as invoiceService from '../services/invoiceService';
 import { getCreditCards } from '../services/creditCardService';
 import { getAccounts } from '../services/accountService';
-import { formatCurrencyBRL, formatDateBR } from '../utils/formatters';
+import { formatDateBR } from '../utils/formatters';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
@@ -68,6 +69,8 @@ function InvoiceBadge({ status, effectiveStatus }) {
 }
 
 function SummaryCards({ summary, loading }) {
+  const { formatCurrencyPrivacy } = usePrivacy();
+
   if (loading) {
     return (
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -87,7 +90,7 @@ function SummaryCards({ summary, loading }) {
         <div>
           <p className="text-sm text-slate-500 dark:text-slate-400">Total em aberto</p>
           <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
-            {formatCurrencyBRL(summary?.totalOpen || 0)}
+            {formatCurrencyPrivacy(summary?.totalOpen || 0)}
           </p>
         </div>
       </Card>
@@ -132,6 +135,7 @@ function SummaryCards({ summary, loading }) {
 }
 
 function PaymentModal({ isOpen, invoice, onClose, onPaid }) {
+  const { formatCurrencyPrivacy } = usePrivacy();
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -211,7 +215,7 @@ function PaymentModal({ isOpen, invoice, onClose, onPaid }) {
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Referência</p>
             <p className="font-medium text-slate-900 dark:text-slate-100">{invoice?.referenceLabel}</p>
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Valor total</p>
-            <p className="text-xl font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyBRL(invoice?.totalAmount)}</p>
+            <p className="text-xl font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyPrivacy(invoice?.totalAmount)}</p>
           </div>
 
           <Select
@@ -223,7 +227,7 @@ function PaymentModal({ isOpen, invoice, onClose, onPaid }) {
             <option value="">Selecione uma conta</option>
             {accounts.map((acc) => (
               <option key={acc.id} value={acc.id}>
-                {acc.name} ({formatCurrencyBRL(acc.currentBalance)})
+                {acc.name} ({formatCurrencyPrivacy(acc.currentBalance)})
               </option>
             ))}
           </Select>
@@ -252,6 +256,7 @@ function PaymentModal({ isOpen, invoice, onClose, onPaid }) {
 }
 
 function InvoiceDetailModal({ isOpen, invoiceId, onClose, onRecalculate, onPay }) {
+  const { formatCurrencyPrivacy } = usePrivacy();
   const [detail, setDetail] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -313,12 +318,12 @@ function InvoiceDetailModal({ isOpen, invoiceId, onClose, onRecalculate, onPay }
             </div>
             <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-700/50">
               <p className="text-sm text-slate-500 dark:text-slate-400">Total</p>
-              <p className="text-xl font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyBRL(summary?.totalAmount)}</p>
+              <p className="text-xl font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyPrivacy(summary?.totalAmount)}</p>
             </div>
             <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-700/50">
               <p className="text-sm text-slate-500 dark:text-slate-400">Pago</p>
               <p className="font-medium text-slate-900 dark:text-slate-100">
-                {status === 'PAID' ? formatCurrencyBRL(summary?.paidAmount) : '--'}
+                {status === 'PAID' ? formatCurrencyPrivacy(summary?.paidAmount) : '--'}
               </p>
             </div>
           </div>
@@ -372,7 +377,7 @@ function InvoiceDetailModal({ isOpen, invoiceId, onClose, onRecalculate, onPay }
                           )}
                         </td>
                         <td className={`px-4 py-3 font-medium ${t.type === 'EXPENSE' ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
-                          {t.type === 'EXPENSE' ? '-' : '+'}{formatCurrencyBRL(t.amount)}
+                          {t.type === 'EXPENSE' ? '-' : '+'}{formatCurrencyPrivacy(t.amount)}
                         </td>
                         <td className="px-4 py-3">
                           <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
@@ -410,6 +415,7 @@ function InvoiceDetailModal({ isOpen, invoiceId, onClose, onRecalculate, onPay }
 }
 
 function InvoiceRow({ invoice, onView, onRecalculate, onPay, onCancel, canWrite }) {
+  const { formatCurrencyPrivacy } = usePrivacy();
   const status = invoice.effectiveStatus || invoice.status;
 
   return (
@@ -431,7 +437,7 @@ function InvoiceRow({ invoice, onView, onRecalculate, onPay, onCancel, canWrite 
         <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{formatDateBR(invoice.closingDate)}</td>
         <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{formatDateBR(invoice.dueDate)}</td>
         <td className="px-4 py-3 font-medium text-slate-900 dark:text-slate-100">
-          {formatCurrencyBRL(invoice.totalAmount)}
+          {formatCurrencyPrivacy(invoice.totalAmount)}
         </td>
         <td className="px-4 py-3">
           <InvoiceBadge status={invoice.status} effectiveStatus={status} />
@@ -492,7 +498,7 @@ function InvoiceRow({ invoice, onView, onRecalculate, onPay, onCancel, canWrite 
               </div>
               <div>
                 <span className="text-slate-500 dark:text-slate-400">Total</span>
-                <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyBRL(invoice.totalAmount)}</p>
+                <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyPrivacy(invoice.totalAmount)}</p>
               </div>
             </div>
 

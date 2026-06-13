@@ -1,6 +1,9 @@
-import { formatCurrencyBRL, formatMonthLabel } from '../../utils/formatters';
+import { usePrivacy } from '../../contexts/PrivacyContext';
+import { formatMonthLabel } from '../../utils/formatters';
 
 function MonthlyFlow({ items }) {
+  const { formatCurrencyPrivacy } = usePrivacy();
+
   if (!items.length) {
     return <p className="text-sm text-slate-500 dark:text-slate-400">Fluxo mensal indisponivel no momento.</p>;
   }
@@ -22,7 +25,7 @@ function MonthlyFlow({ items }) {
                   {formatMonthLabel(item.month)}
                 </h3>
               <p className={`mt-1 text-sm font-semibold ${economyPositive ? 'text-emerald-600' : 'text-rose-600'}`}>
-                Economia: {formatCurrencyBRL(item.economy)}
+                Economia: {formatCurrencyPrivacy(item.economy)}
               </p>
             </div>
 
@@ -38,7 +41,7 @@ function MonthlyFlow({ items }) {
                       {entry.label}
                     </span>
                     <strong className="whitespace-nowrap text-sm font-bold text-slate-800 dark:text-slate-200">
-                      {formatCurrencyBRL(entry.value)}
+                      {formatCurrencyPrivacy(entry.value)}
                     </strong>
                   </div>
                   <div className="mt-1.5 h-1.5 w-full rounded-full bg-slate-200 dark:bg-slate-700">

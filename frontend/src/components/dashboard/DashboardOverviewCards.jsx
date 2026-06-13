@@ -1,31 +1,34 @@
 import SummaryCard from './SummaryCard';
-import { formatCurrencyBRL, formatPercentage } from '../../utils/formatters';
+import { usePrivacy } from '../../contexts/PrivacyContext';
+import { formatPercentage } from '../../utils/formatters';
 
 function DashboardOverviewCards({ data, tenantName }) {
+  const { formatCurrencyPrivacy } = usePrivacy();
+
   if (!data) return null;
 
   const cards = [
     {
       title: 'Saldo total',
-      value: formatCurrencyBRL(data.totalBalance),
+      value: formatCurrencyPrivacy(data.totalBalance),
       description: `Posição consolidada das contas de ${tenantName || 'Finance AI'}.`,
       variant: 'highlight'
     },
     {
       title: 'Receitas do mês',
-      value: formatCurrencyBRL(data.monthlyIncome),
+      value: formatCurrencyPrivacy(data.monthlyIncome),
       description: 'Entradas confirmadas no mês atual.',
       variant: 'positive'
     },
     {
       title: 'Despesas do mês',
-      value: formatCurrencyBRL(data.monthlyExpense),
+      value: formatCurrencyPrivacy(data.monthlyExpense),
       description: `${formatPercentage(data.expensePercentage)} da receita mensal.`,
       variant: 'negative'
     },
     {
       title: 'Economia do mês',
-      value: formatCurrencyBRL(data.monthlyEconomy),
+      value: formatCurrencyPrivacy(data.monthlyEconomy),
       description: 'Receitas menos despesas e investimentos confirmados.',
       variant: data.monthlyEconomy >= 0 ? 'positive' : 'negative'
     }

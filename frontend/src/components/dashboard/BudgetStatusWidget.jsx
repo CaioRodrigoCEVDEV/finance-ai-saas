@@ -1,8 +1,10 @@
 import { BadgeDollarSign } from 'lucide-react';
 import Card from '../ui/Card';
-import { formatCurrencyBRL } from '../../utils/formatters';
+import { usePrivacy } from '../../contexts/PrivacyContext';
 
 function BudgetStatusWidget({ data }) {
+  const { formatCurrencyPrivacy } = usePrivacy();
+
   if (!data) return null;
 
   const { totalBudget, totalUsed, totalRemaining, usedPercentage, warningCount, exceededCount } = data;
@@ -19,15 +21,15 @@ function BudgetStatusWidget({ data }) {
       <div className="space-y-3">
         <div className="flex items-center justify-between text-sm">
           <span className="text-slate-500 dark:text-slate-400">Orçamento total</span>
-          <span className="font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyBRL(totalBudget)}</span>
+          <span className="font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyPrivacy(totalBudget)}</span>
         </div>
         <div className="flex items-center justify-between text-sm">
           <span className="text-slate-500 dark:text-slate-400">Utilizado</span>
-          <span className="font-semibold text-rose-600">{formatCurrencyBRL(totalUsed)}</span>
+          <span className="font-semibold text-rose-600">{formatCurrencyPrivacy(totalUsed)}</span>
         </div>
         <div className="flex items-center justify-between text-sm">
           <span className="text-slate-500 dark:text-slate-400">Disponível</span>
-          <span className="font-semibold text-emerald-600">{formatCurrencyBRL(totalRemaining)}</span>
+          <span className="font-semibold text-emerald-600">{formatCurrencyPrivacy(totalRemaining)}</span>
         </div>
         {(warningCount > 0 || exceededCount > 0) && (
           <div className="flex items-center justify-between text-sm">

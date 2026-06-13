@@ -14,7 +14,8 @@ import Modal from '../components/ui/Modal';
 import PageHeader from '../components/ui/PageHeader';
 import Select from '../components/ui/Select';
 import { useAuth } from '../contexts/AuthContext';
-import { formatCurrencyBRL, formatDateBR } from '../utils/formatters';
+import { usePrivacy } from '../contexts/PrivacyContext';
+import { formatDateBR } from '../utils/formatters';
 import { getAccounts } from '../services/accountService';
 import { getCategories } from '../services/categoryService';
 import { getCreditCards } from '../services/creditCardService';
@@ -112,6 +113,7 @@ const initialFilters = {
 
 function RecurrencesPage() {
   const { tenant } = useAuth();
+  const { formatCurrencyPrivacy } = usePrivacy();
   const isReadonly = tenant?.role === 'READONLY';
   const hasInitializedFilters = useRef(false);
 
@@ -378,8 +380,8 @@ function RecurrencesPage() {
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
           <MetricCard title="Recorrências ativas" value={activeCount} description={`${pausedCount} pausadas`} />
           <MetricCard title="Próximos lancamentos" value={nextSevenDaysCount} description="Nos proximos 7 dias" />
-          <MetricCard title="Receitas mensais estimadas" value={formatCurrencyBRL(monthlyIncomeEstimate)} description="Valor estimado mensal" />
-          <MetricCard title="Despesas mensais estimadas" value={formatCurrencyBRL(monthlyExpenseEstimate)} description="Valor estimado mensal" />
+          <MetricCard title="Receitas mensais estimadas" value={formatCurrencyPrivacy(monthlyIncomeEstimate)} description="Valor estimado mensal" />
+          <MetricCard title="Despesas mensais estimadas" value={formatCurrencyPrivacy(monthlyExpenseEstimate)} description="Valor estimado mensal" />
         </div>
 
         <Card className="rounded-[28px] p-5">
@@ -501,7 +503,7 @@ function RecurrencesPage() {
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-600 dark:bg-slate-800/50">
                 <p className="font-semibold text-slate-900 dark:text-slate-100">{generateTarget.description}</p>
                 <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                  {formatCurrencyBRL(generateTarget.amount)} • {formatRecurrenceType(generateTarget.type)} • Próxima: {formatDateBR(generateTarget.nextRunDate)}
+                  {formatCurrencyPrivacy(generateTarget.amount)} • {formatRecurrenceType(generateTarget.type)} • Próxima: {formatDateBR(generateTarget.nextRunDate)}
                 </p>
               </div>
             )}
@@ -519,6 +521,8 @@ function RecurrencesPage() {
 }
 
 function RecurrenceMobileCard({ recurrence, isReadonly, loading, onGenerate, onEdit, onPauseToggle, onFinish, onDelete }) {
+  const { formatCurrencyPrivacy } = usePrivacy();
+
   return (
     <Card className="rounded-[28px] p-5">
       <div className="flex items-start justify-between gap-3">
@@ -532,7 +536,7 @@ function RecurrenceMobileCard({ recurrence, isReadonly, loading, onGenerate, onE
       <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
         <div>
           <span className="text-slate-500 dark:text-slate-400">Valor</span>
-          <p className="font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyBRL(recurrence.amount)}</p>
+          <p className="font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyPrivacy(recurrence.amount)}</p>
         </div>
         <div>
           <span className="text-slate-500 dark:text-slate-400">Próximo lançamento</span>
@@ -599,6 +603,8 @@ function RecurrenceMobileCard({ recurrence, isReadonly, loading, onGenerate, onE
 }
 
 function RecurrenceTable({ recurrences, isReadonly, loading, onGenerate, onEdit, onPauseToggle, onFinish, onDelete }) {
+  const { formatCurrencyPrivacy } = usePrivacy();
+
   return (
     <Card className="hidden overflow-hidden rounded-[28px] p-0 lg:block">
       <div className="w-full overflow-hidden">
@@ -642,7 +648,7 @@ function RecurrenceTable({ recurrences, isReadonly, loading, onGenerate, onEdit,
                     <Badge variant={getTypeVariant(recurrence.type)}>{formatRecurrenceType(recurrence.type)}</Badge>
                   </td>
                   <td className={`px-3 py-3 text-right font-semibold whitespace-nowrap ${recurrence.type === 'INCOME' ? 'text-emerald-600' : 'text-rose-600'}`}>
-                    {recurrence.type === 'INCOME' ? '+' : '-'}{formatCurrencyBRL(recurrence.amount)}
+                    {recurrence.type === 'INCOME' ? '+' : '-'}{formatCurrencyPrivacy(recurrence.amount)}
                   </td>
                   <td className="px-3 py-3 whitespace-nowrap">
                     <span className="text-slate-500 dark:text-slate-400">{formatFrequency(recurrence.frequency)}</span>

@@ -1,8 +1,11 @@
 import Card from '../ui/Card';
 import LoadingSkeleton from '../ui/LoadingSkeleton';
-import { formatCurrencyBRL, formatPercentage } from '../../utils/formatters';
+import { usePrivacy } from '../../contexts/PrivacyContext';
+import { formatPercentage } from '../../utils/formatters';
 
 function SummaryItem({ label, value, prefix, suffix, isCurrency, isPercentage, loading }) {
+  const { formatCurrencyPrivacy } = usePrivacy();
+
   return (
     <Card className="rounded-[28px] border-slate-200/80 bg-white/95 p-6 dark:border-slate-700 dark:bg-slate-800">
       <p className="text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">{label}</p>
@@ -11,7 +14,7 @@ function SummaryItem({ label, value, prefix, suffix, isCurrency, isPercentage, l
       ) : (
         <p className="mt-3 text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
           {prefix}
-          {isCurrency ? formatCurrencyBRL(value) : isPercentage ? formatPercentage(value) : value}
+          {isCurrency ? formatCurrencyPrivacy(value) : isPercentage ? formatPercentage(value) : value}
           {suffix}
         </p>
       )}

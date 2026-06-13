@@ -18,7 +18,8 @@ import MetricCard from '../components/MetricCard';
 import Modal from '../components/ui/Modal';
 import PageHeader from '../components/ui/PageHeader';
 import Select from '../components/ui/Select';
-import { formatCurrencyBRL, formatDateBR } from '../utils/formatters';
+import { usePrivacy } from '../contexts/PrivacyContext';
+import { formatDateBR } from '../utils/formatters';
 import { getFinancialCalendarMonth } from '../services/financialCalendarService';
 
 const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
@@ -63,6 +64,7 @@ function getKindLabel(kind) {
 
 export default function FinancialCalendarPage() {
   const navigate = useNavigate();
+  const { formatCurrencyPrivacy } = usePrivacy();
   const now = new Date();
 
   const [currentYear, setCurrentYear] = useState(now.getFullYear());
@@ -312,22 +314,22 @@ export default function FinancialCalendarPage() {
             <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
               <MetricCard
                 title="Receitas do mes"
-                value={formatCurrencyBRL(summary.totalIncome)}
-                description={`${summary.scheduledIncome > 0 ? formatCurrencyBRL(summary.scheduledIncome) + ' previstas' : ''}`}
+                value={formatCurrencyPrivacy(summary.totalIncome)}
+                description={`${summary.scheduledIncome > 0 ? formatCurrencyPrivacy(summary.scheduledIncome) + ' previstas' : ''}`}
               />
               <MetricCard
                 title="Despesas do mes"
-                value={formatCurrencyBRL(summary.totalExpense)}
-                description={`${summary.scheduledExpense > 0 ? formatCurrencyBRL(summary.scheduledExpense) + ' previstas' : ''}`}
+                value={formatCurrencyPrivacy(summary.totalExpense)}
+                description={`${summary.scheduledExpense > 0 ? formatCurrencyPrivacy(summary.scheduledExpense) + ' previstas' : ''}`}
               />
               <MetricCard
                 title="Pendentes"
-                value={formatCurrencyBRL(summary.pendingExpense)}
-                description={`${summary.pendingIncome > 0 ? formatCurrencyBRL(summary.pendingIncome) + ' a receber' : 'Despesas a pagar'}`}
+                value={formatCurrencyPrivacy(summary.pendingExpense)}
+                description={`${summary.pendingIncome > 0 ? formatCurrencyPrivacy(summary.pendingIncome) + ' a receber' : 'Despesas a pagar'}`}
               />
               <MetricCard
                 title="Saldo previsto"
-                value={formatCurrencyBRL(summary.projectedBalance)}
+                value={formatCurrencyPrivacy(summary.projectedBalance)}
                 description={`${summary.eventCount} eventos no mes`}
               />
             </div>
@@ -385,12 +387,12 @@ export default function FinancialCalendarPage() {
                         <div className="mt-1 space-y-0.5">
                           {incomeTotal > 0 && (
                             <p className="text-[11px] font-medium leading-tight text-emerald-600 dark:text-emerald-400">
-                              +{formatCurrencyBRL(incomeTotal)}
+                              +{formatCurrencyPrivacy(incomeTotal)}
                             </p>
                           )}
                           {expenseTotal > 0 && (
                             <p className="text-[11px] font-medium leading-tight text-rose-600 dark:text-rose-400">
-                              -{formatCurrencyBRL(expenseTotal)}
+                              -{formatCurrencyPrivacy(expenseTotal)}
                             </p>
                           )}
                           <div className="mt-1 space-y-0.5">
@@ -455,12 +457,12 @@ export default function FinancialCalendarPage() {
                           <div className="text-right">
                             {dayIncome > 0 && (
                               <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                                +{formatCurrencyBRL(dayIncome)}
+                                +{formatCurrencyPrivacy(dayIncome)}
                               </p>
                             )}
                             {dayExpense > 0 && (
                               <p className="text-sm font-medium text-rose-600 dark:text-rose-400">
-                                -{formatCurrencyBRL(dayExpense)}
+                                -{formatCurrencyPrivacy(dayExpense)}
                               </p>
                             )}
                           </div>
@@ -474,7 +476,7 @@ export default function FinancialCalendarPage() {
                               </Badge>
                               <span className="truncate text-slate-700 dark:text-slate-300">{event.title}</span>
                               <span className={`ml-auto shrink-0 font-medium ${event.type === 'INCOME' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
-                                {event.type === 'INCOME' ? '+' : '-'}{formatCurrencyBRL(event.amount)}
+                                {event.type === 'INCOME' ? '+' : '-'}{formatCurrencyPrivacy(event.amount)}
                               </span>
                             </div>
                           ))}
@@ -504,19 +506,19 @@ export default function FinancialCalendarPage() {
                 <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-center dark:border-emerald-800 dark:bg-emerald-900/20">
                   <p className="text-xs text-slate-500 dark:text-slate-400">Receitas</p>
                   <p className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">
-                    {formatCurrencyBRL(selectedDay.income)}
+                    {formatCurrencyPrivacy(selectedDay.income)}
                   </p>
                 </div>
                 <div className="rounded-2xl border border-rose-200 bg-rose-50 p-3 text-center dark:border-rose-800 dark:bg-rose-900/20">
                   <p className="text-xs text-slate-500 dark:text-slate-400">Despesas</p>
                   <p className="text-lg font-semibold text-rose-600 dark:text-rose-400">
-                    {formatCurrencyBRL(selectedDay.expense)}
+                    {formatCurrencyPrivacy(selectedDay.expense)}
                   </p>
                 </div>
                 <div className={`rounded-2xl border p-3 text-center ${selectedDay.balance >= 0 ? 'border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-900/20' : 'border-rose-200 bg-rose-50 dark:border-rose-800 dark:bg-rose-900/20'}`}>
                   <p className="text-xs text-slate-500 dark:text-slate-400">Saldo</p>
                   <p className={`text-lg font-semibold ${selectedDay.balance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
-                    {formatCurrencyBRL(selectedDay.balance)}
+                    {formatCurrencyPrivacy(selectedDay.balance)}
                   </p>
                 </div>
               </div>
@@ -544,7 +546,7 @@ export default function FinancialCalendarPage() {
                         </div>
                       </div>
                       <span className={`shrink-0 text-lg font-semibold ${event.type === 'INCOME' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
-                        {event.type === 'INCOME' ? '+' : '-'}{formatCurrencyBRL(event.amount)}
+                        {event.type === 'INCOME' ? '+' : '-'}{formatCurrencyPrivacy(event.amount)}
                       </span>
                     </div>
 

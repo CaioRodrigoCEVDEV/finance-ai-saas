@@ -2,13 +2,11 @@ import Card from '../ui/Card';
 import EmptyState from '../ui/EmptyState';
 import LoadingSkeleton from '../ui/LoadingSkeleton';
 import { Landmark } from 'lucide-react';
-import { formatCurrencyBRL } from '../../utils/formatters';
-
-function formatCurrency(value) {
-  return formatCurrencyBRL(value);
-}
+import { usePrivacy } from '../../contexts/PrivacyContext';
 
 function AccountReport({ data, loading }) {
+  const { formatCurrencyPrivacy } = usePrivacy();
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -46,10 +44,10 @@ function AccountReport({ data, loading }) {
             {data.map((item) => (
               <tr key={item.accountId} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                 <td className="px-6 py-4 font-medium text-slate-900 dark:text-slate-100">{item.accountName}</td>
-                <td className="px-6 py-4 text-emerald-600">{formatCurrency(item.income)}</td>
-                <td className="px-6 py-4 text-rose-600">{formatCurrency(item.expense)}</td>
+                <td className="px-6 py-4 text-emerald-600">{formatCurrencyPrivacy(item.income)}</td>
+                <td className="px-6 py-4 text-rose-600">{formatCurrencyPrivacy(item.expense)}</td>
                 <td className={`px-6 py-4 font-semibold ${item.balance >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                  {formatCurrency(item.balance)}
+                  {formatCurrencyPrivacy(item.balance)}
                 </td>
                 <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{item.transactionCount}</td>
               </tr>

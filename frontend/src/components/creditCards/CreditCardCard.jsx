@@ -3,7 +3,8 @@ import { CalendarDays, CreditCard as CreditCardIcon, Pencil, Trash2 } from 'luci
 import Badge from '../ui/Badge';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
-import { formatCurrencyBRL, formatDateBR, formatPercentage } from '../../utils/formatters';
+import { usePrivacy } from '../../contexts/PrivacyContext';
+import { formatDateBR, formatPercentage } from '../../utils/formatters';
 
 function getBrandLabel(brand) {
   const labels = {
@@ -19,6 +20,7 @@ function getBrandLabel(brand) {
 }
 
 function CreditCardCard({ creditCard, onEdit, onDelete, loading }) {
+  const { formatCurrencyPrivacy } = usePrivacy();
   const usagePercentage = creditCard.limitAmount > 0
     ? Math.min((creditCard.currentInvoiceAmount / creditCard.limitAmount) * 100, 100)
     : 0;
@@ -69,15 +71,15 @@ function CreditCardCard({ creditCard, onEdit, onDelete, loading }) {
         <div className="grid gap-4 sm:grid-cols-3">
           <div>
             <p className="text-xs uppercase tracking-[0.22em] text-white/60">Limite total</p>
-            <p className="mt-2 text-lg font-semibold">{formatCurrencyBRL(creditCard.limitAmount)}</p>
+            <p className="mt-2 text-lg font-semibold">{formatCurrencyPrivacy(creditCard.limitAmount)}</p>
           </div>
           <div>
             <p className="text-xs uppercase tracking-[0.22em] text-white/60">Usado no mes</p>
-            <p className="mt-2 text-lg font-semibold">{formatCurrencyBRL(creditCard.currentInvoiceAmount)}</p>
+            <p className="mt-2 text-lg font-semibold">{formatCurrencyPrivacy(creditCard.currentInvoiceAmount)}</p>
           </div>
           <div>
             <p className="text-xs uppercase tracking-[0.22em] text-white/60">Disponivel</p>
-            <p className="mt-2 text-lg font-semibold">{formatCurrencyBRL(creditCard.availableLimit)}</p>
+            <p className="mt-2 text-lg font-semibold">{formatCurrencyPrivacy(creditCard.availableLimit)}</p>
           </div>
         </div>
 

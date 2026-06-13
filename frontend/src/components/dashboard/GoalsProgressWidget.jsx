@@ -1,8 +1,10 @@
 import { Target } from 'lucide-react';
 import Card from '../ui/Card';
-import { formatCurrencyBRL } from '../../utils/formatters';
+import { usePrivacy } from '../../contexts/PrivacyContext';
 
 function GoalsProgressWidget({ data }) {
+  const { formatCurrencyPrivacy } = usePrivacy();
+
   if (!data) return null;
 
   const { activeGoals, completedGoals, totalTargetAmount, totalCurrentAmount, overallProgressPercentage } = data;
@@ -27,11 +29,11 @@ function GoalsProgressWidget({ data }) {
         </div>
         <div className="flex items-center justify-between text-sm">
           <span className="text-slate-500 dark:text-slate-400">Valor alvo</span>
-          <span className="font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyBRL(totalTargetAmount)}</span>
+          <span className="font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyPrivacy(totalTargetAmount)}</span>
         </div>
         <div className="flex items-center justify-between text-sm">
           <span className="text-slate-500 dark:text-slate-400">Valor acumulado</span>
-          <span className="font-semibold text-emerald-600">{formatCurrencyBRL(totalCurrentAmount)}</span>
+          <span className="font-semibold text-emerald-600">{formatCurrencyPrivacy(totalCurrentAmount)}</span>
         </div>
       </div>
 

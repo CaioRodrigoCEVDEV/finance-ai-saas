@@ -1,8 +1,11 @@
 import { ArrowDownRight } from 'lucide-react';
 import Card from '../ui/Card';
-import { formatCurrencyBRL, formatDateBR } from '../../utils/formatters';
+import { usePrivacy } from '../../contexts/PrivacyContext';
+import { formatDateBR } from '../../utils/formatters';
 
 function TopExpensesWidget({ expenses }) {
+  const { formatCurrencyPrivacy } = usePrivacy();
+
   if (!expenses || expenses.length === 0) {
     return (
       <Card className="rounded-[28px] p-6">
@@ -38,7 +41,7 @@ function TopExpensesWidget({ expenses }) {
                 {item.categoryName} • {formatDateBR(item.transactionDate)}
               </p>
             </div>
-            <p className="text-sm font-semibold text-rose-600">{formatCurrencyBRL(item.amount)}</p>
+            <p className="text-sm font-semibold text-rose-600">{formatCurrencyPrivacy(item.amount)}</p>
           </div>
         ))}
       </div>

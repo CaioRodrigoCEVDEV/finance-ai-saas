@@ -4,11 +4,6 @@ import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import Select from '../../components/ui/Select';
-import { formatCurrencyBRL } from '../../utils/formatters';
-
-function formatCurrency(value) {
-  return formatCurrencyBRL(value);
-}
 
 function ImportPreviewTable({
   preview,

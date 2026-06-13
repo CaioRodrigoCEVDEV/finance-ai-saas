@@ -1,13 +1,16 @@
 import { PiggyBank, ShieldAlert, Target, TrendingUp } from 'lucide-react';
 
 import Card from '../ui/Card';
-import { formatCurrencyBRL, formatPercentage } from '../../utils/formatters';
+import { usePrivacy } from '../../contexts/PrivacyContext';
+import { formatPercentage } from '../../utils/formatters';
 
 function BudgetSummaryCards({ summary }) {
+  const { formatCurrencyPrivacy } = usePrivacy();
+
   const items = [
-    { label: 'Orcamento total', value: formatCurrencyBRL(summary.totalBudget), icon: PiggyBank },
-    { label: 'Utilizado', value: formatCurrencyBRL(summary.totalUsed), icon: TrendingUp },
-    { label: 'Disponivel', value: formatCurrencyBRL(summary.totalRemaining), icon: Target },
+    { label: 'Orcamento total', value: formatCurrencyPrivacy(summary.totalBudget), icon: PiggyBank },
+    { label: 'Utilizado', value: formatCurrencyPrivacy(summary.totalUsed), icon: TrendingUp },
+    { label: 'Disponivel', value: formatCurrencyPrivacy(summary.totalRemaining), icon: Target },
     { label: 'Percentual usado', value: formatPercentage(summary.usedPercentage), icon: ShieldAlert }
   ];
 

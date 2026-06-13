@@ -2,13 +2,12 @@ import Card from '../ui/Card';
 import EmptyState from '../ui/EmptyState';
 import LoadingSkeleton from '../ui/LoadingSkeleton';
 import { Calendar } from 'lucide-react';
-import { formatCurrencyBRL, formatMonthLabel } from '../../utils/formatters';
-
-function formatCurrency(value) {
-  return formatCurrencyBRL(value);
-}
+import { usePrivacy } from '../../contexts/PrivacyContext';
+import { formatMonthLabel } from '../../utils/formatters';
 
 function MonthlyEvolutionReport({ data, loading }) {
+  const { formatCurrencyPrivacy } = usePrivacy();
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -40,7 +39,7 @@ function MonthlyEvolutionReport({ data, loading }) {
           <div className="mb-4 flex items-center justify-between">
             <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">{formatMonthLabel(item.month)}</h3>
             <span className={`text-sm font-semibold ${item.balance >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-              Saldo: {formatCurrency(item.balance)}
+              Saldo: {formatCurrencyPrivacy(item.balance)}
             </span>
           </div>
 
@@ -48,7 +47,7 @@ function MonthlyEvolutionReport({ data, loading }) {
             <div className="space-y-1">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-600 dark:text-slate-400">Receitas</span>
-                <span className="font-medium text-emerald-600 dark:text-emerald-400">{formatCurrency(item.income)}</span>
+                <span className="font-medium text-emerald-600 dark:text-emerald-400">{formatCurrencyPrivacy(item.income)}</span>
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
                 <div
@@ -61,7 +60,7 @@ function MonthlyEvolutionReport({ data, loading }) {
             <div className="space-y-1">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-600 dark:text-slate-400">Despesas</span>
-                <span className="font-medium text-rose-600 dark:text-rose-400">{formatCurrency(item.expense)}</span>
+                <span className="font-medium text-rose-600 dark:text-rose-400">{formatCurrencyPrivacy(item.expense)}</span>
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
                 <div
@@ -74,7 +73,7 @@ function MonthlyEvolutionReport({ data, loading }) {
             <div className="space-y-1">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-600 dark:text-slate-400">Investimentos</span>
-                <span className="font-medium text-blue-600 dark:text-blue-400">{formatCurrency(item.investment)}</span>
+                <span className="font-medium text-blue-600 dark:text-blue-400">{formatCurrencyPrivacy(item.investment)}</span>
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
                 <div

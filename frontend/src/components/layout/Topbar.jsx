@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
-import { ChevronDown, CircleUser, LogOut, Menu, MessageSquareText, Settings, Shield } from 'lucide-react';
+import { ChevronDown, CircleUser, Eye, EyeOff, LogOut, Menu, MessageSquareText, Settings, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { useAuth } from '../../contexts/AuthContext';
+import { usePrivacy } from '../../contexts/PrivacyContext';
 import { cn } from '../../utils/cn';
 import NotificationBell from '../notifications/NotificationBell';
 import PwaInstallButton from '../PwaInstallButton';
@@ -25,6 +26,7 @@ function getInitials(name) {
 function Topbar({ onMenuClick }) {
   const navigate = useNavigate();
   const { logout, tenant, user, isSuperAdmin } = useAuth();
+  const { hideValues, toggleHideValues } = usePrivacy();
   const [open, setOpen] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const containerRef = useRef(null);
@@ -97,6 +99,19 @@ function Topbar({ onMenuClick }) {
           <MessageSquareText className="h-5 w-5 text-slate-500 dark:text-slate-400" />
         </button>
         <NotificationBell />
+        <button
+          type="button"
+          onClick={toggleHideValues}
+          className="relative flex h-9 w-9 items-center justify-center rounded-2xl transition hover:bg-slate-50 dark:hover:bg-slate-700/50"
+          aria-label={hideValues ? 'Exibir valores' : 'Ocultar valores'}
+          title={hideValues ? 'Exibir valores' : 'Ocultar valores'}
+        >
+          {hideValues ? (
+            <EyeOff className="h-5 w-5 text-slate-500 dark:text-slate-400" />
+          ) : (
+            <Eye className="h-5 w-5 text-slate-500 dark:text-slate-400" />
+          )}
+        </button>
 
         <div className="relative" ref={containerRef}>
           <button

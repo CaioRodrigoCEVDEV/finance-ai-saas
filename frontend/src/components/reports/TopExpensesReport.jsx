@@ -2,11 +2,8 @@ import Card from '../ui/Card';
 import EmptyState from '../ui/EmptyState';
 import LoadingSkeleton from '../ui/LoadingSkeleton';
 import { ArrowDown } from 'lucide-react';
-import { formatCurrencyBRL, formatDateBR } from '../../utils/formatters';
-
-function formatCurrency(value) {
-  return formatCurrencyBRL(value);
-}
+import { usePrivacy } from '../../contexts/PrivacyContext';
+import { formatDateBR } from '../../utils/formatters';
 
 function formatDate(value) {
   if (!value) return '-';
@@ -14,6 +11,8 @@ function formatDate(value) {
 }
 
 function TopExpensesReport({ data, loading }) {
+  const { formatCurrencyPrivacy } = usePrivacy();
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -51,7 +50,7 @@ function TopExpensesReport({ data, loading }) {
             </p>
           </div>
           <div className="shrink-0 text-sm font-semibold text-rose-600">
-            {formatCurrency(item.amount)}
+            {formatCurrencyPrivacy(item.amount)}
           </div>
         </Card>
       ))}

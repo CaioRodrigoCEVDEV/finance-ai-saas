@@ -2,11 +2,7 @@ import { TrendingDown, TrendingUp, PiggyBank, Scale } from 'lucide-react';
 
 import Card from '../ui/Card';
 import LoadingSkeleton from '../ui/LoadingSkeleton';
-import { formatCurrencyBRL } from '../../utils/formatters';
-
-function formatCurrency(value) {
-  return formatCurrencyBRL(value);
-}
+import { usePrivacy } from '../../contexts/PrivacyContext';
 
 function SummaryCard({ icon: Icon, label, value, colorClass, iconBgClass }) {
   return (
@@ -23,6 +19,8 @@ function SummaryCard({ icon: Icon, label, value, colorClass, iconBgClass }) {
 }
 
 function FinancialSummaryReport({ data, loading }) {
+  const { formatCurrencyPrivacy } = usePrivacy();
+
   if (loading) {
     return (
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -42,28 +40,28 @@ function FinancialSummaryReport({ data, loading }) {
       <SummaryCard
         icon={TrendingUp}
         label="Receitas"
-        value={formatCurrency(data.income)}
+        value={formatCurrencyPrivacy(data.income)}
         colorClass="text-emerald-600"
         iconBgClass="bg-emerald-50"
       />
       <SummaryCard
         icon={TrendingDown}
         label="Despesas"
-        value={formatCurrency(data.expense)}
+        value={formatCurrencyPrivacy(data.expense)}
         colorClass="text-rose-600"
         iconBgClass="bg-rose-50"
       />
       <SummaryCard
         icon={PiggyBank}
         label="Investimentos"
-        value={formatCurrency(data.investment)}
+        value={formatCurrencyPrivacy(data.investment)}
         colorClass="text-blue-600"
         iconBgClass="bg-blue-50"
       />
       <SummaryCard
         icon={Scale}
         label="Saldo do periodo"
-        value={formatCurrency(data.balance)}
+        value={formatCurrencyPrivacy(data.balance)}
         colorClass={data.balance >= 0 ? 'text-emerald-600' : 'text-rose-600'}
         iconBgClass={data.balance >= 0 ? 'bg-emerald-50' : 'bg-rose-50'}
       />

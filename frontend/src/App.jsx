@@ -1,13 +1,16 @@
 import AppRoutes from './routes';
 import { AuthProvider } from './contexts/AuthContext';
+import { PrivacyProvider } from './contexts/PrivacyContext';
 import { ToastProvider } from './contexts/ToastContext';
 
 function App() {
   return (
     <AuthProvider>
-      <ToastProvider>
-        <AppRoutes />
-      </ToastProvider>
+      <PrivacyProvider>
+        <ToastProvider>
+          <AppRoutes />
+        </ToastProvider>
+      </PrivacyProvider>
     </AuthProvider>
   );
 }

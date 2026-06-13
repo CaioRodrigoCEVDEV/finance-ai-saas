@@ -16,6 +16,7 @@ import ExpensesByCategory from '../components/dashboard/ExpensesByCategory';
 import TopExpensesWidget from '../components/dashboard/TopExpensesWidget';
 import RecentTransactions from '../components/dashboard/RecentTransactions';
 import MonthlyFlow from '../components/dashboard/MonthlyFlow';
+import { usePrivacy } from '../contexts/PrivacyContext';
 
 import {
   getDashboardOverview,
@@ -27,7 +28,7 @@ import {
   getRecentTransactions,
   getMonthlyFlow
 } from '../services/dashboardService';
-import { formatCurrencyBRL, formatDateBR } from '../utils/formatters';
+import { formatDateBR } from '../utils/formatters';
 import { getGreeting, getFirstName } from '../utils/greeting';
 
 const initialState = {
@@ -43,6 +44,7 @@ const initialState = {
 
 function Dashboard() {
   const { user, tenant } = useAuth();
+  const { formatCurrencyPrivacy } = usePrivacy();
   const navigate = useNavigate();
   const firstName = getFirstName(user?.name);
   const greeting = getGreeting();
@@ -237,7 +239,7 @@ function Dashboard() {
                           <p className="text-xs text-slate-500 dark:text-slate-400">{b.categoryName}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyBRL(b.usedAmount)} de {formatCurrencyBRL(b.amount)}</p>
+                          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyPrivacy(b.usedAmount)} de {formatCurrencyPrivacy(b.amount)}</p>
                           <p className={`text-xs font-medium ${b.status === 'EXCEEDED' ? 'text-rose-600' : b.status === 'WARNING' ? 'text-amber-600' : 'text-emerald-600'}`}>
                             {b.status === 'EXCEEDED' ? 'Excedido' : b.status === 'WARNING' ? 'Quase no limite' : 'Dentro do orçamento'}
                           </p>
@@ -277,7 +279,7 @@ function Dashboard() {
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyBRL(g.currentAmount)} de {formatCurrencyBRL(g.targetAmount)}</p>
+                          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyPrivacy(g.currentAmount)} de {formatCurrencyPrivacy(g.targetAmount)}</p>
                           <p className="text-xs font-medium text-emerald-600">{g.progressPercentage.toFixed(2)}%</p>
                         </div>
                       </div>

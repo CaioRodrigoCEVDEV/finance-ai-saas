@@ -3,9 +3,9 @@ import { Pencil, Trash2 } from 'lucide-react';
 import Badge from '../ui/Badge';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
+import { usePrivacy } from '../../contexts/PrivacyContext';
 
 import {
-  formatCurrencyBRL,
   formatDateBR,
   formatTransactionStatus,
   formatTransactionType
@@ -40,6 +40,7 @@ function getStatusVariant(status) {
 }
 
 function TransactionMobileCard({ transaction, loading, onEdit, onDelete }) {
+  const { formatCurrencyPrivacy } = usePrivacy();
   const holderName = transaction.creditCard?.name || transaction.account?.name || 'Sem vinculacao';
   const isNegativeValue = ['EXPENSE', 'INVESTMENT'].includes(transaction.type);
   const amountColor = isNegativeValue ? 'text-rose-600' : transaction.type === 'TRANSFER' ? 'text-slate-700' : 'text-emerald-600';
@@ -54,7 +55,7 @@ function TransactionMobileCard({ transaction, loading, onEdit, onDelete }) {
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{transaction.category?.name || 'Sem categoria'} • {holderName}</p>
         </div>
         <p className={`text-base font-semibold ${amountColor}`}>
-          {amountPrefix}{formatCurrencyBRL(transaction.amount)}
+          {amountPrefix}{formatCurrencyPrivacy(transaction.amount)}
         </p>
       </div>
 

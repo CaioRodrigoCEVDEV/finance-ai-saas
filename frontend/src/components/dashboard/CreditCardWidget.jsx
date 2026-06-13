@@ -1,8 +1,10 @@
 import { CreditCard } from 'lucide-react';
 import Card from '../ui/Card';
-import { formatCurrencyBRL } from '../../utils/formatters';
+import { usePrivacy } from '../../contexts/PrivacyContext';
 
 function CreditCardWidget({ data }) {
+  const { formatCurrencyPrivacy } = usePrivacy();
+
   if (!data) return null;
 
   const { totalCards, activeCards, totalLimit, currentInvoiceAmount, availableLimit, usagePercentage } = data;
@@ -23,15 +25,15 @@ function CreditCardWidget({ data }) {
         </div>
         <div className="flex items-center justify-between text-sm">
           <span className="text-slate-500 dark:text-slate-400">Limite total</span>
-          <span className="font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyBRL(totalLimit)}</span>
+          <span className="font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyPrivacy(totalLimit)}</span>
         </div>
         <div className="flex items-center justify-between text-sm">
           <span className="text-slate-500 dark:text-slate-400">Fatura atual</span>
-          <span className="font-semibold text-rose-600">{formatCurrencyBRL(currentInvoiceAmount)}</span>
+          <span className="font-semibold text-rose-600">{formatCurrencyPrivacy(currentInvoiceAmount)}</span>
         </div>
         <div className="flex items-center justify-between text-sm">
           <span className="text-slate-500 dark:text-slate-400">Limite disponível</span>
-          <span className="font-semibold text-emerald-600">{formatCurrencyBRL(availableLimit)}</span>
+          <span className="font-semibold text-emerald-600">{formatCurrencyPrivacy(availableLimit)}</span>
         </div>
       </div>
 

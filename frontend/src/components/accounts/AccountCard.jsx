@@ -14,7 +14,7 @@ import {
 import Badge from '../ui/Badge';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
-import { formatCurrencyBRL } from '../../utils/formatters';
+import { usePrivacy } from '../../contexts/PrivacyContext';
 
 const TYPE_LABELS = {
   CHECKING: 'Conta corrente',
@@ -39,6 +39,7 @@ const ICON_MAP = {
 };
 
 function AccountCard({ account, onEdit, onDelete }) {
+  const { formatCurrencyPrivacy } = usePrivacy();
   const AccountIcon = ICON_MAP[account.icon];
 
   return (
@@ -66,11 +67,11 @@ function AccountCard({ account, onEdit, onDelete }) {
       <div className="mt-8 grid gap-4 rounded-3xl border border-slate-200 bg-slate-50 p-4 sm:grid-cols-2 dark:border-slate-600 dark:bg-slate-800/50">
         <div>
           <p className="text-xs uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Saldo atual</p>
-          <p className="mt-2 text-3xl font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyBRL(account.currentBalance)}</p>
+          <p className="mt-2 text-3xl font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyPrivacy(account.currentBalance)}</p>
         </div>
         <div>
           <p className="text-xs uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Saldo inicial</p>
-          <p className="mt-2 text-lg font-medium text-slate-700 dark:text-slate-300">{formatCurrencyBRL(account.initialBalance)}</p>
+          <p className="mt-2 text-lg font-medium text-slate-700 dark:text-slate-300">{formatCurrencyPrivacy(account.initialBalance)}</p>
         </div>
       </div>
 

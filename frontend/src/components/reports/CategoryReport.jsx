@@ -2,13 +2,12 @@ import Card from '../ui/Card';
 import EmptyState from '../ui/EmptyState';
 import LoadingSkeleton from '../ui/LoadingSkeleton';
 import { FolderKanban } from 'lucide-react';
-import { formatCurrencyBRL, formatTransactionType } from '../../utils/formatters';
-
-function formatCurrency(value) {
-  return formatCurrencyBRL(value);
-}
+import { usePrivacy } from '../../contexts/PrivacyContext';
+import { formatTransactionType } from '../../utils/formatters';
 
 function CategoryReport({ data, loading }) {
+  const { formatCurrencyPrivacy } = usePrivacy();
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -60,7 +59,7 @@ function CategoryReport({ data, loading }) {
                     {formatTransactionType(item.type)}
                   </span>
                 </td>
-                <td className="px-6 py-4 font-medium text-slate-900 dark:text-slate-100">{formatCurrency(item.amount)}</td>
+                <td className="px-6 py-4 font-medium text-slate-900 dark:text-slate-100">{formatCurrencyPrivacy(item.amount)}</td>
                 <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{item.transactionCount}</td>
                 <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{item.percentage}%</td>
                 <td className="px-6 py-4">

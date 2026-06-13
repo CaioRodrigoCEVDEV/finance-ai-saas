@@ -1,9 +1,11 @@
 import { CreditCard, Layers3, TrendingUp, Wallet } from 'lucide-react';
 
 import Card from '../ui/Card';
-import { formatCurrencyBRL } from '../../utils/formatters';
+import { usePrivacy } from '../../contexts/PrivacyContext';
 
 function CreditCardSummary({ cards }) {
+  const { formatCurrencyPrivacy } = usePrivacy();
+
   const totals = cards.reduce((accumulator, card) => ({
     limitAmount: accumulator.limitAmount + Number(card.limitAmount || 0),
     currentInvoiceAmount: accumulator.currentInvoiceAmount + Number(card.currentInvoiceAmount || 0),
@@ -17,9 +19,9 @@ function CreditCardSummary({ cards }) {
   });
 
   const items = [
-    { label: 'Total de limite', value: formatCurrencyBRL(totals.limitAmount), icon: Wallet },
-    { label: 'Total utilizado no mes', value: formatCurrencyBRL(totals.currentInvoiceAmount), icon: TrendingUp },
-    { label: 'Limite disponivel', value: formatCurrencyBRL(totals.availableLimit), icon: Layers3 },
+    { label: 'Total de limite', value: formatCurrencyPrivacy(totals.limitAmount), icon: Wallet },
+    { label: 'Total utilizado no mes', value: formatCurrencyPrivacy(totals.currentInvoiceAmount), icon: TrendingUp },
+    { label: 'Limite disponivel', value: formatCurrencyPrivacy(totals.availableLimit), icon: Layers3 },
     { label: 'Cartoes ativos', value: String(totals.activeCards), icon: CreditCard }
   ];
 

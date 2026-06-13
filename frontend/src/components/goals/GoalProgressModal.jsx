@@ -3,9 +3,11 @@ import { useEffect, useState } from 'react';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import Modal from '../ui/Modal';
-import { formatCurrencyBRL, formatPercentage } from '../../utils/formatters';
+import { usePrivacy } from '../../contexts/PrivacyContext';
+import { formatPercentage } from '../../utils/formatters';
 
 function GoalProgressModal({ isOpen, goal, loading, serverError, onClose, onSubmit }) {
+  const { formatCurrencyPrivacy } = usePrivacy();
   const [currentAmount, setCurrentAmount] = useState('');
   const [error, setError] = useState('');
 
@@ -46,11 +48,11 @@ function GoalProgressModal({ isOpen, goal, loading, serverError, onClose, onSubm
             <div className="mt-3 flex items-center gap-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Alvo</p>
-                <p className="mt-1 text-sm font-medium text-slate-900 dark:text-slate-100">{formatCurrencyBRL(goal.targetAmount)}</p>
+                <p className="mt-1 text-sm font-medium text-slate-900 dark:text-slate-100">{formatCurrencyPrivacy(goal.targetAmount)}</p>
               </div>
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Atual</p>
-                <p className="mt-1 text-sm font-medium text-slate-900 dark:text-slate-100">{formatCurrencyBRL(goal.currentAmount)}</p>
+                <p className="mt-1 text-sm font-medium text-slate-900 dark:text-slate-100">{formatCurrencyPrivacy(goal.currentAmount)}</p>
               </div>
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Progresso</p>
