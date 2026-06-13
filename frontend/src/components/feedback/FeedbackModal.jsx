@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
-import { createPortal } from 'react-dom';
-import { MessageSquareText, AlertCircle, X } from 'lucide-react';
+import { useState, useCallback } from 'react';
+import { MessageSquareText, AlertCircle } from 'lucide-react';
 
 import Button from '../ui/Button';
+import FormModal from '../ui/FormModal';
 import * as feedbackService from '../../services/feedbackService';
 import { useToast } from '../../contexts/ToastContext';
 
@@ -23,17 +23,6 @@ function FeedbackModal({ isOpen, onClose }) {
     setSending(false);
     onClose();
   }, [onClose]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    function handleKeyDown(event) {
-      if (event.key === 'Escape') handleClose();
-    }
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, handleClose]);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -60,30 +49,31 @@ function FeedbackModal({ isOpen, onClose }) {
     }
   }
 
-  if (!isOpen) return null;
-
-  return createPortal(
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 px-4 py-6 backdrop-blur-sm dark:bg-slate-950/60"
-      onClick={handleClose}
-    >
-      <div
-        className="w-[94%] max-w-lg rounded-[28px] border border-slate-200 bg-white shadow-soft dark:border-slate-700 dark:bg-slate-800"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-slate-700">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Enviar feedback</h2>
-          <Button variant="ghost" size="sm" onClick={handleClose} aria-label="Fechar modal">
-            <X className="h-4 w-4" />
+  return (
+    <FormModal
+      isOpen={isOpen}
+      eyebrow="FEEDBACK"
+      title="Envie seu feedback"
+      maxWidth="max-w-lg"
+      onClose={handleClose}
+      footer={(
+        <>
+          <Button variant="secondary" onClick={handleClose} type="button" disabled={sending}>
+            Cancelar
           </Button>
-        </div>
+          <Button type="submit" form="feedback-form" disabled={sending || message.trim().length < MIN_LENGTH}>
+            <MessageSquareText className="h-4 w-4" />
+            {sending ? 'Enviando...' : 'Enviar feedback'}
+          </Button>
+        </>
+      )}
+    >
+      <div className="space-y-3">
+        <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+          Conte o que você encontrou, sentiu falta ou gostaria de melhorar.
+        </p>
 
-        <div className="space-y-3 px-5 py-4">
-          <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-            Conte o que você encontrou, sentiu falta ou gostaria de melhorar.
-          </p>
-
-          <form onSubmit={handleSubmit} className="space-y-3">
+        <form id="feedback-form" onSubmit={handleSubmit} className="space-y-3">
             <div>
               <textarea
                 value={message}
@@ -96,7 +86,7 @@ function FeedbackModal({ isOpen, onClose }) {
                 placeholder="Digite seu feedback..."
                 maxLength={MAX_LENGTH}
                 disabled={sending}
-                className="block w-full min-h-[140px] resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 disabled:opacity-60 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-500 dark:focus:border-emerald-400 dark:focus:ring-emerald-900/30"
+                className="block w-full min-h-[140px] resize-none rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 disabled:opacity-60 dark:border-slate-600 dark:bg-slate-700/40 dark:text-slate-100 dark:placeholder-slate-400 dark:focus:border-emerald-400 dark:focus:ring-emerald-900/30"
               />
               <div className="mt-1 flex items-center justify-between">
                 <span className="text-xs text-slate-400">
@@ -116,20 +106,9 @@ function FeedbackModal({ isOpen, onClose }) {
                 <span>{error}</span>
               </div>
             )}
-            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <Button variant="secondary" onClick={handleClose} type="button" disabled={sending}>
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={sending || message.trim().length < MIN_LENGTH}>
-                <MessageSquareText className="h-4 w-4" />
-                {sending ? 'Enviando...' : 'Enviar feedback'}
-              </Button>
-            </div>
           </form>
-        </div>
       </div>
-    </div>,
-    document.body
+    </FormModal>
   );
 }
 

@@ -6,6 +6,7 @@ import AdminLayout from '../../layouts/admin/AdminLayout';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
+import FormModal from '../../components/ui/FormModal';
 import Input from '../../components/ui/Input';
 import LoadingSkeleton from '../../components/ui/LoadingSkeleton';
 import Modal from '../../components/ui/Modal';
@@ -455,48 +456,64 @@ function AdminTenantDetails() {
         </div>
       </div>
 
-      <Modal isOpen={planModal.isOpen} title="Alterar Plano" onClose={() => setPlanModal({ isOpen: false, selectedPlan: '' })}>
-        <div className="space-y-6">
-          <Select
-            label="Selecione o novo plano"
-            value={planModal.selectedPlan}
-            onChange={(e) => setPlanModal({ ...planModal, selectedPlan: e.target.value })}
-          >
-            {PLAN_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </Select>
-          <div className="flex justify-end gap-3">
+      <FormModal
+        isOpen={planModal.isOpen}
+        eyebrow="EDITAR WORKSPACE"
+        title="Atualize o plano do workspace"
+        onClose={() => setPlanModal({ isOpen: false, selectedPlan: '' })}
+        footer={(
+          <>
             <Button variant="secondary" onClick={() => setPlanModal({ isOpen: false, selectedPlan: '' })} disabled={actionLoading}>
               Cancelar
             </Button>
             <Button variant="primary" onClick={handleUpdatePlan} disabled={actionLoading || !planModal.selectedPlan || planModal.selectedPlan === tenant?.plan}>
               {actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              Salvar
+              Salvar alterações
             </Button>
-          </div>
+          </>
+        )}
+      >
+        <div className="space-y-4">
+          <Select
+            label="Selecione o novo plano"
+            value={planModal.selectedPlan}
+            onChange={(e) => setPlanModal({ ...planModal, selectedPlan: e.target.value })}
+            className="h-11 py-0 text-sm"
+          >
+            {PLAN_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </Select>
         </div>
-      </Modal>
+      </FormModal>
 
-      <Modal isOpen={nameModal.isOpen} title="Alterar Nome" onClose={() => setNameModal({ isOpen: false, name: '' })}>
-        <div className="space-y-6">
-          <Input
-            label="Nome do workspace"
-            value={nameModal.name}
-            onChange={(e) => setNameModal({ ...nameModal, name: e.target.value })}
-            placeholder="Digite o novo nome"
-          />
-          <div className="flex justify-end gap-3">
+      <FormModal
+        isOpen={nameModal.isOpen}
+        eyebrow="EDITAR WORKSPACE"
+        title="Atualize o nome do workspace"
+        onClose={() => setNameModal({ isOpen: false, name: '' })}
+        footer={(
+          <>
             <Button variant="secondary" onClick={() => setNameModal({ isOpen: false, name: '' })} disabled={actionLoading}>
               Cancelar
             </Button>
             <Button variant="primary" onClick={handleUpdateName} disabled={actionLoading || !nameModal.name.trim() || nameModal.name.trim() === tenant?.name}>
               {actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              Salvar
+              Salvar alterações
             </Button>
-          </div>
+          </>
+        )}
+      >
+        <div className="space-y-4">
+          <Input
+            label="Nome do workspace"
+            value={nameModal.name}
+            onChange={(e) => setNameModal({ ...nameModal, name: e.target.value })}
+            placeholder="Digite o novo nome"
+            className="h-11 py-0 text-sm"
+          />
         </div>
-      </Modal>
+      </FormModal>
 
       <ConfirmModal
         isOpen={confirmModal.isOpen}

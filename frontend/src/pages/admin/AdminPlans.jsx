@@ -5,9 +5,9 @@ import AdminLayout from '../../layouts/admin/AdminLayout';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
+import FormModal from '../../components/ui/FormModal';
 import Input from '../../components/ui/Input';
 import LoadingSkeleton from '../../components/ui/LoadingSkeleton';
-import Modal from '../../components/ui/Modal';
 import { useToast } from '../../contexts/ToastContext';
 import { listPlanLimits, updatePlanLimit } from '../../services/adminService';
 
@@ -229,13 +229,25 @@ function AdminPlans() {
           </div>
         ) : null}
 
-        <Modal
+        <FormModal
           isOpen={editModal.isOpen}
-          title={editModal.plan ? `Editar limites - ${editModal.plan}` : 'Editar limites'}
+          eyebrow="EDITAR PLANO"
+          title={editModal.plan ? `Atualize os limites do plano ${editModal.plan}` : 'Atualize os limites do plano'}
           onClose={closeEditModal}
+          footer={(
+            <>
+              <Button variant="secondary" onClick={closeEditModal} disabled={saving}>
+                Cancelar
+              </Button>
+              <Button onClick={handleSave} disabled={saving}>
+                <Save className="h-4 w-4" />
+                {saving ? 'Salvando...' : 'Salvar alterações'}
+              </Button>
+            </>
+          )}
         >
-          <div className="space-y-6">
-            <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
               {LIMIT_FIELDS.map((field) => (
                 <Input
                   key={field.key}
@@ -244,11 +256,12 @@ function AdminPlans() {
                   min="0"
                   value={editModal.form[field.key] ?? 0}
                   onChange={(e) => handleFormChange(field.key, Number(e.target.value))}
+                  className="h-11 py-0 text-sm"
                 />
               ))}
             </div>
 
-            <div className="border-t border-slate-200 pt-6 dark:border-slate-700">
+            <div className="border-t border-slate-700 pt-4">
               <p className="mb-4 text-sm font-semibold text-slate-700 dark:text-slate-300">Permissões</p>
               <div className="space-y-3">
                 {BOOLEAN_FIELDS.map((field) => (
@@ -263,18 +276,8 @@ function AdminPlans() {
                 ))}
               </div>
             </div>
-
-            <div className="flex justify-end gap-3 pt-2">
-              <Button variant="secondary" onClick={closeEditModal} disabled={saving}>
-                Cancelar
-              </Button>
-              <Button onClick={handleSave} disabled={saving}>
-                <Save className="h-4 w-4" />
-                {saving ? 'Salvando...' : 'Salvar'}
-              </Button>
-            </div>
           </div>
-        </Modal>
+        </FormModal>
       </div>
     </AdminLayout>
   );

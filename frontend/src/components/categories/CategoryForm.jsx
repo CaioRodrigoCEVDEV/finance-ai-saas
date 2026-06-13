@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 
-import Button from '../ui/Button';
 import Input from '../ui/Input';
 import Select from '../ui/Select';
 
@@ -35,9 +34,10 @@ function buildFormValues(category) {
   };
 }
 
-function CategoryForm({ category, categories, loading, onCancel, onSubmit }) {
+function CategoryForm({ category, categories, onSubmit, formId = 'category-form' }) {
   const [formValues, setFormValues] = useState(initialFormValues);
   const [error, setError] = useState('');
+  const fieldClassName = 'h-11 py-0 text-sm';
 
   useEffect(() => {
     setFormValues(buildFormValues(category));
@@ -82,38 +82,31 @@ function CategoryForm({ category, categories, loading, onCancel, onSubmit }) {
 
   return (
     <section>
-      <div>
-        <p className="text-sm uppercase tracking-[0.28em] text-emerald-600">{category ? 'Editar categoria' : 'Nova categoria'}</p>
-        <h2 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">
-          {category ? 'Atualize a categoria personalizada' : 'Cadastre uma nova categoria para este workspace'}
-        </h2>
-      </div>
-
-      <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
-        <div className="grid gap-5 md:grid-cols-2">
+      <form id={formId} className="space-y-4" onSubmit={handleSubmit}>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
           <div className="md:col-span-2">
-            <Input label="Nome" name="name" value={formValues.name} onChange={handleChange} />
+            <Input label="Nome" name="name" value={formValues.name} onChange={handleChange} className={fieldClassName} />
           </div>
 
-          <Select label="Tipo" name="type" value={formValues.type} onChange={handleChange}>
+          <Select label="Tipo" name="type" value={formValues.type} onChange={handleChange} className={fieldClassName}>
               {CATEGORY_TYPES.map((typeOption) => (
                 <option key={typeOption.value} value={typeOption.value}>{typeOption.label}</option>
               ))}
           </Select>
 
-          <Select label="Categoria pai" name="parentId" value={formValues.parentId} onChange={handleChange}>
+          <Select label="Categoria pai" name="parentId" value={formValues.parentId} onChange={handleChange} className={fieldClassName}>
               <option value="">Sem categoria pai</option>
               {parentOptions.map((parentOption) => (
                 <option key={parentOption.id} value={parentOption.id}>{parentOption.name}</option>
               ))}
           </Select>
 
-          <Input label="Cor" name="color" value={formValues.color} onChange={handleChange} />
-          <Input label="Icone" name="icon" value={formValues.icon} onChange={handleChange} />
+          <Input label="Cor" name="color" value={formValues.color} onChange={handleChange} className={fieldClassName} />
+          <Input label="Ícone" name="icon" value={formValues.icon} onChange={handleChange} className={fieldClassName} />
         </div>
 
         {category ? (
-          <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:border-slate-600 dark:bg-slate-800/50 dark:text-slate-300">
+          <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-700 dark:border-slate-600/70 dark:bg-slate-700/30 dark:text-slate-300">
             <input name="isActive" type="checkbox" checked={formValues.isActive} onChange={handleChange} className="h-4 w-4 rounded border-slate-300 text-emerald-600 dark:border-slate-500 dark:bg-slate-700" />
             Categoria ativa
           </label>
@@ -125,14 +118,6 @@ function CategoryForm({ category, categories, loading, onCancel, onSubmit }) {
           </div>
         ) : null}
 
-        <div className="flex flex-wrap gap-3">
-          <Button type="submit" disabled={loading}>
-            {loading ? 'Salvando...' : category ? 'Salvar alterações' : 'Criar categoria'}
-          </Button>
-          <Button type="button" variant="secondary" onClick={onCancel}>
-            Cancelar
-          </Button>
-        </div>
       </form>
     </section>
   );

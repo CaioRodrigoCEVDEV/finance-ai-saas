@@ -10,7 +10,7 @@ import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import EmptyState from '../components/ui/EmptyState';
 import LoadingSkeleton from '../components/ui/LoadingSkeleton';
-import Modal from '../components/ui/Modal';
+import FormModal from '../components/ui/FormModal';
 import PageHeader from '../components/ui/PageHeader';
 import { getCategories } from '../services/categoryService';
 import {
@@ -310,7 +310,20 @@ function Budgets() {
           ) : null}
         </div>
 
-        <Modal isOpen={formVisible} title={selectedBudget ? 'Editar orçamento' : 'Novo orçamento'} onClose={handleCancelForm}>
+        <FormModal
+          isOpen={formVisible}
+          eyebrow={selectedBudget ? 'EDITAR ORÇAMENTO' : 'NOVO ORÇAMENTO'}
+          title={selectedBudget ? 'Atualize os dados do orçamento mensal' : 'Cadastre um novo orçamento mensal'}
+          onClose={handleCancelForm}
+          footer={(
+            <>
+              <Button type="button" variant="secondary" onClick={handleCancelForm}>Cancelar</Button>
+              <Button type="submit" form="budget-form" disabled={saving}>
+                {saving ? 'Salvando...' : selectedBudget ? 'Salvar alterações' : 'Criar orçamento'}
+              </Button>
+            </>
+          )}
+        >
           <BudgetForm
             budget={selectedBudget}
             categories={categories}
@@ -319,7 +332,7 @@ function Budgets() {
             onCancel={handleCancelForm}
             onSubmit={handleSubmit}
           />
-        </Modal>
+        </FormModal>
       </div>
     </AppLayout>
   );

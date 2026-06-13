@@ -7,7 +7,7 @@ const TYPE_OPTIONS = [
   { value: '', label: 'Todos os tipos' },
   { value: 'INCOME', label: 'Receita' },
   { value: 'EXPENSE', label: 'Despesa' },
-  { value: 'TRANSFER', label: 'Transferencia' },
+  { value: 'TRANSFER', label: 'Transferência' },
   { value: 'INVESTMENT', label: 'Investimento' }
 ];
 
@@ -23,7 +23,7 @@ function TransactionFilters({ filters, accounts, categories, loading, onChange, 
     <Card className="rounded-[28px] p-5">
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <div className="xl:col-span-2">
-          <Input label="Busca" name="search" placeholder="Descricao ou observacoes" value={filters.search} onChange={onChange} />
+          <Input label="Busca" name="search" placeholder="Descrição ou observações" value={filters.search} onChange={onChange} />
         </div>
 
         <Select label="Tipo" name="type" value={filters.type} onChange={onChange}>

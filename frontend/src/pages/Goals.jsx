@@ -11,7 +11,7 @@ import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import EmptyState from '../components/ui/EmptyState';
 import LoadingSkeleton from '../components/ui/LoadingSkeleton';
-import Modal from '../components/ui/Modal';
+import FormModal from '../components/ui/FormModal';
 import PageHeader from '../components/ui/PageHeader';
 import {
   createGoal,
@@ -342,7 +342,20 @@ function Goals() {
           ) : null}
         </div>
 
-        <Modal isOpen={formVisible} title={selectedGoal ? 'Editar meta' : 'Nova meta'} onClose={handleCancelForm}>
+        <FormModal
+          isOpen={formVisible}
+          eyebrow={selectedGoal ? 'EDITAR META' : 'NOVA META'}
+          title={selectedGoal ? 'Atualize os dados da meta financeira' : 'Cadastre uma nova meta financeira'}
+          onClose={handleCancelForm}
+          footer={(
+            <>
+              <Button type="button" variant="secondary" onClick={handleCancelForm}>Cancelar</Button>
+              <Button type="submit" form="goal-form" disabled={saving}>
+                {saving ? 'Salvando...' : selectedGoal ? 'Salvar alterações' : 'Criar meta'}
+              </Button>
+            </>
+          )}
+        >
           <GoalForm
             goal={selectedGoal}
             loading={saving}
@@ -350,7 +363,7 @@ function Goals() {
             onCancel={handleCancelForm}
             onSubmit={handleSubmit}
           />
-        </Modal>
+        </FormModal>
 
         <GoalProgressModal
           isOpen={progressModalVisible}

@@ -6,6 +6,7 @@ import AdminLayout from '../../layouts/admin/AdminLayout';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
+import FormModal from '../../components/ui/FormModal';
 import Input from '../../components/ui/Input';
 import LoadingSkeleton from '../../components/ui/LoadingSkeleton';
 import Modal from '../../components/ui/Modal';
@@ -433,20 +434,13 @@ function AdminUserDetails() {
           </div>
         </Modal>
 
-        <Modal
+        <FormModal
           isOpen={resetPasswordModal.isOpen}
-          title="Redefinir Senha"
+          eyebrow="EDITAR USUÁRIO"
+          title="Redefina a senha do usuário"
           onClose={closeResetPasswordModal}
-        >
-          <div className="space-y-6">
-            <Input
-              label="Nova senha"
-              type="password"
-              placeholder="Mínimo de 6 caracteres"
-              value={resetPasswordModal.password}
-              onChange={(e) => setResetPasswordModal((prev) => ({ ...prev, password: e.target.value }))}
-            />
-            <div className="flex justify-end gap-3">
+          footer={(
+            <>
               <Button variant="secondary" onClick={closeResetPasswordModal} disabled={actionLoading}>
                 Cancelar
               </Button>
@@ -455,25 +449,30 @@ function AdminUserDetails() {
                 onClick={handleResetPassword}
                 disabled={actionLoading || (resetPasswordModal.password || '').length < 6}
               >
-                {actionLoading ? 'Redefinindo...' : 'Confirmar'}
+                {actionLoading ? 'Redefinindo...' : 'Salvar alterações'}
               </Button>
-            </div>
-          </div>
-        </Modal>
-
-        <Modal
-          isOpen={changeNameModal.isOpen}
-          title="Alterar Nome"
-          onClose={closeChangeNameModal}
+            </>
+          )}
         >
-          <div className="space-y-6">
+          <div className="space-y-4">
             <Input
-              label="Nome"
-              placeholder="Novo nome do usuário"
-              value={changeNameModal.name}
-              onChange={(e) => setChangeNameModal((prev) => ({ ...prev, name: e.target.value }))}
+              label="Nova senha"
+              type="password"
+              placeholder="Mínimo de 6 caracteres"
+              value={resetPasswordModal.password}
+              onChange={(e) => setResetPasswordModal((prev) => ({ ...prev, password: e.target.value }))}
+              className="h-11 py-0 text-sm"
             />
-            <div className="flex justify-end gap-3">
+          </div>
+        </FormModal>
+
+        <FormModal
+          isOpen={changeNameModal.isOpen}
+          eyebrow="EDITAR USUÁRIO"
+          title="Atualize o nome do usuário"
+          onClose={closeChangeNameModal}
+          footer={(
+            <>
               <Button variant="secondary" onClick={closeChangeNameModal} disabled={actionLoading}>
                 Cancelar
               </Button>
@@ -482,26 +481,29 @@ function AdminUserDetails() {
                 onClick={handleChangeName}
                 disabled={actionLoading || !changeNameModal.name.trim()}
               >
-                {actionLoading ? 'Salvando...' : 'Salvar'}
+                {actionLoading ? 'Salvando...' : 'Salvar alterações'}
               </Button>
-            </div>
-          </div>
-        </Modal>
-
-        <Modal
-          isOpen={changeEmailModal.isOpen}
-          title="Alterar Email"
-          onClose={closeChangeEmailModal}
+            </>
+          )}
         >
-          <div className="space-y-6">
+          <div className="space-y-4">
             <Input
-              label="Email"
-              type="email"
-              placeholder="Novo email do usuário"
-              value={changeEmailModal.email}
-              onChange={(e) => setChangeEmailModal((prev) => ({ ...prev, email: e.target.value }))}
+              label="Nome"
+              placeholder="Novo nome do usuário"
+              value={changeNameModal.name}
+              onChange={(e) => setChangeNameModal((prev) => ({ ...prev, name: e.target.value }))}
+              className="h-11 py-0 text-sm"
             />
-            <div className="flex justify-end gap-3">
+          </div>
+        </FormModal>
+
+        <FormModal
+          isOpen={changeEmailModal.isOpen}
+          eyebrow="EDITAR USUÁRIO"
+          title="Atualize o email do usuário"
+          onClose={closeChangeEmailModal}
+          footer={(
+            <>
               <Button variant="secondary" onClick={closeChangeEmailModal} disabled={actionLoading}>
                 Cancelar
               </Button>
@@ -510,27 +512,30 @@ function AdminUserDetails() {
                 onClick={handleChangeEmail}
                 disabled={actionLoading || !changeEmailModal.email.trim()}
               >
-                {actionLoading ? 'Salvando...' : 'Salvar'}
+                {actionLoading ? 'Salvando...' : 'Salvar alterações'}
               </Button>
-            </div>
-          </div>
-        </Modal>
-
-        <Modal
-          isOpen={changeGlobalRoleModal.isOpen}
-          title="Alterar Role Global"
-          onClose={closeChangeGlobalRoleModal}
+            </>
+          )}
         >
-          <div className="space-y-6">
-            <Select
-              label="Perfil global"
-              value={changeGlobalRoleModal.globalRole}
-              onChange={(e) => setChangeGlobalRoleModal((prev) => ({ ...prev, globalRole: e.target.value }))}
-            >
-              <option value="USER">Usuário</option>
-              <option value="SUPER_ADMIN">Super Admin</option>
-            </Select>
-            <div className="flex justify-end gap-3">
+          <div className="space-y-4">
+            <Input
+              label="Email"
+              type="email"
+              placeholder="Novo email do usuário"
+              value={changeEmailModal.email}
+              onChange={(e) => setChangeEmailModal((prev) => ({ ...prev, email: e.target.value }))}
+              className="h-11 py-0 text-sm"
+            />
+          </div>
+        </FormModal>
+
+        <FormModal
+          isOpen={changeGlobalRoleModal.isOpen}
+          eyebrow="EDITAR USUÁRIO"
+          title="Atualize o perfil global do usuário"
+          onClose={closeChangeGlobalRoleModal}
+          footer={(
+            <>
               <Button variant="secondary" onClick={closeChangeGlobalRoleModal} disabled={actionLoading}>
                 Cancelar
               </Button>
@@ -539,11 +544,23 @@ function AdminUserDetails() {
                 onClick={handleChangeGlobalRole}
                 disabled={actionLoading || changeGlobalRoleModal.globalRole === user.globalRole}
               >
-                {actionLoading ? 'Salvando...' : 'Salvar'}
+                {actionLoading ? 'Salvando...' : 'Salvar alterações'}
               </Button>
-            </div>
+            </>
+          )}
+        >
+          <div className="space-y-4">
+            <Select
+              label="Perfil global"
+              value={changeGlobalRoleModal.globalRole}
+              onChange={(e) => setChangeGlobalRoleModal((prev) => ({ ...prev, globalRole: e.target.value }))}
+              className="h-11 py-0 text-sm"
+            >
+              <option value="USER">Usuário</option>
+              <option value="SUPER_ADMIN">Super Admin</option>
+            </Select>
           </div>
-        </Modal>
+        </FormModal>
       </div>
     </AdminLayout>
   );

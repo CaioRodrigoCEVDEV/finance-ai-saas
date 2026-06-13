@@ -10,7 +10,7 @@ import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import EmptyState from '../components/ui/EmptyState';
 import LoadingSkeleton from '../components/ui/LoadingSkeleton';
-import Modal from '../components/ui/Modal';
+import FormModal from '../components/ui/FormModal';
 import PageHeader from '../components/ui/PageHeader';
 import {
   createCategorizationRule,
@@ -250,10 +250,19 @@ function CategorizationRules() {
           ) : null}
         </div>
 
-        <Modal
+        <FormModal
           isOpen={formVisible}
-          title={selectedRule ? 'Editar regra' : 'Nova regra'}
+          eyebrow={selectedRule ? 'EDITAR REGRA' : 'NOVA REGRA'}
+          title={selectedRule ? 'Atualize a regra de categorização' : 'Cadastre uma nova regra de categorização'}
           onClose={handleCancelForm}
+          footer={(
+            <>
+              <Button type="button" variant="secondary" onClick={handleCancelForm}>Cancelar</Button>
+              <Button type="submit" form="categorization-rule-form" disabled={saving}>
+                {saving ? 'Salvando...' : selectedRule ? 'Salvar alterações' : 'Criar regra'}
+              </Button>
+            </>
+          )}
         >
           <CategorizationRuleForm
             rule={selectedRule}
@@ -261,7 +270,7 @@ function CategorizationRules() {
             onCancel={handleCancelForm}
             onSubmit={handleSubmit}
           />
-        </Modal>
+        </FormModal>
 
         <ApplyRulesModal isOpen={applyVisible} onClose={() => setApplyVisible(false)} />
       </div>

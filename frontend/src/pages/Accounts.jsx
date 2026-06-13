@@ -9,7 +9,7 @@ import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import EmptyState from '../components/ui/EmptyState';
 import LoadingSkeleton from '../components/ui/LoadingSkeleton';
-import Modal from '../components/ui/Modal';
+import FormModal from '../components/ui/FormModal';
 import PageHeader from '../components/ui/PageHeader';
 import {
   createAccount,
@@ -193,9 +193,22 @@ function Accounts() {
             ) : null}
         </div>
 
-        <Modal isOpen={formVisible} title={selectedAccount ? 'Editar conta' : 'Nova conta'} onClose={handleCancelForm}>
+        <FormModal
+          isOpen={formVisible}
+          eyebrow={selectedAccount ? 'EDITAR CONTA' : 'NOVA CONTA'}
+          title={selectedAccount ? 'Atualize os dados da conta financeira' : 'Cadastre uma nova conta financeira'}
+          onClose={handleCancelForm}
+          footer={(
+            <>
+              <Button type="button" variant="secondary" onClick={handleCancelForm}>Cancelar</Button>
+              <Button type="submit" form="account-form" disabled={saving}>
+                {saving ? 'Salvando...' : selectedAccount ? 'Salvar alterações' : 'Criar conta'}
+              </Button>
+            </>
+          )}
+        >
           <AccountForm account={selectedAccount} loading={saving} serverError={formError} onCancel={handleCancelForm} onSubmit={handleSubmit} />
-        </Modal>
+        </FormModal>
       </div>
     </AppLayout>
   );

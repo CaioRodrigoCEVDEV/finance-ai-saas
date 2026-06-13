@@ -12,7 +12,6 @@ import {
   Wallet
 } from 'lucide-react';
 
-import Button from '../ui/Button';
 import Input from '../ui/Input';
 import Select from '../ui/Select';
 import { cn } from '../../utils/cn';
@@ -124,11 +123,12 @@ function buildFormValues(account) {
   };
 }
 
-function AccountForm({ account, loading, onCancel, onSubmit, serverError }) {
+function AccountForm({ account, onSubmit, serverError, formId = 'account-form' }) {
   const [formValues, setFormValues] = useState(initialFormValues);
   const [selectedBank, setSelectedBank] = useState('');
   const [customBankName, setCustomBankName] = useState('');
   const [error, setError] = useState('');
+  const fieldClassName = 'h-11 py-0 text-sm';
 
   useEffect(() => {
     setFormValues(buildFormValues(account));
@@ -188,25 +188,18 @@ function AccountForm({ account, loading, onCancel, onSubmit, serverError }) {
 
   return (
     <section>
-      <div>
-        <p className="text-sm uppercase tracking-[0.28em] text-emerald-600">{account ? 'Editar conta' : 'Nova conta'}</p>
-        <h2 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">
-          {account ? 'Atualize os dados da conta' : 'Cadastre uma nova conta financeira'}
-        </h2>
-      </div>
+      <form id={formId} className="space-y-4" onSubmit={handleSubmit}>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
+          <Input label="Nome" name="name" value={formValues.name} onChange={handleChange} className={fieldClassName} />
 
-      <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
-        <div className="grid gap-5 md:grid-cols-2">
-          <Input label="Nome" name="name" value={formValues.name} onChange={handleChange} />
-
-          <Select label="Tipo" name="type" value={formValues.type} onChange={handleChange}>
+          <Select label="Tipo" name="type" value={formValues.type} onChange={handleChange} className={fieldClassName}>
             {ACCOUNT_TYPES.map((typeOption) => (
               <option key={typeOption.value} value={typeOption.value}>{typeOption.label}</option>
             ))}
           </Select>
 
           <div>
-            <Select label="Banco" value={selectedBank} onChange={handleBankChange}>
+            <Select label="Banco" value={selectedBank} onChange={handleBankChange} className={fieldClassName}>
               <option value="">Selecionar banco (opcional)</option>
               {BANKS.map((bank) => (
                 <option key={bank} value={bank}>{bank}</option>
@@ -219,19 +212,20 @@ function AccountForm({ account, loading, onCancel, onSubmit, serverError }) {
                   value={customBankName}
                   onChange={(e) => setCustomBankName(e.target.value)}
                   placeholder="Digite o nome do banco"
+                  className={fieldClassName}
                 />
               </div>
             ) : null}
           </div>
 
-          <Select label="Moeda" name="currency" value={formValues.currency} onChange={handleChange}>
+          <Select label="Moeda" name="currency" value={formValues.currency} onChange={handleChange} className={fieldClassName}>
             {CURRENCIES.map((c) => (
               <option key={c.value} value={c.value}>{c.label}</option>
             ))}
           </Select>
 
-          <Input label="Saldo inicial" name="initialBalance" type="number" step="0.01" value={formValues.initialBalance} onChange={handleChange} />
-          <Input label="Saldo atual" name="currentBalance" type="number" step="0.01" value={formValues.currentBalance} onChange={handleChange} />
+          <Input label="Saldo inicial" name="initialBalance" type="number" step="0.01" value={formValues.initialBalance} onChange={handleChange} className={fieldClassName} />
+          <Input label="Saldo atual" name="currentBalance" type="number" step="0.01" value={formValues.currentBalance} onChange={handleChange} className={fieldClassName} />
 
           <div>
             <span className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Cor</span>
@@ -266,7 +260,7 @@ function AccountForm({ account, loading, onCancel, onSubmit, serverError }) {
                   className={cn(
                     'flex flex-col items-center gap-1 rounded-xl border-2 p-2 transition',
                     formValues.icon === value
-                      ? 'border-emerald-500 bg-emerald-50 dark:border-emerald-400 dark:bg-emerald-900/30'
+                      ? 'border-emerald-500 bg-emerald-50 dark:border-emerald-600/60 dark:bg-emerald-950/25'
                       : 'border-slate-200 hover:border-slate-300 dark:border-slate-600 dark:hover:border-slate-500'
                   )}
                   title={label}
@@ -289,7 +283,7 @@ function AccountForm({ account, loading, onCancel, onSubmit, serverError }) {
           </div>
         </div>
 
-        <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:border-slate-600 dark:bg-slate-800/50 dark:text-slate-300">
+        <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-700 dark:border-slate-600/70 dark:bg-slate-700/30 dark:text-slate-300">
           <input name="isActive" type="checkbox" checked={formValues.isActive} onChange={handleChange} className="h-4 w-4 rounded border-slate-300 text-emerald-600 dark:border-slate-500 dark:bg-slate-700" />
           Conta ativa
         </label>
@@ -300,14 +294,6 @@ function AccountForm({ account, loading, onCancel, onSubmit, serverError }) {
           </div>
         ) : null}
 
-        <div className="flex flex-wrap gap-3">
-          <Button type="submit" disabled={loading}>
-            {loading ? 'Salvando...' : account ? 'Salvar alteracoes' : 'Criar conta'}
-          </Button>
-          <Button type="button" variant="secondary" onClick={onCancel}>
-            Cancelar
-          </Button>
-        </div>
       </form>
     </section>
   );

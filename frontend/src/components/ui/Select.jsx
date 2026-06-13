@@ -9,8 +9,8 @@ function Select({ label, error, className = '', children, ...props }) {
       <span className="relative block">
         <select
           className={cn(
-            'w-full appearance-none rounded-2xl border bg-white px-4 py-3 pr-10 text-slate-900 outline-none transition focus:ring-4 dark:bg-slate-800 dark:text-slate-100',
-            error ? 'border-rose-300 focus:border-rose-400 focus:ring-rose-100 dark:border-rose-600 dark:focus:border-rose-500 dark:focus:ring-rose-900/30' : 'border-slate-200 focus:border-emerald-500 focus:ring-emerald-100 dark:border-slate-600 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30',
+            'w-full appearance-none rounded-2xl border bg-white px-4 py-3 pr-10 text-slate-900 outline-none transition focus:ring-4 dark:bg-slate-700/40 dark:text-slate-100',
+            error ? 'border-rose-300 focus:border-rose-400 focus:ring-rose-100 dark:border-rose-600 dark:focus:border-rose-500 dark:focus:ring-rose-900/30' : 'border-slate-300 focus:border-emerald-500 focus:ring-emerald-100 dark:border-slate-600 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30',
             className
           )}
           {...props}

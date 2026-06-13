@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 
 import { getCategories } from '../../services/categoryService';
-import Button from '../ui/Button';
 import Input from '../ui/Input';
 import Select from '../ui/Select';
 
@@ -13,7 +12,7 @@ const matchTypeOptions = [
   { value: 'REGEX', label: 'Expressao regular (Regex)' }
 ];
 
-function CategorizationRuleForm({ rule, loading, onCancel, onSubmit }) {
+function CategorizationRuleForm({ rule, loading, onSubmit, formId = 'categorization-rule-form' }) {
   const [categories, setCategories] = useState([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [formError, setFormError] = useState('');
@@ -23,6 +22,7 @@ function CategorizationRuleForm({ rule, loading, onCancel, onSubmit }) {
   const [categoryId, setCategoryId] = useState(rule?.category?.id || '');
   const [priority, setPriority] = useState(rule?.priority ?? 1);
   const [isActive, setIsActive] = useState(rule?.isActive ?? true);
+  const fieldClassName = 'h-11 py-0 text-sm';
 
   useEffect(() => {
     async function load() {
@@ -87,7 +87,7 @@ function CategorizationRuleForm({ rule, loading, onCancel, onSubmit }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form id={formId} onSubmit={handleSubmit} className="space-y-4">
       {formError ? (
         <div className="rounded-2xl bg-rose-50 p-4 text-sm text-rose-700">
           {formError}
@@ -100,15 +100,17 @@ function CategorizationRuleForm({ rule, loading, onCancel, onSubmit }) {
         onChange={(e) => setName(e.target.value)}
         placeholder="Ex: Ifood para Alimentacao"
         disabled={loading || categoriesLoading}
+        className={fieldClassName}
       />
 
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
         <Input
           label="Texto procurado"
           value={matchText}
           onChange={(e) => setMatchText(e.target.value)}
           placeholder="Ex: IFOOD"
           disabled={loading || categoriesLoading}
+          className={fieldClassName}
         />
 
         <Select
@@ -116,6 +118,7 @@ function CategorizationRuleForm({ rule, loading, onCancel, onSubmit }) {
           value={matchType}
           onChange={(e) => setMatchType(e.target.value)}
           disabled={loading || categoriesLoading}
+          className={fieldClassName}
         >
           {matchTypeOptions.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -130,6 +133,7 @@ function CategorizationRuleForm({ rule, loading, onCancel, onSubmit }) {
         value={categoryId}
         onChange={(e) => setCategoryId(e.target.value)}
         disabled={loading || categoriesLoading}
+        className={fieldClassName}
       >
         <option value="">Selecione uma categoria</option>
         {categories.map((cat) => (
@@ -139,7 +143,7 @@ function CategorizationRuleForm({ rule, loading, onCancel, onSubmit }) {
         ))}
       </Select>
 
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
         <Input
           label="Prioridade"
           type="number"
@@ -148,9 +152,10 @@ function CategorizationRuleForm({ rule, loading, onCancel, onSubmit }) {
           value={priority}
           onChange={(e) => setPriority(e.target.value)}
           disabled={loading || categoriesLoading}
+          className={fieldClassName}
         />
 
-        <div className="flex items-center gap-3">
+        <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-700 dark:border-slate-600/70 dark:bg-slate-700/30 dark:text-slate-300">
           <input
             id="isActive"
             type="checkbox"
@@ -159,19 +164,8 @@ function CategorizationRuleForm({ rule, loading, onCancel, onSubmit }) {
             onChange={(e) => setIsActive(e.target.checked)}
             disabled={loading || categoriesLoading}
           />
-          <label htmlFor="isActive" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-            Regra ativa
-          </label>
-        </div>
-      </div>
-
-      <div className="flex items-center justify-end gap-3 pt-2">
-        <Button variant="secondary" type="button" onClick={onCancel} disabled={loading}>
-          Cancelar
-        </Button>
-        <Button type="submit" disabled={loading || categoriesLoading}>
-          {loading ? 'Salvando...' : rule ? 'Salvar alteracoes' : 'Criar regra'}
-        </Button>
+          Regra ativa
+        </label>
       </div>
     </form>
   );

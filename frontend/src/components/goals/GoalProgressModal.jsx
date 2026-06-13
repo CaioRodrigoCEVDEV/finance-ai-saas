@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 
 import Button from '../ui/Button';
+import FormModal from '../ui/FormModal';
 import Input from '../ui/Input';
-import Modal from '../ui/Modal';
 import { usePrivacy } from '../../contexts/PrivacyContext';
 import { formatPercentage } from '../../utils/formatters';
 
@@ -39,10 +39,23 @@ function GoalProgressModal({ isOpen, goal, loading, serverError, onClose, onSubm
   }
 
   return (
-    <Modal isOpen={isOpen} title="Atualizar progresso" onClose={onClose}>
+    <FormModal
+      isOpen={isOpen}
+      eyebrow="ATUALIZAR META"
+      title="Atualize o progresso da meta financeira"
+      onClose={onClose}
+      footer={(
+        <>
+          <Button type="button" variant="secondary" onClick={onClose}>Cancelar</Button>
+          <Button type="submit" form="goal-progress-form" disabled={loading}>
+            {loading ? 'Salvando...' : 'Salvar progresso'}
+          </Button>
+        </>
+      )}
+    >
       {goal ? (
         <div>
-          <div className="mb-6 rounded-2xl bg-slate-50 p-4 dark:bg-slate-700/50">
+          <div className="mb-6 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-600/70 dark:bg-slate-700/30">
             <p className="text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Meta</p>
             <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">{goal.name}</p>
             <div className="mt-3 flex items-center gap-4">
@@ -61,7 +74,7 @@ function GoalProgressModal({ isOpen, goal, loading, serverError, onClose, onSubm
             </div>
           </div>
 
-          <form className="space-y-5" onSubmit={handleSubmit}>
+          <form id="goal-progress-form" className="space-y-4" onSubmit={handleSubmit}>
             <Input
               label="Novo valor atual"
               name="currentAmount"
@@ -71,6 +84,7 @@ function GoalProgressModal({ isOpen, goal, loading, serverError, onClose, onSubm
               value={currentAmount}
               onChange={handleChange}
               autoFocus
+              className="h-11 py-0 text-sm"
             />
 
             {error || serverError ? (
@@ -79,16 +93,10 @@ function GoalProgressModal({ isOpen, goal, loading, serverError, onClose, onSubm
               </div>
             ) : null}
 
-            <div className="flex flex-wrap gap-3">
-              <Button type="submit" disabled={loading}>
-                {loading ? 'Salvando...' : 'Salvar progresso'}
-              </Button>
-              <Button type="button" variant="secondary" onClick={onClose}>Cancelar</Button>
-            </div>
           </form>
         </div>
       ) : null}
-    </Modal>
+    </FormModal>
   );
 }
 

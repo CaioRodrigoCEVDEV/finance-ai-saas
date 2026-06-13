@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 
-import Button from '../ui/Button';
 import Input from '../ui/Input';
 import Select from '../ui/Select';
 
@@ -54,9 +53,10 @@ function buildFormValues(budget) {
   };
 }
 
-function BudgetForm({ budget, categories, loading, serverError, onCancel, onSubmit }) {
+function BudgetForm({ budget, categories, serverError, onSubmit, formId = 'budget-form' }) {
   const [formValues, setFormValues] = useState(initialFormValues);
   const [error, setError] = useState('');
+  const fieldClassName = 'h-11 py-0 text-sm';
 
   useEffect(() => {
     setFormValues(buildFormValues(budget));
@@ -118,35 +118,28 @@ function BudgetForm({ budget, categories, loading, serverError, onCancel, onSubm
 
   return (
     <section>
-      <div>
-        <p className="text-sm uppercase tracking-[0.28em] text-emerald-600">{budget ? 'Editar orçamento' : 'Novo orçamento'}</p>
-        <h2 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">
-          {budget ? 'Atualize o limite mensal da categoria' : 'Defina um teto mensal para controlar seus gastos'}
-        </h2>
-      </div>
-
-      <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
-        <div className="grid gap-5 md:grid-cols-2">
+      <form id={formId} className="space-y-4" onSubmit={handleSubmit}>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
           <div className="md:col-span-2">
-            <Input label="Nome" name="name" value={formValues.name} onChange={handleChange} />
+            <Input label="Nome" name="name" value={formValues.name} onChange={handleChange} className={fieldClassName} />
           </div>
 
-          <Select label="Categoria" name="categoryId" value={formValues.categoryId} onChange={handleChange}>
+          <Select label="Categoria" name="categoryId" value={formValues.categoryId} onChange={handleChange} className={fieldClassName}>
             <option value="">Selecione uma categoria</option>
             {categories.map((category) => (
               <option key={category.id} value={category.id}>{category.name}</option>
             ))}
           </Select>
 
-          <Input label="Valor limite" name="amount" type="number" step="0.01" min="0" value={formValues.amount} onChange={handleChange} />
+          <Input label="Valor limite" name="amount" type="number" step="0.01" min="0" value={formValues.amount} onChange={handleChange} className={fieldClassName} />
 
-          <Select label="Mês" name="month" value={formValues.month} onChange={handleChange}>
+          <Select label="Mês" name="month" value={formValues.month} onChange={handleChange} className={fieldClassName}>
             {monthOptions.map((option) => (
               <option key={option.value} value={option.value}>{option.label}</option>
             ))}
           </Select>
 
-          <Select label="Ano" name="year" value={formValues.year} onChange={handleChange}>
+          <Select label="Ano" name="year" value={formValues.year} onChange={handleChange} className={fieldClassName}>
             {yearOptions.map((year) => (
               <option key={year} value={year}>{year}</option>
             ))}
@@ -159,12 +152,6 @@ function BudgetForm({ budget, categories, loading, serverError, onCancel, onSubm
           </div>
         ) : null}
 
-        <div className="flex flex-wrap gap-3">
-          <Button type="submit" disabled={loading}>
-            {loading ? 'Salvando...' : budget ? 'Salvar alterações' : 'Criar orçamento'}
-          </Button>
-          <Button type="button" variant="secondary" onClick={onCancel}>Cancelar</Button>
-        </div>
       </form>
     </section>
   );

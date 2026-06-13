@@ -29,6 +29,7 @@ import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import EmptyState from '../components/ui/EmptyState';
+import FormModal from '../components/ui/FormModal';
 import Input from '../components/ui/Input';
 import LoadingSkeleton from '../components/ui/LoadingSkeleton';
 import Modal from '../components/ui/Modal';
@@ -196,20 +197,36 @@ function PaymentModal({ isOpen, invoice, onClose, onPaid }) {
   }
 
   return (
-    <Modal isOpen={isOpen} title="Pagar fatura" onClose={onClose}>
+    <FormModal
+      isOpen={isOpen}
+      eyebrow="PAGAR FATURA"
+      title="Registre o pagamento da fatura"
+      onClose={onClose}
+      footer={(
+        <>
+          <Button type="button" variant="secondary" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button type="submit" form="pay-invoice-form" disabled={saving || loading}>
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Banknote className="h-4 w-4" />}
+            Confirmar pagamento
+          </Button>
+        </>
+      )}
+    >
       {loading ? (
         <div className="flex justify-center py-8">
           <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form id="pay-invoice-form" onSubmit={handleSubmit} className="space-y-4">
           {error && (
             <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-800 dark:bg-rose-900/30 dark:text-rose-400">
               {error}
             </div>
           )}
 
-          <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-700/50">
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-600/70 dark:bg-slate-700/30">
             <p className="text-sm text-slate-500 dark:text-slate-400">Cartão</p>
             <p className="font-medium text-slate-900 dark:text-slate-100">{invoice?.creditCard?.name}</p>
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Referência</p>
@@ -223,6 +240,7 @@ function PaymentModal({ isOpen, invoice, onClose, onPaid }) {
             value={form.accountId}
             onChange={(e) => setForm({ ...form, accountId: e.target.value })}
             required
+            className="h-11 py-0 text-sm"
           >
             <option value="">Selecione uma conta</option>
             {accounts.map((acc) => (
@@ -238,20 +256,11 @@ function PaymentModal({ isOpen, invoice, onClose, onPaid }) {
             value={form.paymentDate}
             onChange={(e) => setForm({ ...form, paymentDate: e.target.value })}
             required
+            className="h-11 py-0 text-sm"
           />
-
-          <div className="flex justify-end gap-3 pt-2">
-            <Button type="button" variant="ghost" onClick={onClose}>
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={saving}>
-              {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Banknote className="mr-2 h-4 w-4" />}
-              Confirmar pagamento
-            </Button>
-          </div>
         </form>
       )}
-    </Modal>
+    </FormModal>
   );
 }
 

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 
-import Button from '../ui/Button';
 import Input from '../ui/Input';
 import Select from '../ui/Select';
 
@@ -34,9 +33,10 @@ function buildFormValues(goal) {
   };
 }
 
-function GoalForm({ goal, loading, serverError, onCancel, onSubmit }) {
+function GoalForm({ goal, serverError, onSubmit, formId = 'goal-form' }) {
   const [formValues, setFormValues] = useState(initialFormValues);
   const [error, setError] = useState('');
+  const fieldClassName = 'h-11 py-0 text-sm';
 
   useEffect(() => {
     setFormValues(buildFormValues(goal));
@@ -92,27 +92,20 @@ function GoalForm({ goal, loading, serverError, onCancel, onSubmit }) {
 
   return (
     <section>
-      <div>
-        <p className="text-sm uppercase tracking-[0.28em] text-emerald-600">{goal ? 'Editar meta' : 'Nova meta'}</p>
-        <h2 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">
-          {goal ? 'Atualize os dados da meta financeira' : 'Defina um objetivo financeiro e acompanhe seu progresso'}
-        </h2>
-      </div>
-
-      <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
-        <div className="grid gap-5 md:grid-cols-2">
+      <form id={formId} className="space-y-4" onSubmit={handleSubmit}>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
           <div className="md:col-span-2">
-            <Input label="Nome" name="name" value={formValues.name} onChange={handleChange} />
+            <Input label="Nome" name="name" value={formValues.name} onChange={handleChange} className={fieldClassName} />
           </div>
 
           <div className="md:col-span-2">
-            <Input label="Descricao" name="description" value={formValues.description} onChange={handleChange} />
+            <Input label="Descrição" name="description" value={formValues.description} onChange={handleChange} className={fieldClassName} />
           </div>
 
-          <Input label="Valor alvo" name="targetAmount" type="number" step="0.01" min="0" value={formValues.targetAmount} onChange={handleChange} />
-          <Input label="Valor atual" name="currentAmount" type="number" step="0.01" min="0" value={formValues.currentAmount} onChange={handleChange} />
-          <Input label="Prazo" name="deadline" type="date" value={formValues.deadline} onChange={handleChange} />
-          <Select label="Status" name="status" value={formValues.status} onChange={handleChange}>
+          <Input label="Valor alvo" name="targetAmount" type="number" step="0.01" min="0" value={formValues.targetAmount} onChange={handleChange} className={fieldClassName} />
+          <Input label="Valor atual" name="currentAmount" type="number" step="0.01" min="0" value={formValues.currentAmount} onChange={handleChange} className={fieldClassName} />
+          <Input label="Prazo" name="deadline" type="date" value={formValues.deadline} onChange={handleChange} className={fieldClassName} />
+          <Select label="Status" name="status" value={formValues.status} onChange={handleChange} className={fieldClassName}>
             {statusOptions.map((option) => (
               <option key={option.value} value={option.value}>{option.label}</option>
             ))}
@@ -125,12 +118,6 @@ function GoalForm({ goal, loading, serverError, onCancel, onSubmit }) {
           </div>
         ) : null}
 
-        <div className="flex flex-wrap gap-3">
-          <Button type="submit" disabled={loading}>
-            {loading ? 'Salvando...' : goal ? 'Salvar alterações' : 'Criar meta'}
-          </Button>
-          <Button type="button" variant="secondary" onClick={onCancel}>Cancelar</Button>
-        </div>
       </form>
     </section>
   );

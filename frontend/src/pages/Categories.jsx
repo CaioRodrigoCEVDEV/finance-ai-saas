@@ -9,7 +9,7 @@ import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import EmptyState from '../components/ui/EmptyState';
 import LoadingSkeleton from '../components/ui/LoadingSkeleton';
-import Modal from '../components/ui/Modal';
+import FormModal from '../components/ui/FormModal';
 import PageHeader from '../components/ui/PageHeader';
 import {
   createCategory,
@@ -197,7 +197,20 @@ function Categories() {
             ) : null}
         </div>
 
-        <Modal isOpen={formVisible} title={selectedCategory ? 'Editar categoria' : 'Nova categoria'} onClose={handleCancelForm}>
+        <FormModal
+          isOpen={formVisible}
+          eyebrow={selectedCategory ? 'EDITAR CATEGORIA' : 'NOVA CATEGORIA'}
+          title={selectedCategory ? 'Atualize os dados da categoria' : 'Cadastre uma nova categoria'}
+          onClose={handleCancelForm}
+          footer={(
+            <>
+              <Button type="button" variant="secondary" onClick={handleCancelForm}>Cancelar</Button>
+              <Button type="submit" form="category-form" disabled={saving}>
+                {saving ? 'Salvando...' : selectedCategory ? 'Salvar alterações' : 'Criar categoria'}
+              </Button>
+            </>
+          )}
+        >
           <CategoryForm
             category={selectedCategory}
             categories={allActiveCategories}
@@ -205,7 +218,7 @@ function Categories() {
             onCancel={handleCancelForm}
             onSubmit={handleSubmit}
           />
-        </Modal>
+        </FormModal>
       </div>
     </AppLayout>
   );

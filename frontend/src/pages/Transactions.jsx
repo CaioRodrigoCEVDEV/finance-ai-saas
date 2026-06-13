@@ -11,7 +11,7 @@ import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import EmptyState from '../components/ui/EmptyState';
 import LoadingSkeleton from '../components/ui/LoadingSkeleton';
-import Modal from '../components/ui/Modal';
+import FormModal from '../components/ui/FormModal';
 import PageHeader from '../components/ui/PageHeader';
 import { getAccounts } from '../services/accountService';
 import { getCategories } from '../services/categoryService';
@@ -365,18 +365,29 @@ function Transactions() {
           ) : null}
         </div>
 
-        <Modal isOpen={formVisible} title={selectedTransaction ? 'Editar transação' : 'Nova transação'} onClose={handleCancelForm}>
+        <FormModal
+          isOpen={formVisible}
+          eyebrow={selectedTransaction ? 'EDITAR TRANSAÇÃO' : 'NOVA TRANSAÇÃO'}
+          title={selectedTransaction ? 'Atualize os dados da movimentação financeira' : 'Cadastre uma nova movimentação financeira'}
+          onClose={handleCancelForm}
+          footer={(
+            <>
+              <Button type="button" variant="secondary" onClick={handleCancelForm}>Cancelar</Button>
+              <Button type="submit" form="transaction-form" disabled={saving}>
+                {saving ? 'Salvando...' : selectedTransaction ? 'Salvar alterações' : 'Criar transação'}
+              </Button>
+            </>
+          )}
+        >
           <TransactionForm
             transaction={selectedTransaction}
             accounts={accounts}
             categories={categories}
             creditCards={creditCards}
-            loading={saving}
             serverError={formError}
-            onCancel={handleCancelForm}
             onSubmit={handleSubmit}
           />
-        </Modal>
+        </FormModal>
       </div>
     </AppLayout>
   );

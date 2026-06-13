@@ -3,7 +3,6 @@ import { Info } from 'lucide-react';
 
 import { cn } from '../../utils/cn';
 import { formatCurrencyBRL, formatDateBR } from '../../utils/formatters';
-import Button from '../ui/Button';
 import Input from '../ui/Input';
 import Select from '../ui/Select';
 
@@ -132,9 +131,10 @@ function buildPreviewText(formValues) {
   return { mainText, endText };
 }
 
-function RecurrenceForm({ recurrence, accounts, categories, creditCards, loading, serverError, onCancel, onSubmit }) {
+function RecurrenceForm({ recurrence, accounts, categories, creditCards, serverError, onSubmit, formId = 'recurrence-form' }) {
   const [formValues, setFormValues] = useState(initialFormValues);
   const [error, setError] = useState('');
+  const fieldClassName = 'h-11 py-0 text-sm';
 
   useEffect(() => {
     setFormValues(buildFormValues(recurrence));
@@ -228,14 +228,7 @@ function RecurrenceForm({ recurrence, accounts, categories, creditCards, loading
 
   return (
     <section>
-      <div>
-        <p className="text-sm uppercase tracking-[0.28em] text-emerald-600 dark:text-emerald-400">{recurrence ? 'Editar recorrência' : 'Nova recorrência'}</p>
-        <h2 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">
-          {recurrence ? 'Atualize os dados da recorrência' : 'Cadastre uma nova recorrência financeira'}
-        </h2>
-      </div>
-
-      <div className="mt-4 rounded-2xl border border-blue-200 bg-blue-50/50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
+        <div className="rounded-2xl border border-blue-200 bg-blue-50/50 p-4 dark:border-blue-700/60 dark:bg-blue-950/20">
         <div className="flex items-start gap-3">
           <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400" />
           <p className="text-sm text-blue-700 dark:text-blue-300">
@@ -245,8 +238,8 @@ function RecurrenceForm({ recurrence, accounts, categories, creditCards, loading
         </div>
       </div>
 
-      <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
-        <div className="grid gap-5 md:grid-cols-2">
+      <form id={formId} className="mt-4 space-y-4" onSubmit={handleSubmit}>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
           <div className="md:col-span-2">
             <Input
               label="Descrição"
@@ -254,6 +247,7 @@ function RecurrenceForm({ recurrence, accounts, categories, creditCards, loading
               value={formValues.description}
               onChange={handleChange}
               placeholder="Ex: Aluguel, Salário, Internet..."
+              className={fieldClassName}
             />
           </div>
 
@@ -265,15 +259,16 @@ function RecurrenceForm({ recurrence, accounts, categories, creditCards, loading
             min="0"
             value={formValues.amount}
             onChange={handleChange}
+            className={fieldClassName}
           />
 
-          <Select label="Frequência" name="frequency" value={formValues.frequency} onChange={handleChange}>
+          <Select label="Frequência" name="frequency" value={formValues.frequency} onChange={handleChange} className={fieldClassName}>
             {FREQUENCY_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>{option.label}</option>
             ))}
           </Select>
 
-          <Select label="Tipo" name="type" value={formValues.type} onChange={handleChange}>
+          <Select label="Tipo" name="type" value={formValues.type} onChange={handleChange} className={fieldClassName}>
             {TYPE_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>{option.label}</option>
             ))}
@@ -285,10 +280,11 @@ function RecurrenceForm({ recurrence, accounts, categories, creditCards, loading
             type="date"
             value={formValues.startDate}
             onChange={handleChange}
+            className={fieldClassName}
           />
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-600 dark:bg-slate-800/50">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-600/70 dark:bg-slate-800/40">
           <p className="mb-3 text-sm font-medium text-slate-700 dark:text-slate-300">Repetir até</p>
           <div className="flex flex-wrap gap-4">
             <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 cursor-pointer">
@@ -320,20 +316,21 @@ function RecurrenceForm({ recurrence, accounts, categories, creditCards, loading
                 type="date"
                 value={formValues.endDate}
                 onChange={handleChange}
+                className={fieldClassName}
               />
             </div>
           )}
         </div>
 
-        <div className="grid gap-5 md:grid-cols-2">
-          <Select label="Categoria" name="categoryId" value={formValues.categoryId} onChange={handleChange}>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
+          <Select label="Categoria" name="categoryId" value={formValues.categoryId} onChange={handleChange} className={fieldClassName}>
             <option value="">Selecione uma categoria</option>
             {filteredCategories.map((category) => (
               <option key={category.id} value={category.id}>{category.name}</option>
             ))}
           </Select>
 
-          <Select label="Forma de pagamento" name="paymentMethod" value={formValues.paymentMethod} onChange={handleChange}>
+          <Select label="Forma de pagamento" name="paymentMethod" value={formValues.paymentMethod} onChange={handleChange} className={fieldClassName}>
             <option value="">Não informado</option>
             <option value="PIX">Pix</option>
             <option value="DEBIT_CARD">Cartão de débito</option>
@@ -345,9 +342,9 @@ function RecurrenceForm({ recurrence, accounts, categories, creditCards, loading
           </Select>
         </div>
 
-        <div className="grid gap-5 md:grid-cols-2">
-          <div className={cn('rounded-[24px] border p-4 transition', formValues.creditCardId ? 'border-slate-200 bg-slate-50 dark:border-slate-600 dark:bg-slate-800/50' : 'border-emerald-200 bg-emerald-50/70 dark:border-emerald-800 dark:bg-emerald-900/30')}>
-            <Select label="Conta" name="accountId" value={formValues.accountId} onChange={handleChange}>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
+          <div className={cn('rounded-[24px] border p-4 transition', formValues.creditCardId ? 'border-slate-200 bg-slate-50 dark:border-slate-600/70 dark:bg-slate-800/40' : 'border-emerald-200 bg-emerald-50/70 dark:border-emerald-600/50 dark:bg-emerald-950/25')}>
+            <Select label="Conta" name="accountId" value={formValues.accountId} onChange={handleChange} className={fieldClassName}>
               <option value="">Selecione uma conta</option>
               {accounts.map((account) => (
                 <option key={account.id} value={account.id}>{account.name}</option>
@@ -355,8 +352,8 @@ function RecurrenceForm({ recurrence, accounts, categories, creditCards, loading
             </Select>
           </div>
 
-          <div className={cn('rounded-[24px] border p-4 transition', isIncome ? 'border-slate-200 bg-slate-50 opacity-50 dark:border-slate-600 dark:bg-slate-800/50' : formValues.creditCardId ? 'border-emerald-200 bg-emerald-50/70 dark:border-emerald-800 dark:bg-emerald-900/30' : 'border-slate-200 bg-slate-50 dark:border-slate-600 dark:bg-slate-800/50')}>
-            <Select label="Cartão de crédito" name="creditCardId" value={formValues.creditCardId} onChange={handleChange} disabled={isIncome || !creditCards.length}>
+          <div className={cn('rounded-[24px] border p-4 transition', isIncome ? 'border-slate-200 bg-slate-50 opacity-50 dark:border-slate-600/70 dark:bg-slate-800/40' : formValues.creditCardId ? 'border-emerald-200 bg-emerald-50/70 dark:border-emerald-600/50 dark:bg-emerald-950/25' : 'border-slate-200 bg-slate-50 dark:border-slate-600/70 dark:bg-slate-800/40')}>
+            <Select label="Cartão de crédito" name="creditCardId" value={formValues.creditCardId} onChange={handleChange} disabled={isIncome || !creditCards.length} className={fieldClassName}>
               <option value="">{creditCards.length ? 'Selecione um cartão' : (isIncome ? 'Não disponível para receitas' : 'Nenhum cartão disponível')}</option>
               {creditCards.map((creditCard) => (
                 <option key={creditCard.id} value={creditCard.id}>{creditCard.name}</option>
@@ -372,25 +369,25 @@ function RecurrenceForm({ recurrence, accounts, categories, creditCards, loading
             rows="4"
             value={formValues.notes}
             onChange={handleChange}
-            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30"
+            className="w-full resize-none rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-slate-600 dark:bg-slate-700/40 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30"
             placeholder="Detalhes adicionais sobre a recorrência"
           />
         </label>
 
         <div className="grid gap-4 md:grid-cols-2">
-          <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:border-slate-600 dark:bg-slate-800/50 dark:text-slate-300">
+          <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-700 dark:border-slate-600/70 dark:bg-slate-700/30 dark:text-slate-300">
             <input name="autoGenerate" type="checkbox" checked={formValues.autoGenerate} onChange={handleChange} className="h-4 w-4 rounded border-slate-300 text-emerald-600 dark:border-slate-500 dark:bg-slate-700" />
             Geração automática
           </label>
 
-          <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:border-slate-600 dark:bg-slate-800/50 dark:text-slate-300">
+          <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-700 dark:border-slate-600/70 dark:bg-slate-700/30 dark:text-slate-300">
             <input name="generateAsPaid" type="checkbox" checked={formValues.generateAsPaid} onChange={handleChange} className="h-4 w-4 rounded border-slate-300 text-emerald-600 dark:border-slate-500 dark:bg-slate-700" />
             Gerar como pago
           </label>
         </div>
 
         {preview && (
-          <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4 dark:border-emerald-800 dark:bg-emerald-900/20">
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4 dark:border-emerald-600/50 dark:bg-emerald-950/25">
             <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Prévia</p>
             <p className="mt-1 text-sm text-emerald-600 dark:text-emerald-400">{preview.mainText}</p>
             {preview.endText && (
@@ -405,12 +402,6 @@ function RecurrenceForm({ recurrence, accounts, categories, creditCards, loading
           </div>
         ) : null}
 
-        <div className="flex flex-wrap gap-3">
-          <Button type="submit" disabled={loading}>
-            {loading ? 'Salvando...' : recurrence ? 'Salvar alterações' : 'Criar recorrência'}
-          </Button>
-          <Button type="button" variant="secondary" onClick={onCancel}>Cancelar</Button>
-        </div>
       </form>
     </section>
   );

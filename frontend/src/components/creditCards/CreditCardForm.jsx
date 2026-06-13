@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 
-import Button from '../ui/Button';
 import Input from '../ui/Input';
 import Select from '../ui/Select';
 import { cn } from '../../utils/cn';
@@ -55,9 +54,10 @@ function buildFormValues(creditCard) {
   };
 }
 
-function CreditCardForm({ creditCard, accounts, loadingAccounts, loading, serverError, onCancel, onSubmit }) {
+function CreditCardForm({ creditCard, accounts, loadingAccounts, serverError, onSubmit, formId = 'credit-card-form' }) {
   const [formValues, setFormValues] = useState(initialFormValues);
   const [error, setError] = useState('');
+  const fieldClassName = 'h-11 py-0 text-sm';
 
   useEffect(() => {
     setFormValues(buildFormValues(creditCard));
@@ -115,28 +115,21 @@ function CreditCardForm({ creditCard, accounts, loadingAccounts, loading, server
 
   return (
     <section>
-      <div>
-        <p className="text-sm uppercase tracking-[0.28em] text-emerald-600">{creditCard ? 'Editar cartão' : 'Novo cartão'}</p>
-        <h2 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">
-          {creditCard ? 'Atualize os dados do cartão' : 'Cadastre um novo cartão de crédito'}
-        </h2>
-      </div>
+      <form id={formId} className="space-y-4" onSubmit={handleSubmit}>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
+          <Input label="Nome" name="name" value={formValues.name} onChange={handleChange} className={fieldClassName} />
 
-      <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
-        <div className="grid gap-5 md:grid-cols-2">
-          <Input label="Nome" name="name" value={formValues.name} onChange={handleChange} />
-
-          <Select label="Bandeira" name="brand" value={formValues.brand} onChange={handleChange}>
+          <Select label="Bandeira" name="brand" value={formValues.brand} onChange={handleChange} className={fieldClassName}>
             {BRAND_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>{option.label}</option>
             ))}
           </Select>
 
-          <Input label="Limite" name="limitAmount" type="number" step="0.01" min="0" value={formValues.limitAmount} onChange={handleChange} />
-          <Input label="Dia de fechamento" name="closingDay" type="number" min="1" max="31" value={formValues.closingDay} onChange={handleChange} />
-          <Input label="Dia de vencimento" name="dueDay" type="number" min="1" max="31" value={formValues.dueDay} onChange={handleChange} />
+          <Input label="Limite" name="limitAmount" type="number" step="0.01" min="0" value={formValues.limitAmount} onChange={handleChange} className={fieldClassName} />
+          <Input label="Dia de fechamento" name="closingDay" type="number" min="1" max="31" value={formValues.closingDay} onChange={handleChange} className={fieldClassName} />
+          <Input label="Dia de vencimento" name="dueDay" type="number" min="1" max="31" value={formValues.dueDay} onChange={handleChange} className={fieldClassName} />
 
-          <Select label="Conta vinculada" name="accountId" value={formValues.accountId} onChange={handleChange} disabled={loadingAccounts}>
+          <Select label="Conta vinculada" name="accountId" value={formValues.accountId} onChange={handleChange} disabled={loadingAccounts} className={fieldClassName}>
             <option value="">Nenhuma conta vinculada</option>
             {accounts.map((account) => (
               <option key={account.id} value={account.id}>{account.name}</option>
@@ -189,7 +182,7 @@ function CreditCardForm({ creditCard, accounts, loadingAccounts, loading, server
           </div>
         </div>
 
-        <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:border-slate-600 dark:bg-slate-800/50 dark:text-slate-300">
+        <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-700 dark:border-slate-600/70 dark:bg-slate-700/30 dark:text-slate-300">
           <input name="isActive" type="checkbox" checked={formValues.isActive} onChange={handleChange} className="h-4 w-4 rounded border-slate-300 text-emerald-600 dark:border-slate-500 dark:bg-slate-700" />
           Cartao ativo
         </label>
@@ -206,12 +199,6 @@ function CreditCardForm({ creditCard, accounts, loadingAccounts, loading, server
           </div>
         ) : null}
 
-        <div className="flex flex-wrap gap-3">
-          <Button type="submit" disabled={loading}>
-            {loading ? 'Salvando...' : creditCard ? 'Salvar alterações' : 'Criar cartão'}
-          </Button>
-          <Button type="button" variant="secondary" onClick={onCancel}>Cancelar</Button>
-        </div>
       </form>
     </section>
   );

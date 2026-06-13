@@ -10,7 +10,7 @@ import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import EmptyState from '../components/ui/EmptyState';
 import LoadingSkeleton from '../components/ui/LoadingSkeleton';
-import Modal from '../components/ui/Modal';
+import FormModal from '../components/ui/FormModal';
 import PageHeader from '../components/ui/PageHeader';
 import { getAccounts } from '../services/accountService';
 import {
@@ -225,7 +225,20 @@ function CreditCards() {
           ) : null}
         </div>
 
-        <Modal isOpen={formVisible} title={selectedCreditCard ? 'Editar cartão' : 'Novo cartão'} onClose={handleCancelForm}>
+        <FormModal
+          isOpen={formVisible}
+          eyebrow={selectedCreditCard ? 'EDITAR CARTÃO' : 'NOVO CARTÃO'}
+          title={selectedCreditCard ? 'Atualize os dados do cartão de crédito' : 'Cadastre um novo cartão de crédito'}
+          onClose={handleCancelForm}
+          footer={(
+            <>
+              <Button type="button" variant="secondary" onClick={handleCancelForm}>Cancelar</Button>
+              <Button type="submit" form="credit-card-form" disabled={saving}>
+                {saving ? 'Salvando...' : selectedCreditCard ? 'Salvar alterações' : 'Criar cartão'}
+              </Button>
+            </>
+          )}
+        >
           <CreditCardForm
             creditCard={selectedCreditCard}
             accounts={accounts}
@@ -235,7 +248,7 @@ function CreditCards() {
             onCancel={handleCancelForm}
             onSubmit={handleSubmit}
           />
-        </Modal>
+        </FormModal>
       </div>
     </AppLayout>
   );

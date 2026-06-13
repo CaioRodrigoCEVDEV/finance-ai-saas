@@ -10,6 +10,7 @@ import EmptyState from '../components/ui/EmptyState';
 import Input from '../components/ui/Input';
 import LoadingSkeleton from '../components/ui/LoadingSkeleton';
 import MetricCard from '../components/MetricCard';
+import FormModal from '../components/ui/FormModal';
 import Modal from '../components/ui/Modal';
 import PageHeader from '../components/ui/PageHeader';
 import Select from '../components/ui/Select';
@@ -481,7 +482,20 @@ function RecurrencesPage() {
           ) : null}
         </div>
 
-        <Modal isOpen={formVisible} title={selectedRecurrence ? 'Editar recorrência' : 'Nova recorrência'} onClose={handleCancelForm}>
+        <FormModal
+          isOpen={formVisible}
+          eyebrow={selectedRecurrence ? 'EDITAR RECORRÊNCIA' : 'NOVA RECORRÊNCIA'}
+          title={selectedRecurrence ? 'Atualize os dados da recorrência' : 'Cadastre uma nova recorrência financeira'}
+          onClose={handleCancelForm}
+          footer={(
+            <>
+              <Button type="button" variant="secondary" onClick={handleCancelForm}>Cancelar</Button>
+              <Button type="submit" form="recurrence-form" disabled={saving}>
+                {saving ? 'Salvando...' : selectedRecurrence ? 'Salvar alterações' : 'Criar recorrência'}
+              </Button>
+            </>
+          )}
+        >
           <RecurrenceForm
             recurrence={selectedRecurrence}
             accounts={accounts}
@@ -492,7 +506,7 @@ function RecurrencesPage() {
             onCancel={handleCancelForm}
               onSubmit={handleFormSubmit}
           />
-        </Modal>
+        </FormModal>
 
         <Modal isOpen={generateModalOpen} title="Gerar lancamento" onClose={() => { setGenerateModalOpen(false); setGenerateTarget(null); }}>
           <div className="space-y-4">
