@@ -1,6 +1,6 @@
-import { Bell, CheckCheck, TrendingDown, Target, CreditCard, Tag, AlertTriangle, X, Loader2 } from 'lucide-react';
+import { Bell, CheckCheck, TrendingDown, Target, CreditCard, Tag, AlertTriangle, Loader2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { getNotifications, getUnreadCount, markAllAsRead } from '../../services/notificationService';
 import { cn } from '../../utils/cn';
@@ -16,9 +16,9 @@ function formatRelativeDate(dateString) {
   const diffDays = Math.floor(diffMs / 86400000);
 
   if (diffMin < 1) return 'Agora mesmo';
-  if (diffMin < 60) return `Ha ${diffMin} min`;
-  if (diffHours < 24) return `Ha ${diffHours}h`;
-  if (diffDays < 7) return `Ha ${diffDays}d`;
+  if (diffMin < 60) return `Há ${diffMin} min`;
+  if (diffHours < 24) return `Há ${diffHours}h`;
+  if (diffDays < 7) return `Há ${diffDays}d`;
   return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit' }).format(date);
 }
 
@@ -93,6 +93,8 @@ function NotificationItem({ notification, onClose }) {
 }
 
 function NotificationBell() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [unreadCount, setUnreadCount] = useState(0);
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -116,13 +118,27 @@ function NotificationBell() {
       }
     }
 
+    function handleKeyDown(event) {
+      if (event.key === 'Escape') {
+        setOpen(false);
+      }
+    }
+
     if (open) {
       document.addEventListener('mousedown', handleClickOutside);
+      window.addEventListener('keydown', handleKeyDown);
       loadRecentNotifications();
     }
 
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [open]);
+
+  useEffect(() => {
+    setOpen(false);
+  }, [location.pathname]);
 
   async function loadUnreadCount() {
     try {
@@ -165,8 +181,10 @@ function NotificationBell() {
         ref={bellRef}
         type="button"
         onClick={handleToggle}
-        className="relative flex h-9 w-9 items-center justify-center rounded-2xl text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 sm:h-10 sm:w-10 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200"
-        aria-label="Notificacoes"
+        className="relative flex h-9 w-9 items-center justify-center rounded-2xl text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 sm:h-10 sm:w-10 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200"
+        aria-label="Notificações"
+        aria-expanded={open}
+        aria-haspopup="true"
       >
         <Bell className="h-5 w-5" />
         {unreadCount > 0 && (
@@ -179,11 +197,11 @@ function NotificationBell() {
       {open && (
         <div
           ref={dropdownRef}
-          className="absolute right-0 z-50 mt-2 w-80 origin-top-right rounded-[28px] border border-slate-200 bg-white shadow-soft-lg dark:border-slate-700 dark:bg-slate-800"
+          className="fixed left-4 right-4 top-24 z-[60] max-w-[calc(100vw-2rem)] origin-top rounded-2xl border border-slate-200/80 bg-white shadow-2xl shadow-slate-900/10 dark:border-slate-700/80 dark:bg-slate-800 dark:shadow-black/40 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-3 sm:w-96 sm:origin-top-right"
         >
           <div className="flex items-center justify-between px-5 pt-5 pb-3">
             <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">
-              Notificacoes
+              Notificações
             </h3>
             {unreadCount > 0 && (
               <Button variant="ghost" size="sm" onClick={handleMarkAllRead}>
@@ -199,10 +217,10 @@ function NotificationBell() {
                 <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
               </div>
             ) : notifications.length === 0 ? (
-              <div className="flex flex-col items-center py-8 text-center">
+              <div className="flex flex-col items-center px-4 py-8 text-center">
                 <Bell className="h-8 w-8 text-slate-300 dark:text-slate-600" />
                 <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
-                  Nenhuma notificacao
+                  Nenhuma notificação
                 </p>
               </div>
             ) : (
@@ -222,10 +240,10 @@ function NotificationBell() {
                 className="w-full"
                 onClick={() => {
                   setOpen(false);
-                  window.location.href = '/notifications';
+                  navigate('/notifications');
                 }}
               >
-                Ver todas as notificacoes
+                Ver todas as notificações
               </Button>
             </div>
           )}
