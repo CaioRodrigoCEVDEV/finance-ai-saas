@@ -29,13 +29,13 @@ function Modal({ isOpen, title, children, onClose }) {
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 px-4 py-6 backdrop-blur-sm dark:bg-slate-950/60" onClick={onClose}>
       <Card className="scrollbar-none max-h-[90vh] w-full max-w-2xl overflow-y-auto p-0" onClick={(event) => event.stopPropagation()}>
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5 dark:border-slate-700">
+        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-4 dark:border-slate-700 md:px-6">
           <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">{title}</h2>
           <Button variant="ghost" size="sm" onClick={onClose} aria-label="Fechar modal">
             <X className="h-4 w-4" />
           </Button>
         </div>
-        <div className="p-6">{children}</div>
+        <div className="p-4 md:p-6">{children}</div>
       </Card>
     </div>,
     document.body

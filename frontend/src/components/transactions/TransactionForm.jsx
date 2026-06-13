@@ -68,6 +68,7 @@ function buildFormValues(transaction) {
 function TransactionForm({ transaction, accounts, categories, creditCards, loading, serverError, onCancel, onSubmit }) {
   const [formValues, setFormValues] = useState(initialFormValues);
   const [error, setError] = useState('');
+  const fieldClassName = 'h-11 py-0 text-sm';
 
   useEffect(() => {
     setFormValues(buildFormValues(transaction));
@@ -180,41 +181,41 @@ function TransactionForm({ transaction, accounts, categories, creditCards, loadi
   return (
     <section>
       <div>
-        <p className="text-sm uppercase tracking-[0.28em] text-emerald-600 dark:text-emerald-400">{transaction ? 'Editar transação' : 'Nova transação'}</p>
-        <h2 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">
+        <p className="text-xs uppercase tracking-[0.24em] text-emerald-600 dark:text-emerald-400">{transaction ? 'Editar transação' : 'Nova transação'}</p>
+        <h2 className="mt-1.5 text-xl font-semibold text-slate-900 dark:text-slate-100">
           {transaction ? 'Atualize os dados da transação' : 'Cadastre uma nova movimentacao financeira'}
         </h2>
       </div>
 
-      <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
-        <div className="grid gap-5 md:grid-cols-2">
+      <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
+        <div className="grid gap-4 md:grid-cols-2">
           <div className="md:col-span-2">
-            <Input label="Descricao" name="description" value={formValues.description} onChange={handleChange} />
+            <Input label="Descricao" name="description" value={formValues.description} onChange={handleChange} className={fieldClassName} />
           </div>
 
-          <Input label="Valor" name="amount" type="number" step="0.01" min="0" value={formValues.amount} onChange={handleChange} />
+          <Input label="Valor" name="amount" type="number" step="0.01" min="0" value={formValues.amount} onChange={handleChange} className={fieldClassName} />
 
-          <Input label="Data" name="transactionDate" type="date" value={formValues.transactionDate} onChange={handleChange} />
+          <Input label="Data" name="transactionDate" type="date" value={formValues.transactionDate} onChange={handleChange} className={fieldClassName} />
 
-          <Select label="Tipo" name="type" value={formValues.type} onChange={handleChange}>
+          <Select label="Tipo" name="type" value={formValues.type} onChange={handleChange} className={fieldClassName}>
             {TYPE_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>{option.label}</option>
             ))}
           </Select>
 
-          <Select label="Status" name="status" value={formValues.status} onChange={handleChange}>
+          <Select label="Status" name="status" value={formValues.status} onChange={handleChange} className={fieldClassName}>
             {STATUS_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>{option.label}</option>
             ))}
           </Select>
 
-          <Select label="Metodo de pagamento" name="paymentMethod" value={formValues.paymentMethod} onChange={handleChange}>
+          <Select label="Metodo de pagamento" name="paymentMethod" value={formValues.paymentMethod} onChange={handleChange} className={fieldClassName}>
             {PAYMENT_METHOD_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>{option.label}</option>
             ))}
           </Select>
 
-          <Select label="Categoria" name="categoryId" value={formValues.categoryId} onChange={handleChange} disabled={formValues.type === 'TRANSFER'}>
+          <Select label="Categoria" name="categoryId" value={formValues.categoryId} onChange={handleChange} disabled={formValues.type === 'TRANSFER'} className={fieldClassName}>
             <option value="">{formValues.type === 'TRANSFER' ? 'Opcional para transferencia' : 'Selecione uma categoria'}</option>
             {filteredCategories.map((category) => (
               <option key={category.id} value={category.id}>{category.name}</option>
@@ -222,10 +223,10 @@ function TransactionForm({ transaction, accounts, categories, creditCards, loadi
           </Select>
         </div>
 
-        <div className="grid gap-5 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2">
           {isCreditCardPayment ? (
-            <div className="rounded-[24px] border border-emerald-200 bg-emerald-50/70 p-4 transition dark:border-emerald-800 dark:bg-emerald-900/30">
-              <Select label="Cartao de crédito" name="creditCardId" value={formValues.creditCardId} onChange={handleChange} disabled={!creditCards.length}>
+            <div className="rounded-[22px] border border-emerald-200 bg-emerald-50/70 p-3.5 transition dark:border-emerald-800 dark:bg-emerald-900/30">
+              <Select label="Cartao de crédito" name="creditCardId" value={formValues.creditCardId} onChange={handleChange} disabled={!creditCards.length} className={fieldClassName}>
                 <option value="">{creditCards.length ? 'Selecione um cartão' : 'Nenhum cartão disponivel'}</option>
                 {creditCards.map((creditCard) => (
                   <option key={creditCard.id} value={creditCard.id}>{creditCard.name}</option>
@@ -234,8 +235,8 @@ function TransactionForm({ transaction, accounts, categories, creditCards, loadi
               <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">Selecione o cartão usado nesta compra.</p>
             </div>
           ) : (
-            <div className="rounded-[24px] border border-emerald-200 bg-emerald-50/70 p-4 transition dark:border-emerald-800 dark:bg-emerald-900/30">
-              <Select label="Conta" name="accountId" value={formValues.accountId} onChange={handleChange}>
+            <div className="rounded-[22px] border border-emerald-200 bg-emerald-50/70 p-3.5 transition dark:border-emerald-800 dark:bg-emerald-900/30">
+              <Select label="Conta" name="accountId" value={formValues.accountId} onChange={handleChange} className={fieldClassName}>
                 <option value="">Selecione uma conta</option>
                 {accounts.map((account) => (
                   <option key={account.id} value={account.id}>{account.name}</option>
@@ -250,16 +251,15 @@ function TransactionForm({ transaction, accounts, categories, creditCards, loadi
           <span className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Observacoes</span>
           <textarea
             name="notes"
-            rows="4"
             value={formValues.notes}
             onChange={handleChange}
-            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30"
+            className="h-24 w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30"
             placeholder="Detalhes adicionais da transação"
           />
         </label>
 
-        <div className="space-y-4">
-          <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:border-slate-600 dark:bg-slate-800/50 dark:text-slate-300">
+        <div className="space-y-3">
+          <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-700 dark:border-slate-600 dark:bg-slate-800/50 dark:text-slate-300">
             <input name="isInstallment" type="checkbox" checked={formValues.isInstallment} onChange={handleChange} className="h-4 w-4 rounded border-slate-300 text-emerald-600 dark:border-slate-500 dark:bg-slate-700" />
             Transacao parcelada
           </label>
@@ -268,9 +268,9 @@ function TransactionForm({ transaction, accounts, categories, creditCards, loadi
         </div>
 
         {formValues.isInstallment ? (
-          <div className="grid gap-5 md:grid-cols-2">
-            <Input label="Numero da parcela" name="installmentNumber" type="number" min="1" value={formValues.installmentNumber} onChange={handleChange} />
-            <Input label="Total de parcelas" name="installmentTotal" type="number" min="2" value={formValues.installmentTotal} onChange={handleChange} />
+          <div className="grid gap-4 md:grid-cols-2">
+            <Input label="Numero da parcela" name="installmentNumber" type="number" min="1" value={formValues.installmentNumber} onChange={handleChange} className={fieldClassName} />
+            <Input label="Total de parcelas" name="installmentTotal" type="number" min="2" value={formValues.installmentTotal} onChange={handleChange} className={fieldClassName} />
           </div>
         ) : null}
 
