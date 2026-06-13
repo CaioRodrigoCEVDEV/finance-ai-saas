@@ -97,7 +97,7 @@ function Sidebar({ mobile = false, onNavigate }) {
     <aside
       className={cn(
         'flex flex-col overflow-hidden',
-        mobile ? 'h-full w-full max-h-full' : 'sticky top-4 h-[calc(100vh-2rem)] w-full'
+        mobile ? 'h-full w-full max-h-full' : 'h-full w-full'
       )}
     >
       <div
@@ -105,7 +105,7 @@ function Sidebar({ mobile = false, onNavigate }) {
           'flex h-full min-h-0 flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-soft dark:border-slate-700 dark:bg-slate-800'
         )}
       >
-        <div className="shrink-0 p-5 pb-0">
+        <div className="shrink-0 p-6 pb-1">
           <Link to="/dashboard" className="flex items-center gap-3" onClick={onNavigate}>
             <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-600 text-white">
               <Sparkles className="h-5 w-5" />
@@ -117,7 +117,7 @@ function Sidebar({ mobile = false, onNavigate }) {
           </Link>
         </div>
 
-        <nav className="scrollbar-hide flex-1 overflow-y-auto overscroll-contain p-5 pt-4">
+        <nav className="scrollbar-none flex-1 overflow-y-auto overscroll-contain px-4 pb-5 pt-4">
           <Link
             to="/dashboard"
             onClick={onNavigate}

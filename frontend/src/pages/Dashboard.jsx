@@ -142,7 +142,7 @@ function Dashboard() {
 
   return (
     <AppLayout>
-      <div className="space-y-8 pb-8">
+      <div className="space-y-7 pb-8">
         <Card className="flex flex-col gap-6 p-6 sm:p-8 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-600">Finance AI</p>
@@ -168,7 +168,7 @@ function Dashboard() {
         </Card>
 
         {loading ? (
-          <section className="space-y-6">
+          <section className="space-y-7">
             <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
               {[1, 2, 3, 4].map((item) => <LoadingSkeleton key={item} className="h-40 rounded-[28px]" />)}
             </div>
@@ -176,7 +176,7 @@ function Dashboard() {
               {[1, 2, 3].map((item) => <LoadingSkeleton key={item} className="h-56 rounded-[28px]" />)}
             </div>
             <LoadingSkeleton className="h-40 rounded-[28px]" />
-            <div className="grid gap-6 xl:grid-cols-2">
+            <div className="grid gap-5 xl:grid-cols-2">
               {[1, 2, 3, 4, 5, 6].map((item) => <LoadingSkeleton key={item} className="h-[340px] rounded-[28px]" />)}
             </div>
           </section>
@@ -202,7 +202,7 @@ function Dashboard() {
         ) : null}
 
         {!loading && !error ? (
-          <div className="space-y-8">
+          <div className="space-y-7">
             <DashboardOverviewCards data={data.overview?.summary} tenantName={tenant?.name} />
 
             <section className="grid gap-5 md:grid-cols-3">
@@ -213,12 +213,12 @@ function Dashboard() {
 
             <DashboardAlerts alerts={data.alerts} />
 
-            <section className="grid gap-6 xl:grid-cols-2">
+            <section className="grid gap-5 xl:grid-cols-2">
               <ExpensesByCategory items={data.expensesByCategory} />
               <TopExpensesWidget expenses={data.topExpenses} />
             </section>
 
-            <section className="grid gap-6 xl:grid-cols-2">
+            <section className="grid gap-5 xl:grid-cols-2">
               <Card className="rounded-[28px] p-6">
                 <div className="mb-6 flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400">

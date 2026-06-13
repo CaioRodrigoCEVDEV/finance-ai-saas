@@ -9,23 +9,23 @@ function AppLayout({ children }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-slate-50 dark:bg-slate-950 transition-colors">
-      <div className="mx-auto grid min-h-screen w-full max-w-content grid-cols-1 gap-4 px-4 py-4 sm:px-6 lg:grid-cols-[18rem_minmax(0,1fr)] lg:gap-6 lg:px-8">
-        <div className="hidden lg:block">
+    <div className="h-screen overflow-hidden bg-slate-50 dark:bg-slate-950 transition-colors">
+      <div className="mx-auto flex h-full w-full max-w-content gap-5 overflow-hidden px-4 py-5 sm:px-6 lg:gap-6 lg:px-6 xl:px-8">
+        <div className="hidden h-full w-72 shrink-0 overflow-hidden lg:block">
           <Sidebar />
         </div>
 
-        <div className="flex min-w-0 flex-col gap-4 lg:gap-5">
-          <div className="sticky top-0 z-20 lg:hidden">
-            <Topbar onMenuClick={() => setMobileMenuOpen(true)} />
+        <section className="relative min-w-0 flex-1 overflow-hidden">
+          <div className="pointer-events-none absolute left-0 right-0 top-0 z-30">
+            <div className="pointer-events-auto">
+              <Topbar onMenuClick={() => setMobileMenuOpen(true)} />
+            </div>
           </div>
 
-          <div className="sticky top-4 z-40 hidden lg:block">
-            <Topbar />
-          </div>
-
-          <main className="min-w-0 pb-8">{children}</main>
-        </div>
+          <main className="scrollbar-none h-full min-w-0 overflow-y-auto overflow-x-hidden">
+            <div className="mx-auto min-w-0 max-w-[1400px] space-y-7 pb-10 pt-[112px]">{children}</div>
+          </main>
+        </section>
       </div>
 
       {mobileMenuOpen ? (
