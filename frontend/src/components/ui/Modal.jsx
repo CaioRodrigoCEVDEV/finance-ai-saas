@@ -28,7 +28,7 @@ function Modal({ isOpen, title, children, onClose }) {
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 px-4 py-6 backdrop-blur-sm dark:bg-slate-950/60" onClick={onClose}>
-      <Card className="max-h-[90vh] w-full max-w-2xl overflow-y-auto p-0" onClick={(event) => event.stopPropagation()}>
+      <Card className="scrollbar-none max-h-[90vh] w-full max-w-2xl overflow-y-auto p-0" onClick={(event) => event.stopPropagation()}>
         <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5 dark:border-slate-700">
           <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">{title}</h2>
           <Button variant="ghost" size="sm" onClick={onClose} aria-label="Fechar modal">
