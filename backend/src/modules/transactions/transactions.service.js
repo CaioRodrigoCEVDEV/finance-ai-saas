@@ -151,8 +151,9 @@ async function findCategoryByTenant(categoryId, tenantId) {
 }
 
 async function validateRelations(data, tenantId) {
-  const accountId = data.accountId === undefined ? undefined : (data.accountId || null);
-  const creditCardId = data.creditCardId === undefined ? undefined : (data.creditCardId || null);
+  const isCreditCardPayment = data.paymentMethod === 'CREDIT_CARD';
+  const accountId = isCreditCardPayment ? null : (data.accountId === undefined ? undefined : (data.accountId || null));
+  const creditCardId = isCreditCardPayment ? (data.creditCardId === undefined ? undefined : (data.creditCardId || null)) : null;
   const categoryId = data.categoryId === undefined ? undefined : (data.categoryId || null);
   const nextPaymentMethod = data.paymentMethod;
   const nextType = data.type;
@@ -187,8 +188,8 @@ async function validateRelations(data, tenantId) {
     };
   }
 
-  if (nextPaymentMethod === 'CREDIT_CARD' && !creditCardId && !accountId) {
-    throw new AppError('Informe um cartao de credito ou uma conta para pagamentos no credito', 400);
+  if (nextPaymentMethod === 'CREDIT_CARD' && !creditCardId) {
+    throw new AppError('Informe o cartao de credito da transacao', 400);
   }
 
   if (nextPaymentMethod && nextPaymentMethod !== 'CREDIT_CARD' && !accountId) {
@@ -265,11 +266,13 @@ function buildListWhere(tenantId, filters) {
 }
 
 function buildCreateData(data, tenantId, userId) {
+  const isCreditCardPayment = data.paymentMethod === 'CREDIT_CARD';
+
   return {
     tenant_id: tenantId,
     user_id: userId,
-    account_id: data.accountId || null,
-    credit_card_id: data.creditCardId || null,
+    account_id: isCreditCardPayment ? null : (data.accountId || null),
+    credit_card_id: isCreditCardPayment ? (data.creditCardId || null) : null,
     category_id: data.categoryId || null,
     description: data.description,
     amount: toDecimalString(data.amount),
@@ -287,6 +290,8 @@ function buildCreateData(data, tenantId, userId) {
 
 function buildUpdateData(existingTransaction, data) {
   const updateData = {};
+  const paymentMethod = data.paymentMethod ?? existingTransaction.payment_method;
+  const isCreditCardPayment = paymentMethod === 'CREDIT_CARD';
 
   if (data.description !== undefined) {
     updateData.description = data.description;
@@ -312,12 +317,18 @@ function buildUpdateData(existingTransaction, data) {
     updateData.payment_method = data.paymentMethod;
   }
 
-  if (data.accountId !== undefined) {
-    updateData.account_id = data.accountId || null;
-  }
+  if (isCreditCardPayment) {
+    updateData.account_id = null;
 
-  if (data.creditCardId !== undefined) {
-    updateData.credit_card_id = data.creditCardId || null;
+    if (data.creditCardId !== undefined) {
+      updateData.credit_card_id = data.creditCardId || null;
+    }
+  } else {
+    updateData.credit_card_id = null;
+
+    if (data.accountId !== undefined) {
+      updateData.account_id = data.accountId || null;
+    }
   }
 
   if (data.categoryId !== undefined) {

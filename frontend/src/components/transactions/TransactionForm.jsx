@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 
-import { cn } from '../../utils/cn';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import Select from '../ui/Select';
@@ -82,6 +81,10 @@ function TransactionForm({ transaction, accounts, categories, creditCards, loadi
     const { name, value, type, checked } = event.target;
     const nextValue = type === 'checkbox' ? checked : value;
 
+    if (name === 'paymentMethod') {
+      setError('');
+    }
+
     setFormValues((currentValues) => {
       const nextValues = {
         ...currentValues,
@@ -92,8 +95,12 @@ function TransactionForm({ transaction, accounts, categories, creditCards, loadi
         nextValues.categoryId = '';
       }
 
-      if (name === 'paymentMethod' && nextValue !== 'CREDIT_CARD') {
-        nextValues.creditCardId = '';
+      if (name === 'paymentMethod') {
+        if (nextValue === 'CREDIT_CARD') {
+          nextValues.accountId = '';
+        } else {
+          nextValues.creditCardId = '';
+        }
       }
 
       if (name === 'isInstallment' && !checked) {
@@ -125,8 +132,8 @@ function TransactionForm({ transaction, accounts, categories, creditCards, loadi
       return;
     }
 
-    if (isCreditCardPayment && !formValues.creditCardId && !formValues.accountId) {
-      setError('Informe um cartão de crédito ou uma conta para pagamentos no crédito.');
+    if (isCreditCardPayment && !formValues.creditCardId) {
+      setError('Informe o cartão de crédito da transação.');
       return;
     }
 
@@ -157,8 +164,8 @@ function TransactionForm({ transaction, accounts, categories, creditCards, loadi
       status: formValues.status,
       transactionDate: formValues.transactionDate,
       paymentMethod: formValues.paymentMethod,
-      accountId: formValues.accountId || null,
-      creditCardId: formValues.creditCardId || null,
+      accountId: isCreditCardPayment ? null : (formValues.accountId || null),
+      creditCardId: isCreditCardPayment ? (formValues.creditCardId || null) : null,
       categoryId: formValues.type === 'TRANSFER' ? (formValues.categoryId || null) : (formValues.categoryId || null),
       notes: formValues.notes.trim() || null,
       isInstallment: formValues.isInstallment,
@@ -216,25 +223,27 @@ function TransactionForm({ transaction, accounts, categories, creditCards, loadi
         </div>
 
         <div className="grid gap-5 md:grid-cols-2">
-          <div className={cn('rounded-[24px] border p-4 transition', !isCreditCardPayment ? 'border-emerald-200 bg-emerald-50/70 dark:border-emerald-800 dark:bg-emerald-900/30' : 'border-slate-200 bg-slate-50 dark:border-slate-600 dark:bg-slate-800/50')}>
-            <Select label="Conta" name="accountId" value={formValues.accountId} onChange={handleChange}>
-              <option value="">Selecione uma conta</option>
-              {accounts.map((account) => (
-                <option key={account.id} value={account.id}>{account.name}</option>
-              ))}
-            </Select>
-            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">Obrigatoria para pagamentos fora do crédito.</p>
-          </div>
-
-          <div className={cn('rounded-[24px] border p-4 transition', isCreditCardPayment ? 'border-emerald-200 bg-emerald-50/70 dark:border-emerald-800 dark:bg-emerald-900/30' : 'border-slate-200 bg-slate-50 dark:border-slate-600 dark:bg-slate-800/50')}>
-            <Select label="Cartao de crédito" name="creditCardId" value={formValues.creditCardId} onChange={handleChange} disabled={!creditCards.length}>
-              <option value="">{creditCards.length ? 'Selecione um cartão' : 'Nenhum cartão disponivel'}</option>
-              {creditCards.map((creditCard) => (
-                <option key={creditCard.id} value={creditCard.id}>{creditCard.name}</option>
-              ))}
-            </Select>
-            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">Destacado quando o metodo for cartão de crédito.</p>
-          </div>
+          {isCreditCardPayment ? (
+            <div className="rounded-[24px] border border-emerald-200 bg-emerald-50/70 p-4 transition dark:border-emerald-800 dark:bg-emerald-900/30">
+              <Select label="Cartao de crédito" name="creditCardId" value={formValues.creditCardId} onChange={handleChange} disabled={!creditCards.length}>
+                <option value="">{creditCards.length ? 'Selecione um cartão' : 'Nenhum cartão disponivel'}</option>
+                {creditCards.map((creditCard) => (
+                  <option key={creditCard.id} value={creditCard.id}>{creditCard.name}</option>
+                ))}
+              </Select>
+              <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">Selecione o cartão usado nesta compra.</p>
+            </div>
+          ) : (
+            <div className="rounded-[24px] border border-emerald-200 bg-emerald-50/70 p-4 transition dark:border-emerald-800 dark:bg-emerald-900/30">
+              <Select label="Conta" name="accountId" value={formValues.accountId} onChange={handleChange}>
+                <option value="">Selecione uma conta</option>
+                {accounts.map((account) => (
+                  <option key={account.id} value={account.id}>{account.name}</option>
+                ))}
+              </Select>
+              <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">Selecione a conta de onde saiu ou entrou o dinheiro.</p>
+            </div>
+          )}
         </div>
 
         <label className="block">
