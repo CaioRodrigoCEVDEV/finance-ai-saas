@@ -533,13 +533,7 @@ function HomePage() {
                   Começar grátis
                   <ArrowRight className="h-4 w-4" />
                 </Button>
-                <Button
-                  as={Link}
-                  to="/login"
-                  variant="secondary"
-                  size="lg"
-                  className="border-emerald-500 text-white hover:bg-emerald-700 dark:border-emerald-600 dark:hover:bg-emerald-800"
-                >
+                <Button as={Link} to="/login" variant="lightOnBrand" size="lg">
                   Entrar
                 </Button>
               </div>
