@@ -630,3 +630,197 @@ hover:bg-rose-50 hover:text-rose-700        →  dark:hover:bg-rose-900/20 dark:
 - [ ] Select custom tem `role="combobox"` e `role="listbox"`?
 - [ ] Fechamento com `Escape` implementado em modais?
 - [ ] Foco visível com `focus-visible:outline-none focus-visible:ring-4`?
+
+### Landing Page (página pública)
+- [ ] Header fixo com `z-[100]`, `bg-white/90 backdrop-blur-md`, borda inferior sutil?
+- [ ] Botão "Começar grátis" com `whitespace-nowrap` e sem quebra em mobile?
+- [ ] Botão "Entrar" oculto em mobile pequeno quando necessário?
+- [ ] Hero sem `min-h-screen` para evitar vazio vertical?
+- [ ] Seções com `scroll-mt-20` (80px) para compensar header fixo?
+- [ ] CTA primário usa `variant="primary"` (bg-emerald-600 text-white)?
+- [ ] Cards de planos com `h-full flex flex-col` e botão com `mt-auto`?
+- [ ] Background animado respeita `prefers-reduced-motion`?
+- [ ] Glows usam `pointer-events-none`, apenas `transform` e `opacity`?
+- [ ] Nenhum listener de scroll JS, `scrollIntoView` ou `window.scrollTo`?
+- [ ] Sem scroll-snap ou lógica que cause "curto circuito" na rolagem?
+- [ ] Rodapé com links e copyright do ano corrente?
+- [ ] Testado em 360px, 412px e desktop sem overflow horizontal?
+
+---
+
+## 13. Landing Page Pública
+
+### 13.1 Identidade Visual da Landing
+
+A landing page do Finance AI segue o mesmo design system da aplicação interna, adaptada para ser um pitch visual de produto SaaS financeiro premium.
+
+**Sensação desejada:**
+- SaaS financeiro moderno, premium e confiável
+- Estilo fintech — limpo, escuro (dark premium como base), com acentos verde/emerald
+- Fundo com movimento sutil (glows animados) para transmitir vida e tecnologia
+- Nada de aparência genérica, institucional ou excessivamente branca
+
+**Background principal:**
+- Claro: `bg-slate-50 (#f8fafc)`
+- Escuro: `bg-slate-950 (#0f172a)`
+- Pode conter glows radiais decorativos como camada `fixed` atrás do conteúdo
+
+### 13.2 Background Animado (Glows)
+
+A landing pode usar glows decorativos para criar profundidade e movimento sutil:
+
+**Regras dos glows:**
+- Camada `fixed inset-0 pointer-events-none z-0 overflow-hidden`
+- Máximo de 4 elementos animados
+- `rounded-full` + `blur-3xl` para efeito suave
+- Opacidade entre `/10` e `/15` das cores (nunca forte)
+- `bg-emerald-500/15`, `bg-emerald-400/15`, `bg-teal-400/10`, `bg-cyan-500/10`
+- Animação em `transform` (translate + scale) e `opacity` apenas
+- Duração longa (10s-18s), `ease-in-out`, `infinite`
+- `will-change: transform` nos elementos animados
+- `aria-hidden="true"` nos glows
+
+**Acessibilidade:**
+- Toda animação envolta em `@media (prefers-reduced-motion: no-preference)`
+- Se o usuário prefere reduzir movimento, os glows ficam estáticos
+
+**Mobile:**
+- Reduzir quantidade de glows visíveis (ex: `hidden md:block` nos laterais)
+- Nunca causar overflow horizontal
+
+### 13.3 Header Público
+
+| Propriedade | Claro | Escuro |
+|---|---|---|
+| Background | `bg-white/90` | `dark:bg-slate-950/90` |
+| Backdrop | `backdrop-blur-md` | (mesmo) |
+| Borda inferior | `border-slate-200/80` | `dark:border-slate-800` |
+| Z-index | `z-[100]` | (mesmo) |
+| Altura | `h-16` | (mesmo) |
+
+**Estrutura:** Logo à esquerda, navegação central (oculta em mobile), ações à direita.
+
+**Botão "Começar grátis":**
+- Usar `variant="primary"` (bg-emerald-600 text-white)
+- `whitespace-nowrap` para evitar quebra em mobile
+- Em telas < 640px, fonte `text-xs` reduz largura
+- Nunca quebrar em duas linhas
+
+**Botão "Entrar":**
+- `variant="ghost" size="sm"`
+- Oculto em mobile pequeno (`hidden sm:inline-flex` ou wrapper `hidden sm:flex`)
+
+### 13.4 Hero
+
+**Layout desktop:** Grid 2 colunas (`lg:grid-cols-[1.2fr_0.9fr]`), texto à esquerda, mockup à direita.
+**Layout mobile:** Empilhado, mockup abaixo do texto.
+
+**Regras do hero:**
+- `pt-8` no topo (compensação do header fixo + espaçamento)
+- `Badge variant="success"` como eyebrow
+- Título com `text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-tight`
+- Destaque em `text-emerald-600 dark:text-emerald-400` no span do título
+- Subtítulo com `text-base sm:text-lg`, `text-slate-600 dark:text-slate-400`
+- CTAs: `Button variant="primary" size="lg"` + `Button variant="secondary" size="lg"`
+- Mockup do dashboard em `Card` (max-w-lg, rounded-[28px], p-5 sm:p-6)
+- Mockup com cards internos de saldo, despesas, orçamentos, metas, cartões
+- Glow decorativo atrás do mockup: `absolute -inset-3 rounded-[28px] bg-gradient-to-br blur-2xl`
+
+**O que evitar:**
+- `min-h-screen` no hero (causa vazio vertical se conteúdo é curto)
+- `padding-top` exagerado
+- Conteúdo escondido atrás do header
+
+### 13.5 Botões e CTAs na Landing
+
+**Padrão de CTAs na landing:**
+- **Hero, Header, Planos, CTA final:** sempre usar `Button` com `variant="primary"` para "Começar grátis"
+- **Consistência visual:** mesmo bg, text, hover, size em todas as seções
+- **CTA secundário:** `variant="secondary"` para "Entrar" / "Entrar na minha conta"
+
+**CTA final (seção verde):**
+- Card com `bg-gradient-to-br from-emerald-600 to-emerald-800`
+- Título e texto em branco (`text-white`, `text-emerald-100`)
+- "Começar grátis" usa `variant="primary"` (bg-emerald-600) **sem custom className** que sobrescreva o estilo
+- "Entrar" usa `variant="secondary"` com classes custom para borda e texto branco
+
+**Regras:** Botões nunca devem ficar brancos sem texto visível em dark mode ou sobre fundo escuro. Garantir contraste adequado.
+
+### 13.6 Seção de Planos
+
+**Layout:**
+- Container: `grid gap-6 md:grid-cols-2 items-stretch`
+- Cards Free e Premium com `h-full flex flex-col` para mesma altura
+- Lista de itens com `flex-1` para ocupar espaço vertical
+- Botão no rodapé com `mt-auto pt-8` (alinhado entre os dois cards)
+
+**Card Free:**
+- `rounded-[32px] p-8 sm:p-10`
+- Sem destaque extra
+
+**Card Premium:**
+- `rounded-[32px] border-emerald-200 p-8 shadow-glow sm:p-10 dark:border-emerald-800 dark:shadow-none`
+- Badge "Mais popular" (`Badge variant="success"`) no topo direito
+- Destaque sutil via borda emerald + shadow-glow
+
+**Itens da lista:**
+- Ícone check: `rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400`
+- Texto: `text-sm text-slate-700 dark:text-slate-300`
+
+**O que evitar:**
+- Altura fixa nos cards
+- `mt-*` manual no botão (usar `mt-auto`)
+- Margens diferentes entre Free e Premium para "enganar" alinhamento
+- Implementar pagamento sem passar pelas regras de backend
+
+### 13.7 Navegação por Âncoras e Scroll
+
+- Usar `<a href="#secao">` nativo (comportamento natural do navegador)
+- Seções alvo com `id` + `scroll-mt-20` (80px para compensar header fixo de 64px + folga)
+- **Nunca** usar `scrollIntoView`, `window.scrollTo`, `useEffect` manipulando scroll
+- **Nunca** usar `scroll-snap-type`, `snap-y`, `snap-mandatory` ou similar
+- **Nunca** usar listeners de `scroll` para mudar estado do React (causa "curto circuito" — conflito com smooth-scroll nativo)
+- Scrollbar estilizada via CSS (6px, tons slate), sem `scrollbar-none` na landing
+- `scrollbar-gutter: stable` no `<html>` para evitar layout shift
+
+### 13.8 Seções da Landing
+
+| Seção | Elementos-chave |
+|---|---|
+| **Header** | `fixed top-0 z-[100]`, bg-translúcido, nav links, "Entrar", "Começar grátis" |
+| **Hero** | Badge + título + subtítulo + CTAs + mockup do dashboard |
+| **Recursos** (`#recursos`) | Grid de features (`md:grid-cols-2 lg:grid-cols-3` ou `4`) com ícone + título + descrição |
+| **Como funciona** (`#como-funciona`) | Passos numerados com ícone, título e descrição |
+| **Diferenciais** | Grid de cards com ícone + título + descrição destacando segurança e multiusuário |
+| **Planos** (`#planos`) | Grid 2 colunas, Free + Premium, cards flex com botão alinhado |
+| **CTA final** | Card gradiente verde com título + CTAs lado a lado |
+| **Rodapé** | Logo + descrição + links + copyright |
+
+### 13.9 Linguagem e Copy
+
+- Usar português (pt-BR) em todas as strings da landing
+- Evitar termos técnicos como "tenant" ou "workspace" sem contexto
+- Foco em benefícios para o usuário final:
+  - Clareza financeira
+  - Controle de contas e cartões
+  - Metas e orçamentos
+  - Relatórios e organização mensal
+- Tom moderno, simples e confiável
+- Eyebrow das seções: `text-sm font-semibold uppercase tracking-[0.28em] text-emerald-600 dark:text-emerald-400`
+
+### 13.10 Responsividade na Landing
+
+| Dispositivo | Largura | Comportamento |
+|---|---|---|
+| Mobile pequeno | 360px | Header compacto, "Entrar" oculto, hero empilhado, botões full-width, 1 coluna |
+| Mobile médio | 412px | Header com "Entrar" visível (se couber), demais igual |
+| Tablet | 768px+ | Navegação visível, grid 2 colunas em features |
+| Desktop | 1024px+ | Layout completo, mockup ao lado do texto, cards lado a lado |
+
+**Regras mobile:**
+- Hero: `flex-col`, CTAs `flex-col`, mockup abaixo
+- Features: `grid-cols-1` → `md:grid-cols-2` → `lg:grid-cols-4`
+- Passos: `flex-col` → `md:flex-row`
+- Planos: empilhados → `md:grid-cols-2`
+- Botões do header: `whitespace-nowrap`, sem quebra
+- Sem overflow horizontal em nenhum breakpoint

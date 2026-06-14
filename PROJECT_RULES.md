@@ -23,6 +23,7 @@ Este documento define regras obrigatórias para qualquer IA ou desenvolvedor que
 
 - **Tailwind CSS 3 com `darkMode: 'class'`.** Nunca use `dark:` sem garantir que o elemento também tenha a classe base de cor clara.
 - **Design system definido em `DESIGN.md`.** Cores, tipografia, sombras, espaçamentos devem seguir o design system. Nunca invente cores novas.
+- **Landing page pública segue DESIGN.md seção 13.** O padrão visual da landing (header público, hero, glows animados, CTAs, planos, scroll) está documentado em `DESIGN.md#13-landing-page-pública`. Toda alteração na landing deve manter consistência com esse padrão.
 - **Paleta brand (verde):** `brand-50` a `brand-900` definida no `tailwind.config.js`. Use `brand` para ações primárias, links e indicadores positivos.
 - **Componentes base em `frontend/src/components/ui/`.** Use `Button`, `Card`, `Input`, `Select`, `Modal`, `Badge`, `LoadingSkeleton`, `EmptyState`, `PageHeader` em vez de criar HTML direto.
 - **Formulários devem mostrar `error` prop nos inputs.** Todo Input e Select aceita `error` como string para exibir validação visual.

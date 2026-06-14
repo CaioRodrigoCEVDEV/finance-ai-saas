@@ -380,6 +380,7 @@ exports.validateCreate = buildValidator(createTransactionSchema, 'body');
 | `frontend/src/services/api.js` | Axios singleton com cookie-based auth |
 | `frontend/src/services/authService.js` | Exemplo de service (login, logout, getMe, register) |
 | `frontend/src/services/transactionService.js` | Exemplo de CRUD service |
+| `frontend/src/pages/HomePage.jsx` | Landing page pública (hero, recursos, planos, CTA, glows animados) |
 | `frontend/src/pages/Dashboard.jsx` | Página complexa: 8 endpoints, loading/error/data, widgets |
 | `frontend/src/pages/Login.jsx` | Página simples: formulário controlado, useAuth |
 | `frontend/src/components/ui/Button.jsx` | Padrão de UI component com variantes |
