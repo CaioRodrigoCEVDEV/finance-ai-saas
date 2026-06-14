@@ -4,18 +4,20 @@ import { useState } from 'react';
 import Sidebar from '../components/layout/Sidebar';
 import Topbar from '../components/layout/Topbar';
 import Button from '../components/ui/Button';
+import AnimatedBackground from '../components/ui/AnimatedBackground';
 
 function AppLayout({ children }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <div className="h-screen overflow-hidden bg-slate-50 dark:bg-slate-950 transition-colors">
+      <AnimatedBackground />
       <div className="mx-auto flex h-full w-full max-w-content gap-5 overflow-hidden px-4 py-5 sm:px-6 lg:gap-6 lg:px-6 xl:px-8">
-        <div className="hidden h-full w-72 shrink-0 overflow-hidden lg:block">
+        <div className="relative z-10 hidden h-full w-72 shrink-0 overflow-hidden lg:block">
           <Sidebar />
         </div>
 
-        <section className="relative min-w-0 flex-1 overflow-hidden">
+        <section className="relative z-10 min-w-0 flex-1 overflow-hidden">
           <div className="pointer-events-none absolute left-0 right-0 top-0 z-30">
             <div className="pointer-events-auto">
               <Topbar onMenuClick={() => setMobileMenuOpen(true)} />
