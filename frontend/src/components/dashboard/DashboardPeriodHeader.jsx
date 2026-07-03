@@ -29,7 +29,7 @@ function DashboardPeriodHeader({ period, loading, onPrevious, onNext, onToday, o
         </div>
 
         <div className={`flex flex-col gap-3 ${loading ? 'pointer-events-none opacity-75' : ''}`} aria-busy={loading}>
-          <div className="flex flex-wrap items-end gap-3">
+          <div className="flex flex-nowrap items-end gap-3 lg:flex-wrap">
             <Button
               aria-label="Mês anterior"
               className="!h-11 !w-11 shrink-0 !px-0"
@@ -41,7 +41,7 @@ function DashboardPeriodHeader({ period, loading, onPrevious, onNext, onToday, o
             </Button>
 
             <Select
-              className="min-w-[220px] sm:min-w-[260px]"
+              className="min-w-0 flex-1 lg:min-w-[260px]"
               label="Período"
               onChange={(event) => {
                 const nextPeriod = parseDashboardPeriodValue(event.target.value);
@@ -71,7 +71,7 @@ function DashboardPeriodHeader({ period, loading, onPrevious, onNext, onToday, o
             </Button>
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex justify-center lg:justify-end">
             <Button
               disabled={loading || isToday}
               onClick={onToday}
