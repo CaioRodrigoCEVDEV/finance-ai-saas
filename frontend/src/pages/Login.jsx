@@ -7,12 +7,14 @@ import {
   Globe,
   Layers,
   Loader2,
+  RefreshCw,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import { useAuth } from '../contexts/AuthContext';
+import { resendVerification } from '../services/authService';
 
 function DemoIndicator({ label, value, accent }) {
   return (
@@ -48,21 +50,53 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const [unverifiedEmail, setUnverifiedEmail] = useState('');
+  const [resending, setResending] = useState(false);
+  const [resent, setResent] = useState(false);
+  const [globalError, setGlobalError] = useState('');
+
   async function handleSubmit(event) {
     event.preventDefault();
 
     try {
       setLoading(true);
       setError('');
+      setUnverifiedEmail('');
+      setResent(false);
+      setGlobalError('');
       await login(email, password);
       navigate('/dashboard', { replace: true });
     } catch (requestError) {
-      setError(
-        requestError.response?.data?.message ||
-          'Não foi possível entrar agora. Confira seu email e senha e tente novamente.',
-      );
+      const code = requestError.response?.data?.code;
+      if (code === 'EMAIL_NOT_VERIFIED') {
+        setUnverifiedEmail(email);
+        setError(requestError.response?.data?.message);
+      } else {
+        setError(
+          requestError.response?.data?.message ||
+            'Não foi possível entrar agora. Confira seu email e senha e tente novamente.',
+        );
+      }
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleResend() {
+    if (!unverifiedEmail) return;
+
+    try {
+      setResending(true);
+      setGlobalError('');
+      await resendVerification(unverifiedEmail);
+      setResent(true);
+    } catch (requestError) {
+      setGlobalError(
+        requestError.response?.data?.message ||
+          'Nao foi possivel reenviar o e-mail.'
+      );
+    } finally {
+      setResending(false);
     }
   }
 
@@ -156,7 +190,39 @@ function Login() {
 
               {error ? (
                 <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-                  {error}
+                  <p>{error}</p>
+                  {unverifiedEmail ? (
+                    <div className="mt-3">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        disabled={resending}
+                        onClick={handleResend}
+                        className="text-rose-700 hover:bg-rose-100 hover:text-rose-800 dark:text-rose-400 dark:hover:bg-rose-900/20 dark:hover:text-rose-300"
+                      >
+                        {resending ? (
+                          <>
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            Reenviando...
+                          </>
+                        ) : (
+                          <>
+                            <RefreshCw className="h-3.5 w-3.5" />
+                            Reenviar e-mail de confirmacao
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  ) : null}
+                  {resent ? (
+                    <p className="mt-2 text-xs text-emerald-600 dark:text-emerald-400">
+                      E-mail reenviado! Verifique sua caixa de entrada.
+                    </p>
+                  ) : null}
+                  {globalError ? (
+                    <p className="mt-2 text-xs text-rose-600">{globalError}</p>
+                  ) : null}
                 </div>
               ) : null}
 

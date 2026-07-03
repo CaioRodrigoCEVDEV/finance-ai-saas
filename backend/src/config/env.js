@@ -16,7 +16,11 @@ const envSchema = z.object({
   RATE_LIMIT_WINDOW_MS: z.coerce.number().default(60000),
   RATE_LIMIT_AUTH_MAX: z.coerce.number().default(10),
   RATE_LIMIT_API_MAX: z.coerce.number().default(200),
-  PAYMENT_SECRET_ENCRYPTION_KEY: z.string().min(16, 'PAYMENT_SECRET_ENCRYPTION_KEY deve ter no minimo 16 caracteres').default('change-payment-secret-key')
+  PAYMENT_SECRET_ENCRYPTION_KEY: z.string().min(16, 'PAYMENT_SECRET_ENCRYPTION_KEY deve ter no minimo 16 caracteres').default('change-payment-secret-key'),
+
+  RESEND_API_KEY: z.string().min(1).optional(),
+  EMAIL_FROM: z.string().min(1).default('Finance AI <noreply@mail.financeai.orderup.com.br>'),
+  APP_URL: z.string().url().default('https://financeai.orderup.com.br')
 });
 
 const parsedEnv = envSchema.parse(process.env);
@@ -33,5 +37,9 @@ module.exports = {
   rateLimitWindowMs: parsedEnv.RATE_LIMIT_WINDOW_MS,
   rateLimitAuthMax: parsedEnv.RATE_LIMIT_AUTH_MAX,
   rateLimitApiMax: parsedEnv.RATE_LIMIT_API_MAX,
-  paymentSecretEncryptionKey: parsedEnv.PAYMENT_SECRET_ENCRYPTION_KEY
+  paymentSecretEncryptionKey: parsedEnv.PAYMENT_SECRET_ENCRYPTION_KEY,
+
+  resendApiKey: parsedEnv.RESEND_API_KEY,
+  emailFrom: parsedEnv.EMAIL_FROM,
+  appUrl: parsedEnv.APP_URL
 };

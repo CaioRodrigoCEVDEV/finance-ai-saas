@@ -48,10 +48,6 @@ function AuthProvider({ children }) {
   async function register(payload) {
     const response = await authService.register(payload);
 
-    setUser(response.user);
-    setTenant(response.tenant);
-    setInitialized(true);
-
     return response;
   }
 

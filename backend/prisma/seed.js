@@ -113,12 +113,14 @@ async function main() {
       email: 'demo@financeai.com',
       password_hash: passwordHash,
       status: 'ACTIVE',
+      email_verified: true,
       deleted_at: null
     },
     update: {
       name: 'Usuário Demo',
       password_hash: passwordHash,
       status: 'ACTIVE',
+      email_verified: true,
       deleted_at: null
     }
   });
@@ -142,6 +144,7 @@ async function main() {
       password_hash: passwordHash,
       status: 'ACTIVE',
       global_role: 'SUPER_ADMIN',
+      email_verified: true,
       deleted_at: null
     },
     update: {
@@ -149,6 +152,7 @@ async function main() {
       password_hash: passwordHash,
       status: 'ACTIVE',
       global_role: 'SUPER_ADMIN',
+      email_verified: true,
       deleted_at: null
     }
   });

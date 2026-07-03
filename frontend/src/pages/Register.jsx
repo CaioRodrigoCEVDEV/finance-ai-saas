@@ -57,13 +57,16 @@ function Register() {
     try {
       setLoading(true);
       setError('');
-      await register({
+      const result = await register({
         name,
         email,
         password,
         workspaceName: workspaceName || undefined
       });
-      navigate('/dashboard', { replace: true });
+      navigate('/verificacao-enviada', {
+        state: { email: result.email },
+        replace: true
+      });
     } catch (requestError) {
       const data = requestError.response?.data;
       setError(

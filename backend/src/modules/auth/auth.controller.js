@@ -5,14 +5,9 @@ const authService = require('./auth.service');
 async function register(request, response, next) {
   try {
     const { name, email, password, workspaceName } = request.body;
-    const session = await authService.register({ name, email, password, workspaceName });
+    const result = await authService.register({ name, email, password, workspaceName });
 
-    response.cookie(env.cookieName, session.token, buildAuthCookieOptions());
-
-    return response.status(201).json({
-      user: session.user,
-      tenant: session.tenant
-    });
+    return response.status(201).json(result);
   } catch (error) {
     return next(error);
   }
@@ -53,9 +48,31 @@ function logout(_request, response) {
   });
 }
 
+async function verifyEmail(request, response, next) {
+  try {
+    const { token } = request.query;
+    const result = await authService.verifyEmail(token);
+    return response.json(result);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+async function resendVerification(request, response, next) {
+  try {
+    const { email } = request.body;
+    const result = await authService.resendVerification(email);
+    return response.json(result);
+  } catch (error) {
+    return next(error);
+  }
+}
+
 module.exports = {
   getMe,
   login,
   logout,
-  register
+  register,
+  verifyEmail,
+  resendVerification
 };

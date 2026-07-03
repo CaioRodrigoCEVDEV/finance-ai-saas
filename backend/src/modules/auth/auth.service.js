@@ -1,8 +1,10 @@
+const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 
 const prisma = require('../../config/prisma');
 const AppError = require('../../utils/app-error');
 const { signToken } = require('../../services/token-service');
+const { sendVerificationEmail, sendVerificationSuccessEmail } = require('../../services/email-service');
 
 function sanitizeUser(user) {
   return {
@@ -10,7 +12,8 @@ function sanitizeUser(user) {
     name: user.name,
     email: user.email,
     avatar_url: user.avatar_url || null,
-    globalRole: user.global_role || 'USER'
+    globalRole: user.global_role || 'USER',
+    emailVerified: user.email_verified || false
   };
 }
 
@@ -27,6 +30,10 @@ function pickCurrentTenant(userTenants) {
   return userTenants.find((item) => item.role === 'OWNER') || userTenants[0] || null;
 }
 
+function generateVerificationToken() {
+  return crypto.randomBytes(32).toString('hex');
+}
+
 async function findUserByEmail(email) {
   return prisma.user.findFirst({
     where: {
@@ -41,6 +48,7 @@ async function findUserByEmail(email) {
       avatar_url: true,
       password_hash: true,
       global_role: true,
+      email_verified: true,
       user_tenants: {
         where: {
           tenant: {
@@ -79,6 +87,7 @@ async function findAuthenticatedUser(userId, tenantId) {
       email: true,
       avatar_url: true,
       global_role: true,
+      email_verified: true,
       user_tenants: {
         where: {
           tenant_id: tenantId,
@@ -127,6 +136,14 @@ async function login(email, password) {
     throw new AppError('Email ou senha invalidos', 401);
   }
 
+  if (!user.email_verified) {
+    throw new AppError(
+      'Confirme seu e-mail antes de entrar. Verifique sua caixa de entrada.',
+      403,
+      'EMAIL_NOT_VERIFIED'
+    );
+  }
+
   const currentTenant = pickCurrentTenant(user.user_tenants);
 
   if (!currentTenant) {
@@ -166,13 +183,19 @@ async function register({ name, email, password, workspaceName }) {
     ? workspaceName.trim()
     : `Workspace de ${name.trim()}`;
 
+  const verificationToken = generateVerificationToken();
+  const verificationExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
   const result = await prisma.$transaction(async (tx) => {
     const user = await tx.user.create({
       data: {
         name: name.trim(),
         email: normalizedEmail,
         password_hash: passwordHash,
-        status: 'ACTIVE'
+        status: 'ACTIVE',
+        email_verified: false,
+        verification_token: verificationToken,
+        verification_expires_at: verificationExpiresAt
       },
       select: {
         id: true,
@@ -206,26 +229,102 @@ async function register({ name, email, password, workspaceName }) {
     return { user, tenant };
   });
 
-  const token = signToken({
-    userId: result.user.id,
-    tenantId: result.tenant.id,
-    role: 'OWNER'
-  });
+  await sendVerificationEmail(result.user.email, result.user.name, verificationToken);
 
   return {
-    token,
-    user: sanitizeUser(result.user),
-    tenant: {
-      id: result.tenant.id,
-      name: result.tenant.name,
-      role: 'OWNER',
-      plan: result.tenant.plan
-    }
+    message: 'Conta criada com sucesso. Enviamos um e-mail de confirmacao para voce.',
+    email: result.user.email
   };
+}
+
+async function verifyEmail(token) {
+  const user = await prisma.user.findFirst({
+    where: {
+      verification_token: token,
+      deleted_at: null,
+      status: 'ACTIVE'
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      email_verified: true,
+      verification_expires_at: true
+    }
+  });
+
+  if (!user) {
+    throw new AppError('Link de verificacao invalido.', 400, 'INVALID_VERIFICATION_TOKEN');
+  }
+
+  if (user.email_verified) {
+    return { message: 'E-mail ja confirmado. Faca login para continuar.' };
+  }
+
+  if (user.verification_expires_at && new Date() > user.verification_expires_at) {
+    throw new AppError('Link de verificacao expirado. Solicite um novo.', 400, 'VERIFICATION_TOKEN_EXPIRED');
+  }
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      email_verified: true,
+      email_verified_at: new Date(),
+      verification_token: null,
+      verification_expires_at: null
+    }
+  });
+
+  await sendVerificationSuccessEmail(user.email, user.name);
+
+  return { message: 'E-mail confirmado com sucesso! Agora voce ja pode entrar.' };
+}
+
+async function resendVerification(email) {
+  const normalizedEmail = email.trim().toLowerCase();
+
+  const user = await prisma.user.findFirst({
+    where: {
+      email: normalizedEmail,
+      deleted_at: null,
+      status: 'ACTIVE'
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      email_verified: true
+    }
+  });
+
+  if (!user) {
+    throw new AppError('Nenhuma conta encontrada com este e-mail.', 404, 'USER_NOT_FOUND');
+  }
+
+  if (user.email_verified) {
+    throw new AppError('Este e-mail ja foi confirmado. Faca login.', 400, 'EMAIL_ALREADY_VERIFIED');
+  }
+
+  const verificationToken = generateVerificationToken();
+  const verificationExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      verification_token: verificationToken,
+      verification_expires_at: verificationExpiresAt
+    }
+  });
+
+  await sendVerificationEmail(user.email, user.name, verificationToken);
+
+  return { message: 'Novo e-mail de confirmacao enviado. Verifique sua caixa de entrada.' };
 }
 
 module.exports = {
   findAuthenticatedUser,
   login,
-  register
+  register,
+  verifyEmail,
+  resendVerification
 };
