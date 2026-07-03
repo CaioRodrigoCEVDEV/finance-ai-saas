@@ -5,7 +5,7 @@ function MonthlyFlow({ items }) {
   const { formatCurrencyPrivacy } = usePrivacy();
 
   if (!items.length) {
-    return <p className="text-sm text-slate-500 dark:text-slate-400">Fluxo mensal indisponivel no momento.</p>;
+    return <p className="text-sm text-slate-500 dark:text-slate-400">Fluxo mensal indisponível para o período selecionado.</p>;
   }
 
   const maxValue = Math.max(
@@ -19,11 +19,11 @@ function MonthlyFlow({ items }) {
         const economyPositive = Number(item.economy || 0) >= 0;
 
         return (
-            <article key={item.month} className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
-              <div className="mb-4">
-                <h3 className="text-sm font-bold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
-                  {formatMonthLabel(item.month)}
-                </h3>
+          <article key={item.month} className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+            <div className="mb-4">
+              <h3 className="text-sm font-bold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
+                {formatMonthLabel(item.month)}
+              </h3>
               <p className={`mt-1 text-sm font-semibold ${economyPositive ? 'text-emerald-600' : 'text-rose-600'}`}>
                 Economia: {formatCurrencyPrivacy(item.economy)}
               </p>

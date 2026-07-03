@@ -7,12 +7,19 @@ const variantStyles = {
   highlight: 'border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-900/30'
 };
 
-function SummaryCard({ title, value, description, variant = 'default' }) {
+function SummaryCard({ title, value, description, variant = 'default', comparison }) {
   return (
     <Card className={`rounded-3xl p-6 shadow-glow transition hover:-translate-y-1 ${variantStyles[variant] || variantStyles.default}`}>
       <p className="text-sm text-slate-500 dark:text-slate-400">{title}</p>
       <h3 className="mt-4 text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">{value}</h3>
       <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">{description}</p>
+      {comparison ? (
+        <div className={`mt-4 flex flex-wrap items-center gap-2 text-sm font-medium ${comparison.tone || 'text-slate-500 dark:text-slate-400'}`}>
+          <span>{comparison.icon}</span>
+          <span>{comparison.value}</span>
+          <span className="text-slate-500 dark:text-slate-400">{comparison.label}</span>
+        </div>
+      ) : null}
     </Card>
   );
 }

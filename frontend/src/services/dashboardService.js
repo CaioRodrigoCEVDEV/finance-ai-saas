@@ -1,46 +1,60 @@
 import api from './api';
 
-export async function getDashboardSummary() {
-  const { data } = await api.get('/dashboard/summary');
+function buildPeriodParams(period) {
+  const params = {};
+
+  if (Number.isInteger(period?.month)) {
+    params.month = period.month;
+  }
+
+  if (Number.isInteger(period?.year)) {
+    params.year = period.year;
+  }
+
+  return Object.keys(params).length > 0 ? { params } : undefined;
+}
+
+export async function getDashboardSummary(period) {
+  const { data } = await api.get('/dashboard/summary', buildPeriodParams(period));
   return data;
 }
 
-export async function getExpensesByCategory() {
-  const { data } = await api.get('/dashboard/expenses-by-category');
+export async function getExpensesByCategory(period) {
+  const { data } = await api.get('/dashboard/expenses-by-category', buildPeriodParams(period));
   return data;
 }
 
-export async function getRecentTransactions() {
-  const { data } = await api.get('/dashboard/recent-transactions');
+export async function getRecentTransactions(period) {
+  const { data } = await api.get('/dashboard/recent-transactions', buildPeriodParams(period));
   return data;
 }
 
-export async function getMonthlyFlow() {
-  const { data } = await api.get('/dashboard/monthly-flow');
+export async function getMonthlyFlow(period) {
+  const { data } = await api.get('/dashboard/monthly-flow', buildPeriodParams(period));
   return data;
 }
 
-export async function getDashboardOverview() {
-  const { data } = await api.get('/dashboard/overview');
+export async function getDashboardOverview(period) {
+  const { data } = await api.get('/dashboard/overview', buildPeriodParams(period));
   return data;
 }
 
-export async function getDashboardAlerts() {
-  const { data } = await api.get('/dashboard/alerts');
+export async function getDashboardAlerts(period) {
+  const { data } = await api.get('/dashboard/alerts', buildPeriodParams(period));
   return data;
 }
 
-export async function getTopExpenses() {
-  const { data } = await api.get('/dashboard/top-expenses');
+export async function getTopExpenses(period) {
+  const { data } = await api.get('/dashboard/top-expenses', buildPeriodParams(period));
   return data;
 }
 
-export async function getBudgetStatus() {
-  const { data } = await api.get('/dashboard/budget-status');
+export async function getBudgetStatus(period) {
+  const { data } = await api.get('/dashboard/budget-status', buildPeriodParams(period));
   return data;
 }
 
-export async function getGoalsProgress() {
-  const { data } = await api.get('/dashboard/goals-progress');
+export async function getGoalsProgress(period) {
+  const { data } = await api.get('/dashboard/goals-progress', buildPeriodParams(period));
   return data;
 }

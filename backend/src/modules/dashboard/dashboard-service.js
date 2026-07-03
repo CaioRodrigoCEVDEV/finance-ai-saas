@@ -1,11 +1,10 @@
 const prisma = require('../../config/prisma');
 const {
   formatMonthKey,
-  getCurrentMonthRange,
-  getLastMonths
+  getLastMonths,
+  resolveDashboardPeriod
 } = require('./dashboard-date-helper');
 const { getCreditCardExpenseAmountMap } = require('../../utils/credit-card-limit');
-const { computeAccountBalances } = require('../accounts/accounts.service');
 
 const UNCATEGORIZED_LABEL = 'Sem categoria';
 
@@ -13,17 +12,30 @@ function toNumber(value) {
   return Number(value || 0);
 }
 
-function getCurrentMonthYear() {
-  const now = new Date();
-  return { month: now.getUTCMonth() + 1, year: now.getUTCFullYear() };
+function buildComparison(current, previous) {
+  const currentValue = toNumber(current);
+  const previousValue = toNumber(previous);
+  const delta = Number((currentValue - previousValue).toFixed(2));
+  const percentage = previousValue === 0
+    ? (currentValue === 0 ? 0 : 100)
+    : Number(((delta / Math.abs(previousValue)) * 100).toFixed(2));
+
+  return {
+    current: currentValue,
+    previous: previousValue,
+    delta,
+    percentage,
+    trend: delta > 0 ? 'up' : (delta < 0 ? 'down' : 'flat')
+  };
 }
 
-async function computeTotalBalance(tenantId) {
+async function computeTotalBalance(tenantId, endDate) {
   const accounts = await prisma.account.findMany({
     where: {
       tenant_id: tenantId,
       is_active: true,
-      deleted_at: null
+      deleted_at: null,
+      ...(endDate ? { created_at: { lte: endDate } } : {})
     },
     select: {
       id: true,
@@ -37,68 +49,122 @@ async function computeTotalBalance(tenantId) {
     return 0;
   }
 
-  const transactionTotals = await computeAccountBalances(tenantId, accountIds);
+  const transactionTotals = await prisma.transaction.groupBy({
+    by: ['account_id', 'type'],
+    where: {
+      tenant_id: tenantId,
+      deleted_at: null,
+      status: 'CONFIRMED',
+      account_id: {
+        in: accountIds
+      },
+      ...(endDate ? { transaction_date: { lte: endDate } } : {})
+    },
+    _sum: {
+      amount: true
+    }
+  });
+
+  const accountTransactionTotals = {};
+
+  for (const aggregate of transactionTotals) {
+    if (!accountTransactionTotals[aggregate.account_id]) {
+      accountTransactionTotals[aggregate.account_id] = { INCOME: 0, EXPENSE: 0 };
+    }
+
+    const amount = toNumber(aggregate._sum.amount);
+
+    if (aggregate.type === 'INCOME') {
+      accountTransactionTotals[aggregate.account_id].INCOME += amount;
+      continue;
+    }
+
+    accountTransactionTotals[aggregate.account_id].EXPENSE += amount;
+  }
 
   let total = 0;
 
   for (const account of accounts) {
-    const tx = transactionTotals[account.id] || { INCOME: 0, EXPENSE: 0 };
+    const tx = accountTransactionTotals[account.id] || { INCOME: 0, EXPENSE: 0 };
     total += toNumber(account.initial_balance) + tx.INCOME - tx.EXPENSE;
   }
 
   return Number(total.toFixed(2));
 }
 
-async function getSummary(tenantId) {
-  const currentMonth = getCurrentMonthRange();
-
-  const [totalBalance, transactionTotals] = await Promise.all([
-    computeTotalBalance(tenantId),
-    prisma.transaction.groupBy({
-      by: ['type'],
-      where: {
-        tenant_id: tenantId,
-        deleted_at: null,
-        status: 'CONFIRMED',
-        transaction_date: {
-          gte: currentMonth.start,
-          lte: currentMonth.end
-        },
-        type: {
-          in: ['INCOME', 'EXPENSE']
-        }
+async function getPeriodSummaryMetrics(tenantId, range) {
+  const transactionTotals = await prisma.transaction.groupBy({
+    by: ['type'],
+    where: {
+      tenant_id: tenantId,
+      deleted_at: null,
+      status: 'CONFIRMED',
+      transaction_date: {
+        gte: range.start,
+        lte: range.end
       },
-      _sum: {
-        amount: true
+      type: {
+        in: ['INCOME', 'EXPENSE', 'INVESTMENT']
       }
-    })
-  ]);
+    },
+    _sum: {
+      amount: true
+    }
+  });
 
-  const monthlyIncome = toNumber(
-    transactionTotals.find((item) => item.type === 'INCOME')?._sum.amount
-  );
-  const monthlyExpense = toNumber(
-    transactionTotals.find((item) => item.type === 'EXPENSE')?._sum.amount
-  );
-  const monthlyEconomy = monthlyIncome - monthlyExpense;
+  const monthlyIncome = toNumber(transactionTotals.find((item) => item.type === 'INCOME')?._sum.amount);
+  const monthlyExpense = toNumber(transactionTotals.find((item) => item.type === 'EXPENSE')?._sum.amount);
+  const monthlyInvestment = toNumber(transactionTotals.find((item) => item.type === 'INVESTMENT')?._sum.amount);
+  const monthlyEconomy = Number((monthlyIncome - monthlyExpense - monthlyInvestment).toFixed(2));
   const expensePercentage = monthlyIncome > 0
     ? Number(((monthlyExpense / monthlyIncome) * 100).toFixed(2))
     : 0;
 
   return {
+    monthlyIncome,
+    monthlyExpense,
+    monthlyInvestment,
+    monthlyEconomy,
+    expensePercentage
+  };
+}
+
+async function getSummary(tenantId, periodInput = {}) {
+  const period = resolveDashboardPeriod(periodInput.month, periodInput.year);
+
+  const [totalBalance, transactionTotals, previousSummary, previousTotalBalance] = await Promise.all([
+    computeTotalBalance(tenantId, period.range.end),
+    getPeriodSummaryMetrics(tenantId, period.range),
+    getPeriodSummaryMetrics(tenantId, period.previous.range),
+    computeTotalBalance(tenantId, period.previous.range.end)
+  ]);
+
+  return {
+    period: {
+      month: period.month,
+      year: period.year,
+      key: period.key
+    },
+    previousPeriod: {
+      month: period.previous.month,
+      year: period.previous.year,
+      key: period.previous.key
+    },
     summary: {
       totalBalance,
-      monthlyIncome,
-      monthlyExpense,
-      monthlyEconomy,
-      expensePercentage
+      ...transactionTotals
+    },
+    comparison: {
+      totalBalance: buildComparison(totalBalance, previousTotalBalance),
+      monthlyIncome: buildComparison(transactionTotals.monthlyIncome, previousSummary.monthlyIncome),
+      monthlyExpense: buildComparison(transactionTotals.monthlyExpense, previousSummary.monthlyExpense),
+      monthlyInvestment: buildComparison(transactionTotals.monthlyInvestment, previousSummary.monthlyInvestment),
+      monthlyEconomy: buildComparison(transactionTotals.monthlyEconomy, previousSummary.monthlyEconomy)
     }
   };
 }
 
-async function getExpensesByCategory(tenantId) {
-  const currentMonth = getCurrentMonthRange();
-
+async function getExpenseCategoryRows(tenantId, range) {
   const groupedExpenses = await prisma.transaction.groupBy({
     by: ['category_id'],
     where: {
@@ -107,8 +173,8 @@ async function getExpensesByCategory(tenantId) {
       status: 'CONFIRMED',
       type: 'EXPENSE',
       transaction_date: {
-        gte: currentMonth.start,
-        lte: currentMonth.end
+        gte: range.start,
+        lte: range.end
       }
     },
     _sum: {
@@ -128,6 +194,8 @@ async function getExpensesByCategory(tenantId) {
   const categories = categoryIds.length > 0
     ? await prisma.category.findMany({
       where: {
+        tenant_id: tenantId,
+        deleted_at: null,
         id: {
           in: categoryIds
         }
@@ -157,12 +225,41 @@ async function getExpensesByCategory(tenantId) {
   });
 }
 
-async function getRecentTransactions(tenantId) {
+async function getExpensesByCategory(tenantId, periodInput = {}) {
+  const period = resolveDashboardPeriod(periodInput.month, periodInput.year);
+
+  const [currentItems, previousItems] = await Promise.all([
+    getExpenseCategoryRows(tenantId, period.range),
+    getExpenseCategoryRows(tenantId, period.previous.range)
+  ]);
+
+  const previousMap = new Map(previousItems.map((item) => [item.categoryId || '__uncategorized__', item]));
+
+  return currentItems.map((item) => {
+    const previous = previousMap.get(item.categoryId || '__uncategorized__');
+    const comparison = buildComparison(item.amount, previous?.amount || 0);
+
+    return {
+      ...item,
+      previousAmount: previous?.amount || 0,
+      deltaAmount: comparison.delta,
+      deltaPercentage: comparison.percentage,
+      trend: comparison.trend
+    };
+  });
+}
+
+async function getRecentTransactions(tenantId, periodInput = {}) {
+  const period = resolveDashboardPeriod(periodInput.month, periodInput.year);
 
   const transactions = await prisma.transaction.findMany({
     where: {
       tenant_id: tenantId,
-      deleted_at: null
+      deleted_at: null,
+      transaction_date: {
+        gte: period.range.start,
+        lte: period.range.end
+      }
     },
     orderBy: {
       transaction_date: 'desc'
@@ -206,8 +303,9 @@ async function getRecentTransactions(tenantId) {
   }));
 }
 
-async function getMonthlyFlow(tenantId) {
-  const months = getLastMonths(6);
+async function getMonthlyFlow(tenantId, periodInput = {}) {
+  const period = resolveDashboardPeriod(periodInput.month, periodInput.year);
+  const months = getLastMonths(6, period.month, period.year);
 
   const transactions = await prisma.transaction.findMany({
     where: {
@@ -262,32 +360,20 @@ async function getMonthlyFlow(tenantId) {
   });
 }
 
-async function getOverview(tenantId) {
-  const currentMonth = getCurrentMonthRange();
-  const { month, year } = getCurrentMonthYear();
+async function getOverview(tenantId, periodInput = {}) {
+  const period = resolveDashboardPeriod(periodInput.month, periodInput.year);
+  const summaryData = await getSummary(tenantId, periodInput);
+  const { month, year } = period;
+  const { range } = period;
 
-  const summaryData = await getSummary(tenantId);
+  const summary = summaryData.summary;
 
-  const investmentAgg = await prisma.transaction.aggregate({
+  const accounts = await prisma.account.findMany({
     where: {
       tenant_id: tenantId,
       deleted_at: null,
-      status: 'CONFIRMED',
-      transaction_date: { gte: currentMonth.start, lte: currentMonth.end },
-      type: 'INVESTMENT'
+      created_at: { lte: range.end }
     },
-    _sum: { amount: true }
-  });
-
-  const monthlyInvestment = toNumber(investmentAgg._sum.amount);
-  const summary = {
-    ...summaryData.summary,
-    monthlyInvestment,
-    monthlyEconomy: Number((summaryData.summary.monthlyIncome - summaryData.summary.monthlyExpense - monthlyInvestment).toFixed(2))
-  };
-
-  const accounts = await prisma.account.findMany({
-    where: { tenant_id: tenantId, deleted_at: null },
     select: { id: true, is_active: true }
   });
 
@@ -297,7 +383,11 @@ async function getOverview(tenantId) {
   const totalBalanceAccounts = summaryData.summary.totalBalance;
 
   const creditCards = await prisma.creditCard.findMany({
-    where: { tenant_id: tenantId, deleted_at: null },
+    where: {
+      tenant_id: tenantId,
+      deleted_at: null,
+      created_at: { lte: range.end }
+    },
     select: { id: true, name: true, limit_amount: true, is_active: true }
   });
 
@@ -307,8 +397,8 @@ async function getOverview(tenantId) {
 
   if (creditCardIds.length > 0) {
     [currentInvoiceMap, usedLimitMap] = await Promise.all([
-      getCreditCardExpenseAmountMap(prisma, tenantId, creditCardIds, { range: currentMonth }),
-      getCreditCardExpenseAmountMap(prisma, tenantId, creditCardIds, { excludePaidInvoices: true })
+      getCreditCardExpenseAmountMap(prisma, tenantId, creditCardIds, { range }),
+      getCreditCardExpenseAmountMap(prisma, tenantId, creditCardIds, { range, excludePaidInvoices: true })
     ]);
   }
 
@@ -324,6 +414,7 @@ async function getOverview(tenantId) {
     where: {
       tenant_id: tenantId,
       deleted_at: null,
+      created_at: { lte: range.end },
       month,
       year
     },
@@ -347,7 +438,7 @@ async function getOverview(tenantId) {
         deleted_at: null,
         status: 'CONFIRMED',
         type: 'EXPENSE',
-        transaction_date: { gte: currentMonth.start, lte: currentMonth.end },
+        transaction_date: { gte: range.start, lte: range.end },
         category_id: { in: budgetCategoryIds }
       },
       _sum: { amount: true }
@@ -376,7 +467,11 @@ async function getOverview(tenantId) {
   const budgetUsedPercentage = totalBudget > 0 ? Number(((totalUsed / totalBudget) * 100).toFixed(2)) : 0;
 
   const goals = await prisma.goal.findMany({
-    where: { tenant_id: tenantId, deleted_at: null },
+    where: {
+      tenant_id: tenantId,
+      deleted_at: null,
+      created_at: { lte: range.end }
+    },
     select: { id: true, status: true, target_amount: true, current_amount: true }
   });
 
@@ -389,6 +484,7 @@ async function getOverview(tenantId) {
 
   return {
     summary,
+    comparison: summaryData.comparison,
     accounts: {
       totalAccounts,
       activeAccounts,
@@ -421,13 +517,19 @@ async function getOverview(tenantId) {
   };
 }
 
-async function getAlerts(tenantId) {
-  const currentMonth = getCurrentMonthRange();
-  const { month, year } = getCurrentMonthYear();
+async function getAlerts(tenantId, periodInput = {}) {
+  const period = resolveDashboardPeriod(periodInput.month, periodInput.year);
+  const { month, year, range } = period;
   const alerts = [];
 
   const budgets = await prisma.budget.findMany({
-    where: { tenant_id: tenantId, deleted_at: null, month, year },
+    where: {
+      tenant_id: tenantId,
+      deleted_at: null,
+      created_at: { lte: range.end },
+      month,
+      year
+    },
     select: { id: true, name: true, amount: true, category_id: true, category: { select: { name: true } } }
   });
 
@@ -442,7 +544,7 @@ async function getAlerts(tenantId) {
         deleted_at: null,
         status: 'CONFIRMED',
         type: 'EXPENSE',
-        transaction_date: { gte: currentMonth.start, lte: currentMonth.end },
+        transaction_date: { gte: range.start, lte: range.end },
         category_id: { in: budgetCategoryIds }
       },
       _sum: { amount: true }
@@ -477,7 +579,12 @@ async function getAlerts(tenantId) {
   });
 
   const creditCards = await prisma.creditCard.findMany({
-    where: { tenant_id: tenantId, deleted_at: null, is_active: true },
+    where: {
+      tenant_id: tenantId,
+      deleted_at: null,
+      is_active: true,
+      created_at: { lte: range.end }
+    },
     select: { id: true, name: true, limit_amount: true }
   });
 
@@ -485,7 +592,7 @@ async function getAlerts(tenantId) {
   let ccTransactionMap = new Map();
 
   if (ccIds.length > 0) {
-    ccTransactionMap = await getCreditCardExpenseAmountMap(prisma, tenantId, ccIds, { excludePaidInvoices: true });
+    ccTransactionMap = await getCreditCardExpenseAmountMap(prisma, tenantId, ccIds, { range, excludePaidInvoices: true });
   }
 
   creditCards.forEach((c) => {
@@ -505,13 +612,13 @@ async function getAlerts(tenantId) {
     }
   });
 
-  const now = new Date();
   const overdueGoals = await prisma.goal.findMany({
     where: {
       tenant_id: tenantId,
       deleted_at: null,
       status: 'ACTIVE',
-      deadline: { lt: now }
+      created_at: { lte: range.end },
+      deadline: { lt: range.end }
     },
     select: { id: true, name: true, deadline: true }
   });
@@ -532,7 +639,7 @@ async function getAlerts(tenantId) {
       tenant_id: tenantId,
       deleted_at: null,
       status: 'CONFIRMED',
-      transaction_date: { gte: currentMonth.start, lte: currentMonth.end },
+      transaction_date: { gte: range.start, lte: range.end },
       type: 'INCOME'
     },
     _sum: { amount: true }
@@ -543,7 +650,7 @@ async function getAlerts(tenantId) {
       tenant_id: tenantId,
       deleted_at: null,
       status: 'CONFIRMED',
-      transaction_date: { gte: currentMonth.start, lte: currentMonth.end },
+      transaction_date: { gte: range.start, lte: range.end },
       type: 'EXPENSE'
     },
     _sum: { amount: true }
@@ -557,13 +664,13 @@ async function getAlerts(tenantId) {
       type: 'EXPENSE_GREATER_THAN_INCOME',
       severity: 'danger',
       title: 'Despesas superam receitas',
-      message: `Suas despesas (${monthlyExpense.toFixed(2)}) são maiores que suas receitas (${monthlyIncome.toFixed(2)}) neste mês.`,
+      message: `Suas despesas (${monthlyExpense.toFixed(2)}) são maiores que suas receitas (${monthlyIncome.toFixed(2)}) no período selecionado.`,
       entityId: null,
       entityType: 'summary'
     });
   }
 
-  const totalBalance = await computeTotalBalance(tenantId);
+  const totalBalance = await computeTotalBalance(tenantId, range.end);
 
   if (totalBalance < 100) {
     alerts.push({
@@ -579,8 +686,8 @@ async function getAlerts(tenantId) {
   return alerts;
 }
 
-async function getTopExpenses(tenantId) {
-  const currentMonth = getCurrentMonthRange();
+async function getTopExpenses(tenantId, periodInput = {}) {
+  const period = resolveDashboardPeriod(periodInput.month, periodInput.year);
 
   const transactions = await prisma.transaction.findMany({
     where: {
@@ -588,7 +695,7 @@ async function getTopExpenses(tenantId) {
       deleted_at: null,
       status: 'CONFIRMED',
       type: 'EXPENSE',
-      transaction_date: { gte: currentMonth.start, lte: currentMonth.end }
+      transaction_date: { gte: period.range.start, lte: period.range.end }
     },
     orderBy: { amount: 'desc' },
     take: 5,
@@ -610,14 +717,15 @@ async function getTopExpenses(tenantId) {
   }));
 }
 
-async function getBudgetStatus(tenantId) {
-  const currentMonth = getCurrentMonthRange();
-  const { month, year } = getCurrentMonthYear();
+async function getBudgetStatus(tenantId, periodInput = {}) {
+  const period = resolveDashboardPeriod(periodInput.month, periodInput.year);
+  const { month, year, range } = period;
 
   const budgets = await prisma.budget.findMany({
     where: {
       tenant_id: tenantId,
       deleted_at: null,
+      created_at: { lte: range.end },
       month,
       year
     },
@@ -641,7 +749,7 @@ async function getBudgetStatus(tenantId) {
         deleted_at: null,
         status: 'CONFIRMED',
         type: 'EXPENSE',
-        transaction_date: { gte: currentMonth.start, lte: currentMonth.end },
+        transaction_date: { gte: range.start, lte: range.end },
         category_id: { in: budgetCategoryIds }
       },
       _sum: { amount: true }
@@ -669,12 +777,15 @@ async function getBudgetStatus(tenantId) {
   });
 }
 
-async function getGoalsProgress(tenantId) {
+async function getGoalsProgress(tenantId, periodInput = {}) {
+  const period = resolveDashboardPeriod(periodInput.month, periodInput.year);
+
   const goals = await prisma.goal.findMany({
     where: {
       tenant_id: tenantId,
       deleted_at: null,
-      status: 'ACTIVE'
+      status: 'ACTIVE',
+      created_at: { lte: period.range.end }
     },
     orderBy: { created_at: 'asc' },
     select: {

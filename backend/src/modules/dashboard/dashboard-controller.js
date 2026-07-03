@@ -2,7 +2,7 @@ const dashboardService = require('./dashboard-service');
 
 async function getSummary(request, response, next) {
   try {
-    const data = await dashboardService.getSummary(request.tenant.id);
+    const data = await dashboardService.getSummary(request.tenant.id, request.query);
 
     return response.json({
       tenant: request.tenant,
@@ -15,7 +15,7 @@ async function getSummary(request, response, next) {
 
 async function getExpensesByCategory(request, response, next) {
   try {
-    const data = await dashboardService.getExpensesByCategory(request.tenant.id);
+    const data = await dashboardService.getExpensesByCategory(request.tenant.id, request.query);
 
     return response.json(data);
   } catch (error) {
@@ -25,7 +25,7 @@ async function getExpensesByCategory(request, response, next) {
 
 async function getRecentTransactions(request, response, next) {
   try {
-    const data = await dashboardService.getRecentTransactions(request.tenant.id);
+    const data = await dashboardService.getRecentTransactions(request.tenant.id, request.query);
 
     return response.json(data);
   } catch (error) {
@@ -35,7 +35,7 @@ async function getRecentTransactions(request, response, next) {
 
 async function getMonthlyFlow(request, response, next) {
   try {
-    const data = await dashboardService.getMonthlyFlow(request.tenant.id);
+    const data = await dashboardService.getMonthlyFlow(request.tenant.id, request.query);
 
     return response.json(data);
   } catch (error) {
@@ -45,7 +45,7 @@ async function getMonthlyFlow(request, response, next) {
 
 async function getOverview(request, response, next) {
   try {
-    const data = await dashboardService.getOverview(request.tenant.id);
+    const data = await dashboardService.getOverview(request.tenant.id, request.query);
 
     return response.json(data);
   } catch (error) {
@@ -55,7 +55,7 @@ async function getOverview(request, response, next) {
 
 async function getAlerts(request, response, next) {
   try {
-    const data = await dashboardService.getAlerts(request.tenant.id);
+    const data = await dashboardService.getAlerts(request.tenant.id, request.query);
 
     return response.json(data);
   } catch (error) {
@@ -65,7 +65,7 @@ async function getAlerts(request, response, next) {
 
 async function getTopExpenses(request, response, next) {
   try {
-    const data = await dashboardService.getTopExpenses(request.tenant.id);
+    const data = await dashboardService.getTopExpenses(request.tenant.id, request.query);
 
     return response.json(data);
   } catch (error) {
@@ -75,7 +75,7 @@ async function getTopExpenses(request, response, next) {
 
 async function getBudgetStatus(request, response, next) {
   try {
-    const data = await dashboardService.getBudgetStatus(request.tenant.id);
+    const data = await dashboardService.getBudgetStatus(request.tenant.id, request.query);
 
     return response.json(data);
   } catch (error) {
@@ -85,7 +85,7 @@ async function getBudgetStatus(request, response, next) {
 
 async function getGoalsProgress(request, response, next) {
   try {
-    const data = await dashboardService.getGoalsProgress(request.tenant.id);
+    const data = await dashboardService.getGoalsProgress(request.tenant.id, request.query);
 
     return response.json(data);
   } catch (error) {

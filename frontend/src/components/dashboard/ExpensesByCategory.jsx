@@ -2,7 +2,7 @@ import { Layers3 } from 'lucide-react';
 import Card from '../ui/Card';
 import ExpenseCategoryList from './ExpenseCategoryList';
 
-function ExpensesByCategory({ items }) {
+function ExpensesByCategory({ items, periodLabel }) {
   return (
     <Card className="rounded-[28px] p-6">
       <div className="mb-6 flex items-center justify-between gap-4">
@@ -13,7 +13,9 @@ function ExpensesByCategory({ items }) {
             </div>
             <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Gastos por categoria</h2>
           </div>
-          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Distribuicao das despesas confirmadas no mes.</p>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+            Distribuição das despesas confirmadas em {periodLabel || 'o período selecionado'}.
+          </p>
         </div>
       </div>
       <ExpenseCategoryList items={items} />

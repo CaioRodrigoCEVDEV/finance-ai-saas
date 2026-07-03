@@ -5,10 +5,53 @@ function createUtcMonthRange(year, month) {
   };
 }
 
-function getCurrentMonthRange() {
+function getCurrentMonthYear() {
   const now = new Date();
 
-  return createUtcMonthRange(now.getUTCFullYear(), now.getUTCMonth());
+  return {
+    month: now.getUTCMonth() + 1,
+    year: now.getUTCFullYear()
+  };
+}
+
+function shiftUtcMonth(year, month, offset) {
+  const reference = new Date(Date.UTC(year, month - 1 + offset, 1));
+
+  return {
+    month: reference.getUTCMonth() + 1,
+    year: reference.getUTCFullYear()
+  };
+}
+
+function getCurrentMonthRange(month, year) {
+  if (Number.isInteger(month) && Number.isInteger(year)) {
+    return createUtcMonthRange(year, month - 1);
+  }
+
+  const current = getCurrentMonthYear();
+
+  return createUtcMonthRange(current.year, current.month - 1);
+}
+
+function resolveDashboardPeriod(month, year) {
+  const current = getCurrentMonthYear();
+  const selectedMonth = Number.isInteger(month) ? month : current.month;
+  const selectedYear = Number.isInteger(year) ? year : current.year;
+  const range = createUtcMonthRange(selectedYear, selectedMonth - 1);
+  const previous = shiftUtcMonth(selectedYear, selectedMonth, -1);
+  const previousRange = createUtcMonthRange(previous.year, previous.month - 1);
+
+  return {
+    month: selectedMonth,
+    year: selectedYear,
+    key: `${selectedYear}-${String(selectedMonth).padStart(2, '0')}`,
+    range,
+    previous: {
+      ...previous,
+      key: `${previous.year}-${String(previous.month).padStart(2, '0')}`,
+      range: previousRange
+    }
+  };
 }
 
 function formatMonthKey(date) {
@@ -18,15 +61,17 @@ function formatMonthKey(date) {
   return `${year}-${month}`;
 }
 
-function getLastMonths(count) {
-  const now = new Date();
+function getLastMonths(count, month, year) {
+  const anchor = resolveDashboardPeriod(month, year);
   const months = [];
 
   for (let offset = count - 1; offset >= 0; offset -= 1) {
-    const reference = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - offset, 1));
+    const reference = new Date(Date.UTC(anchor.year, anchor.month - 1 - offset, 1));
     const range = createUtcMonthRange(reference.getUTCFullYear(), reference.getUTCMonth());
 
     months.push({
+      month: reference.getUTCMonth() + 1,
+      year: reference.getUTCFullYear(),
       key: formatMonthKey(reference),
       start: range.start,
       end: range.end
@@ -37,7 +82,10 @@ function getLastMonths(count) {
 }
 
 module.exports = {
+  getCurrentMonthYear,
   formatMonthKey,
   getCurrentMonthRange,
-  getLastMonths
+  getLastMonths,
+  resolveDashboardPeriod,
+  shiftUtcMonth
 };

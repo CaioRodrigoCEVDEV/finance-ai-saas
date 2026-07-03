@@ -15,7 +15,7 @@ function TopExpensesWidget({ expenses }) {
           </div>
           <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Top 5 despesas</h2>
         </div>
-        <p className="text-sm text-slate-500 dark:text-slate-400">Nenhuma despesa encontrada no mês atual.</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">Nenhuma despesa encontrada no período selecionado.</p>
       </Card>
     );
   }

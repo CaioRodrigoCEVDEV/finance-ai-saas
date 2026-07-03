@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Plus } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 import AppLayout from '../layouts/AppLayout';
 import Card from '../components/ui/Card';
 import LoadingSkeleton from '../components/ui/LoadingSkeleton';
 import Button from '../components/ui/Button';
+import FormModal from '../components/ui/FormModal';
+import TransactionForm from '../components/transactions/TransactionForm';
 import { useAuth } from '../contexts/AuthContext';
 import DashboardOverviewCards from '../components/dashboard/DashboardOverviewCards';
 import DashboardAlerts from '../components/dashboard/DashboardAlerts';
@@ -16,7 +17,16 @@ import ExpensesByCategory from '../components/dashboard/ExpensesByCategory';
 import TopExpensesWidget from '../components/dashboard/TopExpensesWidget';
 import RecentTransactions from '../components/dashboard/RecentTransactions';
 import MonthlyFlow from '../components/dashboard/MonthlyFlow';
+import DashboardPeriodHeader from '../components/dashboard/DashboardPeriodHeader';
 import { usePrivacy } from '../contexts/PrivacyContext';
+import {
+  formatDashboardPeriodLabel,
+  getCurrentDashboardPeriod,
+  normalizeDashboardPeriod,
+  readStoredDashboardPeriod,
+  shiftDashboardPeriod,
+  writeStoredDashboardPeriod
+} from '../utils/dashboardPeriod';
 
 import {
   getDashboardOverview,
@@ -28,8 +38,11 @@ import {
   getRecentTransactions,
   getMonthlyFlow
 } from '../services/dashboardService';
+import { getAccounts } from '../services/accountService';
+import { getCategories } from '../services/categoryService';
+import { getCreditCards } from '../services/creditCardService';
+import { createTransaction } from '../services/transactionService';
 import { formatDateBR } from '../utils/formatters';
-import { getGreeting, getFirstName } from '../utils/greeting';
 
 const initialState = {
   overview: null,
@@ -43,14 +56,104 @@ const initialState = {
 };
 
 function Dashboard() {
-  const { user, tenant } = useAuth();
+  const { tenant } = useAuth();
   const { formatCurrencyPrivacy } = usePrivacy();
-  const navigate = useNavigate();
-  const firstName = getFirstName(user?.name);
-  const greeting = getGreeting();
   const [data, setData] = useState(initialState);
+  const [period, setPeriod] = useState(() => readStoredDashboardPeriod() || getCurrentDashboardPeriod());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [formVisible, setFormVisible] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState('');
+  const [accounts, setAccounts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [creditCards, setCreditCards] = useState([]);
+  const selectedPeriodLabel = useMemo(() => formatDashboardPeriodLabel(period.month, period.year), [period.month, period.year]);
+
+  useEffect(() => {
+    writeStoredDashboardPeriod(period);
+  }, [period]);
+
+  const updatePeriod = (nextPeriod) => {
+    setPeriod((current) => {
+      const normalized = normalizeDashboardPeriod(nextPeriod.month, nextPeriod.year);
+
+      if (current.month === normalized.month && current.year === normalized.year) {
+        return current;
+      }
+
+      return normalized;
+    });
+  };
+
+  const goToPreviousPeriod = () => {
+    setPeriod((current) => {
+      const nextPeriod = shiftDashboardPeriod(current, -1);
+
+      if (current.month === nextPeriod.month && current.year === nextPeriod.year) {
+        return current;
+      }
+
+      return nextPeriod;
+    });
+  };
+
+  const goToNextPeriod = () => {
+    setPeriod((current) => {
+      const nextPeriod = shiftDashboardPeriod(current, 1);
+
+      if (current.month === nextPeriod.month && current.year === nextPeriod.year) {
+        return current;
+      }
+
+      return nextPeriod;
+    });
+  };
+
+  const goToToday = () => {
+    setPeriod(getCurrentDashboardPeriod());
+  };
+
+  useEffect(() => {
+    async function loadReferences() {
+      try {
+        const [accountData, categoryData, creditCardData] = await Promise.all([
+          getAccounts(),
+          getCategories({ includeInactive: false }),
+          getCreditCards()
+        ]);
+        setAccounts(accountData);
+        setCategories(categoryData);
+        setCreditCards(creditCardData);
+      } catch (_error) {
+        /* silent — form will show empty selects */
+      }
+    }
+    loadReferences();
+  }, []);
+
+  function handleOpenForm() {
+    setFormVisible(true);
+    setFormError('');
+  }
+
+  function handleCloseForm() {
+    setFormVisible(false);
+    setFormError('');
+  }
+
+  async function handleSubmit(payload) {
+    try {
+      setSaving(true);
+      setFormError('');
+      await createTransaction(payload);
+      setFormVisible(false);
+    } catch (requestError) {
+      setFormError(requestError.response?.data?.error || requestError.message || 'Erro ao criar transação.');
+    } finally {
+      setSaving(false);
+    }
+  }
 
   useEffect(() => {
     let isMounted = true;
@@ -61,14 +164,14 @@ function Dashboard() {
         setError('');
 
         const endpoints = [
-          { name: 'overview', fn: getDashboardOverview },
-          { name: 'alerts', fn: getDashboardAlerts },
-          { name: 'expensesByCategory', fn: getExpensesByCategory },
-          { name: 'topExpenses', fn: getTopExpenses },
-          { name: 'budgetStatus', fn: getBudgetStatus },
-          { name: 'goalsProgress', fn: getGoalsProgress },
-          { name: 'recentTransactions', fn: getRecentTransactions },
-          { name: 'monthlyFlow', fn: getMonthlyFlow }
+          { name: 'overview', fn: () => getDashboardOverview(period) },
+          { name: 'alerts', fn: () => getDashboardAlerts(period) },
+          { name: 'expensesByCategory', fn: () => getExpensesByCategory(period) },
+          { name: 'topExpenses', fn: () => getTopExpenses(period) },
+          { name: 'budgetStatus', fn: () => getBudgetStatus(period) },
+          { name: 'goalsProgress', fn: () => getGoalsProgress(period) },
+          { name: 'recentTransactions', fn: () => getRecentTransactions(period) },
+          { name: 'monthlyFlow', fn: () => getMonthlyFlow(period) }
         ];
 
         const results = await Promise.allSettled(endpoints.map(e => e.fn()));
@@ -140,34 +243,19 @@ function Dashboard() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [period]);
 
   return (
     <AppLayout>
       <div className="space-y-7 pb-8">
-        <Card className="flex flex-col gap-6 p-6 sm:p-8 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-600">Finance AI</p>
-            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">
-              {firstName ? `${greeting}, ${firstName}` : greeting}
-              <span aria-hidden="true"> 👋</span>
-            </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400 sm:text-base">
-              Aqui está o resumo da sua vida financeira hoje.
-            </p>
-          </div>
-          <div className="flex shrink-0 items-center">
-            <Button
-              variant="primary"
-              size="md"
-              onClick={() => navigate('/transactions')}
-              className="flex items-center gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              Nova transação
-            </Button>
-          </div>
-        </Card>
+        <DashboardPeriodHeader
+          period={period}
+          loading={loading}
+          onPrevious={goToPreviousPeriod}
+          onNext={goToNextPeriod}
+          onToday={goToToday}
+          onSelectPeriod={updatePeriod}
+        />
 
         {loading ? (
           <section className="space-y-7">
@@ -205,7 +293,12 @@ function Dashboard() {
 
         {!loading && !error ? (
           <div className="space-y-7">
-            <DashboardOverviewCards data={data.overview?.summary} tenantName={tenant?.name} />
+            <DashboardOverviewCards
+              comparison={data.overview?.comparison}
+              data={data.overview?.summary}
+              periodLabel={selectedPeriodLabel}
+              tenantName={tenant?.name}
+            />
 
             <section className="grid gap-5 md:grid-cols-3">
               <CreditCardWidget data={data.overview?.creditCards} />
@@ -216,7 +309,7 @@ function Dashboard() {
             <DashboardAlerts alerts={data.alerts} />
 
             <section className="grid gap-5 xl:grid-cols-2">
-              <ExpensesByCategory items={data.expensesByCategory} />
+              <ExpensesByCategory items={data.expensesByCategory} periodLabel={selectedPeriodLabel} />
               <TopExpensesWidget expenses={data.topExpenses} />
             </section>
 
@@ -228,7 +321,7 @@ function Dashboard() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
                   </div>
-                  <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Orçamentos do mês</h2>
+                  <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Orçamentos do período</h2>
                 </div>
                 <div className="space-y-3">
                   {data.budgetStatus.map((b) => (
@@ -254,7 +347,7 @@ function Dashboard() {
                     </div>
                   ))}
                   {data.budgetStatus.length === 0 && (
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Nenhum orçamento para o mês atual.</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Nenhum orçamento para o período selecionado.</p>
                   )}
                 </div>
               </Card>
@@ -266,7 +359,7 @@ function Dashboard() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                     </svg>
                   </div>
-                  <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Metas em andamento</h2>
+                  <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Metas do período</h2>
                 </div>
                 <div className="space-y-3">
                   {data.goalsProgress.map((g) => (
@@ -292,7 +385,7 @@ function Dashboard() {
                     </div>
                   ))}
                   {data.goalsProgress.length === 0 && (
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Nenhuma meta ativa no momento.</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Nenhuma meta ativa no período selecionado.</p>
                   )}
                 </div>
               </Card>
@@ -306,7 +399,7 @@ function Dashboard() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Transações recentes</h2>
+                  <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Transações do período</h2>
                 </div>
                 <RecentTransactions transactions={data.recentTransactions} />
               </Card>
@@ -318,7 +411,7 @@ function Dashboard() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
                     </svg>
                   </div>
-                  <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Fluxo mensal</h2>
+                  <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Fluxo mensal selecionado</h2>
                 </div>
                 <MonthlyFlow items={data.monthlyFlow} />
               </Card>
@@ -326,6 +419,37 @@ function Dashboard() {
           </div>
         ) : null}
       </div>
+
+      <button
+        className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-600 text-white shadow-lg transition hover:bg-emerald-700 active:scale-95 dark:bg-emerald-500 dark:hover:bg-emerald-400"
+        onClick={handleOpenForm}
+        aria-label="Nova transação"
+      >
+        <Plus className="h-6 w-6" />
+      </button>
+
+      <FormModal
+        isOpen={formVisible}
+        eyebrow="NOVA TRANSAÇÃO"
+        title="Cadastre uma nova movimentação financeira"
+        onClose={handleCloseForm}
+        footer={(
+          <>
+            <Button type="button" variant="secondary" onClick={handleCloseForm} disabled={saving}>Cancelar</Button>
+            <Button type="submit" form="transaction-form" disabled={saving}>
+              {saving ? 'Salvando...' : 'Criar transação'}
+            </Button>
+          </>
+        )}
+      >
+        <TransactionForm
+          accounts={accounts}
+          categories={categories}
+          creditCards={creditCards}
+          serverError={formError}
+          onSubmit={handleSubmit}
+        />
+      </FormModal>
     </AppLayout>
   );
 }
