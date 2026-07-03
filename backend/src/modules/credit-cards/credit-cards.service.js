@@ -158,7 +158,7 @@ async function getCreditCardById(creditCardId, tenantId) {
     getCreditCardExpenseAmountMap(prisma, tenantId, creditCard.id, { range: cardRange }),
     getCreditCardExpenseAmountMap(prisma, tenantId, creditCard.id, { range: cardRange, excludePaidInvoices: true }),
     prisma.transaction.count({
-      where: buildCreditCardExpenseWhere(tenantId, creditCard.id, range)
+      where: buildCreditCardExpenseWhere(tenantId, creditCard.id, cardRange)
     })
   ]);
 

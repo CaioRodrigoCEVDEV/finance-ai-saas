@@ -53,6 +53,8 @@ function isTransactionInPaidInvoice(transaction, paidInvoicesByCard) {
 }
 
 async function queryCardExpenses(prisma, tenantId, ids, range, excludePaidInvoices) {
+  ids = normalizeCreditCardIds(ids);
+
   const [transactions, paidInvoices] = await Promise.all([
     prisma.transaction.findMany({
       where: buildCreditCardExpenseWhere(tenantId, ids, range),
