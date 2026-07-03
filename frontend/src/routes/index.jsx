@@ -15,6 +15,8 @@ import Login from '../pages/Login';
 import Register from '../pages/Register';
 import VerifyEmail from '../pages/VerifyEmail';
 import EmailVerificationSent from '../pages/EmailVerificationSent';
+import ForgotPassword from '../pages/ForgotPassword';
+import ResetPassword from '../pages/ResetPassword';
 import Reports from '../pages/Reports';
 import Transactions from '../pages/Transactions';
 import Notifications from '../pages/Notifications';
@@ -119,6 +121,8 @@ function AppRoutes() {
         />
         <Route path="/verificacao-enviada" element={<EmailVerificationSent />} />
         <Route path="/verificar-email" element={<VerifyEmail />} />
+        <Route path="/esqueci-senha" element={<ForgotPassword />} />
+        <Route path="/redefinir-senha" element={<ResetPassword />} />
         <Route
           path="/accounts"
           element={(

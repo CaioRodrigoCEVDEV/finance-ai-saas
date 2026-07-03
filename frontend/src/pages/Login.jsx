@@ -188,6 +188,15 @@ function Login() {
                 required
               />
 
+              <div className="text-right -mt-3">
+                <Link
+                  to="/esqueci-senha"
+                  className="text-xs font-medium text-emerald-600 transition hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300"
+                >
+                  Esqueci a senha
+                </Link>
+              </div>
+
               {error ? (
                 <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
                   <p>{error}</p>

@@ -68,11 +68,33 @@ async function resendVerification(request, response, next) {
   }
 }
 
+async function forgotPassword(request, response, next) {
+  try {
+    const { email } = request.body;
+    const result = await authService.forgotPassword(email);
+    return response.json(result);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+async function resetPassword(request, response, next) {
+  try {
+    const { token, password } = request.body;
+    const result = await authService.resetPassword(token, password);
+    return response.json(result);
+  } catch (error) {
+    return next(error);
+  }
+}
+
 module.exports = {
   getMe,
   login,
   logout,
   register,
   verifyEmail,
-  resendVerification
+  resendVerification,
+  forgotPassword,
+  resetPassword
 };

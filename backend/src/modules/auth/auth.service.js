@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 const prisma = require('../../config/prisma');
 const AppError = require('../../utils/app-error');
 const { signToken } = require('../../services/token-service');
-const { sendVerificationEmail, sendVerificationSuccessEmail } = require('../../services/email-service');
+const { sendVerificationEmail, sendVerificationSuccessEmail, sendPasswordResetEmail } = require('../../services/email-service');
 
 function sanitizeUser(user) {
   return {
@@ -321,10 +321,84 @@ async function resendVerification(email) {
   return { message: 'Novo e-mail de confirmacao enviado. Verifique sua caixa de entrada.' };
 }
 
+async function forgotPassword(email) {
+  const normalizedEmail = email.trim().toLowerCase();
+
+  const user = await prisma.user.findFirst({
+    where: {
+      email: normalizedEmail,
+      deleted_at: null,
+      status: 'ACTIVE'
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true
+    }
+  });
+
+  if (!user) {
+    return { message: 'Se o e-mail estiver cadastrado, voce recebera um link de recuperacao.' };
+  }
+
+  const resetToken = generateVerificationToken();
+  const resetExpiresAt = new Date(Date.now() + 60 * 60 * 1000);
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      password_reset_token: resetToken,
+      password_reset_expires_at: resetExpiresAt
+    }
+  });
+
+  await sendPasswordResetEmail(user.email, user.name, resetToken);
+
+  return { message: 'Se o e-mail estiver cadastrado, voce recebera um link de recuperacao.' };
+}
+
+async function resetPassword(token, newPassword) {
+  const user = await prisma.user.findFirst({
+    where: {
+      password_reset_token: token,
+      deleted_at: null,
+      status: 'ACTIVE'
+    },
+    select: {
+      id: true,
+      email: true,
+      password_reset_expires_at: true
+    }
+  });
+
+  if (!user) {
+    throw new AppError('Link de recuperacao invalido.', 400, 'INVALID_RESET_TOKEN');
+  }
+
+  if (user.password_reset_expires_at && new Date() > user.password_reset_expires_at) {
+    throw new AppError('Link de recuperacao expirado. Solicite um novo.', 400, 'RESET_TOKEN_EXPIRED');
+  }
+
+  const passwordHash = await bcrypt.hash(newPassword, 12);
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      password_hash: passwordHash,
+      password_reset_token: null,
+      password_reset_expires_at: null
+    }
+  });
+
+  return { message: 'Senha redefinida com sucesso! Agora voce ja pode entrar.' };
+}
+
 module.exports = {
   findAuthenticatedUser,
   login,
   register,
   verifyEmail,
-  resendVerification
+  resendVerification,
+  forgotPassword,
+  resetPassword
 };
