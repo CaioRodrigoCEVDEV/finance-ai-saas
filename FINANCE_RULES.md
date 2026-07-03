@@ -71,6 +71,15 @@ const LIMIT_IMPACTING_STATUSES = ['CONFIRMED', 'PENDING'];
 ### Limite mínimo
 - O limite disponível nunca fica negativo: `Math.max(limitAmount - usedAmount, 0)`.
 
+### Período de fatura por ciclo de fechamento
+- `calculateCreditCardBillingPeriod(closingDay, referenceDate)` em `credit-card-billing.js` calcula o período da fatura atual com base no dia de fechamento do cartão, não no mês calendário.
+- Regra:
+  - Se `referenceDate <= closingDay` do mês: período = (fechamento anterior + 1 dia) até (fechamento deste mês).
+  - Se `referenceDate > closingDay` do mês: período = (fechamento deste mês + 1 dia) até (fechamento do próximo mês).
+- `safeDay()` ajusta o dia de fechamento para o último dia do mês quando o dia não existe (ex.: 31/fev → 28/fev).
+- Usado por: `credit-cards.service.js` (list, getById, update), `dashboard-service.js` (overview, alerts).
+- **Nunca use mês calendário para filtrar transações de cartão.** Todo cálculo de fatura/limite deve usar o ciclo de fechamento.
+
 ---
 
 ## 4. Como Despesas Confirmadas Impactam Valores
@@ -93,6 +102,8 @@ const LIMIT_IMPACTING_STATUSES = ['CONFIRMED', 'PENDING'];
 ### Fatura de cartão
 - `calculateInvoiceTotal()`: soma **todas** as transações EXPENSE do período (sem filtrar por status).
 - **Todas as despesas** no período da fatura entram no cálculo, independente do status.
+- O período da fatura é definido pelo **ciclo de fechamento** do cartão (`calculateCreditCardBillingPeriod`), não pelo mês calendário.
+- `currentInvoiceAmount` no dashboard e resumo de cartões reflete o período do ciclo, não o mês civil.
 
 ---
 

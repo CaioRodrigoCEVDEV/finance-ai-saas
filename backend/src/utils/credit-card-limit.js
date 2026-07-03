@@ -52,13 +52,7 @@ function isTransactionInPaidInvoice(transaction, paidInvoicesByCard) {
   ));
 }
 
-async function getCreditCardExpenseAmountMap(prisma, tenantId, creditCardIds, { range, excludePaidInvoices = false } = {}) {
-  const ids = normalizeCreditCardIds(creditCardIds);
-
-  if (ids.length === 0) {
-    return new Map();
-  }
-
+async function queryCardExpenses(prisma, tenantId, ids, range, excludePaidInvoices) {
   const [transactions, paidInvoices] = await Promise.all([
     prisma.transaction.findMany({
       where: buildCreditCardExpenseWhere(tenantId, ids, range),
@@ -99,6 +93,32 @@ async function getCreditCardExpenseAmountMap(prisma, tenantId, creditCardIds, { 
 
     return accumulator;
   }, new Map());
+}
+
+async function getCreditCardExpenseAmountMap(prisma, tenantId, creditCardIds, { range, excludePaidInvoices = false, cardRanges } = {}) {
+  const ids = normalizeCreditCardIds(creditCardIds);
+
+  if (ids.length === 0) {
+    return new Map();
+  }
+
+  if (cardRanges && cardRanges.size > 0) {
+    const results = await Promise.all(
+      ids.map((id) => {
+        const cardRange = cardRanges.get(id);
+        return queryCardExpenses(prisma, tenantId, id, cardRange, excludePaidInvoices);
+      })
+    );
+
+    return results.reduce((accumulator, cardMap) => {
+      cardMap.forEach((amount, cardId) => {
+        accumulator.set(cardId, (accumulator.get(cardId) || 0) + amount);
+      });
+      return accumulator;
+    }, new Map());
+  }
+
+  return queryCardExpenses(prisma, tenantId, ids, range, excludePaidInvoices);
 }
 
 module.exports = {

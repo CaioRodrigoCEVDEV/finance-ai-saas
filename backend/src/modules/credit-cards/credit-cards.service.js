@@ -4,6 +4,7 @@ const {
   buildCreditCardExpenseWhere,
   getCreditCardExpenseAmountMap
 } = require('../../utils/credit-card-limit');
+const { calculateCreditCardBillingPeriod } = require('../../utils/credit-card-billing');
 const planService = require('../plans/plan.service');
 
 function toDecimalString(value) {
@@ -14,13 +15,16 @@ function toNumber(value) {
   return Number(value || 0);
 }
 
-function getCurrentMonthRange() {
+function buildCardRanges(creditCards) {
   const now = new Date();
+  const ranges = new Map();
 
-  return {
-    start: new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0),
-    end: new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999)
-  };
+  creditCards.forEach((card) => {
+    const period = calculateCreditCardBillingPeriod(card.closing_day, now);
+    ranges.set(card.id, { start: period.startDate, end: period.endDate });
+  });
+
+  return ranges;
 }
 
 async function findAccountByTenant(accountId, tenantId) {
@@ -128,11 +132,11 @@ async function listCreditCards(tenantId) {
     return [];
   }
 
-  const range = getCurrentMonthRange();
+  const cardRanges = buildCardRanges(creditCards);
   const creditCardIds = creditCards.map((creditCard) => creditCard.id);
   const [invoiceAmountMap, usedAmountMap] = await Promise.all([
-    getCreditCardExpenseAmountMap(prisma, tenantId, creditCardIds, { range }),
-    getCreditCardExpenseAmountMap(prisma, tenantId, creditCardIds, { excludePaidInvoices: true })
+    getCreditCardExpenseAmountMap(prisma, tenantId, creditCardIds, { cardRanges }),
+    getCreditCardExpenseAmountMap(prisma, tenantId, creditCardIds, { cardRanges, excludePaidInvoices: true })
   ]);
 
   return creditCards.map((creditCard) => toCreditCardResponse(creditCard, {
@@ -148,10 +152,11 @@ async function getCreditCardById(creditCardId, tenantId) {
     throw new AppError('Cartao nao encontrado', 404);
   }
 
-  const range = getCurrentMonthRange();
+  const cardPeriod = calculateCreditCardBillingPeriod(creditCard.closing_day, new Date());
+  const cardRange = { start: cardPeriod.startDate, end: cardPeriod.endDate };
   const [invoiceAmountMap, usedAmountMap, expenseCountCurrentMonth] = await Promise.all([
-    getCreditCardExpenseAmountMap(prisma, tenantId, creditCard.id, { range }),
-    getCreditCardExpenseAmountMap(prisma, tenantId, creditCard.id, { excludePaidInvoices: true }),
+    getCreditCardExpenseAmountMap(prisma, tenantId, creditCard.id, { range: cardRange }),
+    getCreditCardExpenseAmountMap(prisma, tenantId, creditCard.id, { range: cardRange, excludePaidInvoices: true }),
     prisma.transaction.count({
       where: buildCreditCardExpenseWhere(tenantId, creditCard.id, range)
     })
@@ -252,10 +257,11 @@ async function updateCreditCard(creditCardId, tenantId, data) {
     }
   });
 
-  const range = getCurrentMonthRange();
+  const updatedPeriod = calculateCreditCardBillingPeriod(creditCard.closing_day, new Date());
+  const updatedRange = { start: updatedPeriod.startDate, end: updatedPeriod.endDate };
   const [invoiceAmountMap, usedAmountMap] = await Promise.all([
-    getCreditCardExpenseAmountMap(prisma, tenantId, creditCard.id, { range }),
-    getCreditCardExpenseAmountMap(prisma, tenantId, creditCard.id, { excludePaidInvoices: true })
+    getCreditCardExpenseAmountMap(prisma, tenantId, creditCard.id, { range: updatedRange }),
+    getCreditCardExpenseAmountMap(prisma, tenantId, creditCard.id, { range: updatedRange, excludePaidInvoices: true })
   ]);
 
   return toCreditCardResponse(creditCard, {

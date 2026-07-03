@@ -5,6 +5,7 @@ const {
   resolveDashboardPeriod
 } = require('./dashboard-date-helper');
 const { getCreditCardExpenseAmountMap } = require('../../utils/credit-card-limit');
+const { calculateCreditCardBillingPeriod } = require('../../utils/credit-card-billing');
 
 const UNCATEGORIZED_LABEL = 'Sem categoria';
 
@@ -388,7 +389,7 @@ async function getOverview(tenantId, periodInput = {}) {
       deleted_at: null,
       created_at: { lte: range.end }
     },
-    select: { id: true, name: true, limit_amount: true, is_active: true }
+    select: { id: true, name: true, limit_amount: true, is_active: true, closing_day: true }
   });
 
   const creditCardIds = creditCards.map((c) => c.id);
@@ -396,9 +397,16 @@ async function getOverview(tenantId, periodInput = {}) {
   let usedLimitMap = new Map();
 
   if (creditCardIds.length > 0) {
+    const cardRanges = new Map();
+
+    creditCards.forEach((c) => {
+      const period = calculateCreditCardBillingPeriod(c.closing_day, new Date());
+      cardRanges.set(c.id, { start: period.startDate, end: period.endDate });
+    });
+
     [currentInvoiceMap, usedLimitMap] = await Promise.all([
-      getCreditCardExpenseAmountMap(prisma, tenantId, creditCardIds, { range }),
-      getCreditCardExpenseAmountMap(prisma, tenantId, creditCardIds, { range, excludePaidInvoices: true })
+      getCreditCardExpenseAmountMap(prisma, tenantId, creditCardIds, { cardRanges }),
+      getCreditCardExpenseAmountMap(prisma, tenantId, creditCardIds, { cardRanges, excludePaidInvoices: true })
     ]);
   }
 
@@ -585,14 +593,21 @@ async function getAlerts(tenantId, periodInput = {}) {
       is_active: true,
       created_at: { lte: range.end }
     },
-    select: { id: true, name: true, limit_amount: true }
+    select: { id: true, name: true, limit_amount: true, closing_day: true }
   });
 
   const ccIds = creditCards.map((c) => c.id);
   let ccTransactionMap = new Map();
 
   if (ccIds.length > 0) {
-    ccTransactionMap = await getCreditCardExpenseAmountMap(prisma, tenantId, ccIds, { range, excludePaidInvoices: true });
+    const ccCardRanges = new Map();
+
+    creditCards.forEach((c) => {
+      const period = calculateCreditCardBillingPeriod(c.closing_day, new Date());
+      ccCardRanges.set(c.id, { start: period.startDate, end: period.endDate });
+    });
+
+    ccTransactionMap = await getCreditCardExpenseAmountMap(prisma, tenantId, ccIds, { cardRanges: ccCardRanges, excludePaidInvoices: true });
   }
 
   creditCards.forEach((c) => {
