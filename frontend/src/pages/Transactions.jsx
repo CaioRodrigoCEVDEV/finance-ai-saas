@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { AlertCircle, ArrowLeftRight, Plus } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 
 import TransactionFilters from '../components/transactions/TransactionFilters';
 import TransactionForm from '../components/transactions/TransactionForm';
@@ -69,6 +70,7 @@ function buildListParams(filters, page) {
 
 function Transactions() {
   const hasInitializedFilters = useRef(false);
+  const location = useLocation();
   const [transactions, setTransactions] = useState([]);
   const [accounts, setAccounts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -84,6 +86,7 @@ function Transactions() {
   const [formError, setFormError] = useState('');
   const [formVisible, setFormVisible] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [pendingNewTransaction, setPendingNewTransaction] = useState(false);
 
   async function loadReferences() {
     const [accountData, categoryData, creditCardData] = await Promise.all([
@@ -145,6 +148,20 @@ function Transactions() {
   useEffect(() => {
     loadPageData(initialFilters, 1);
   }, []);
+
+  useEffect(() => {
+    if (location.state?.openNewTransaction) {
+      setPendingNewTransaction(true);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
+
+  useEffect(() => {
+    if (pendingNewTransaction && accounts.length > 0) {
+      handleCreateClick();
+      setPendingNewTransaction(false);
+    }
+  }, [pendingNewTransaction, accounts]);
 
   function handleCreateClick() {
     setSelectedTransaction(null);
