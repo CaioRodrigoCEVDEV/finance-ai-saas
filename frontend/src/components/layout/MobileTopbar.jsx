@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { MessageSquareText } from 'lucide-react';
+import { Eye, EyeOff, MessageSquareText } from 'lucide-react';
 
 import { useAuth } from '../../contexts/AuthContext';
+import { usePrivacy } from '../../contexts/PrivacyContext';
 import FeedbackModal from '../feedback/FeedbackModal';
 import NotificationBell from '../notifications/NotificationBell';
 
@@ -18,6 +19,7 @@ function getInitials(name) {
 
 function MobileTopbar() {
   const { user } = useAuth();
+  const { hideValues, toggleHideValues } = usePrivacy();
   const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   return (
@@ -47,6 +49,19 @@ function MobileTopbar() {
           aria-label="Enviar feedback"
         >
           <MessageSquareText className="h-5 w-5 text-slate-500 dark:text-slate-400" />
+        </button>
+        <button
+          type="button"
+          onClick={toggleHideValues}
+          className="flex h-9 w-9 items-center justify-center rounded-2xl transition hover:bg-slate-50 dark:hover:bg-slate-700/50"
+          aria-label={hideValues ? 'Exibir valores' : 'Ocultar valores'}
+          title={hideValues ? 'Exibir valores' : 'Ocultar valores'}
+        >
+          {hideValues ? (
+            <EyeOff className="h-5 w-5 text-slate-500 dark:text-slate-400" />
+          ) : (
+            <Eye className="h-5 w-5 text-slate-500 dark:text-slate-400" />
+          )}
         </button>
         <NotificationBell />
       </div>
