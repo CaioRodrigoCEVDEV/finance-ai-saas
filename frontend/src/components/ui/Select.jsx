@@ -179,7 +179,9 @@ function Select({
       ref={rootRef}
       className="relative block min-w-0"
       onBlur={(event) => {
-        if (!rootRef.current?.contains(event.relatedTarget)) setOpen(false);
+        if (rootRef.current?.contains(event.relatedTarget)) return;
+        if (menuRef.current?.contains(event.relatedTarget)) return;
+        setOpen(false);
       }}
     >
       {label ? <span className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">{label}</span> : null}
