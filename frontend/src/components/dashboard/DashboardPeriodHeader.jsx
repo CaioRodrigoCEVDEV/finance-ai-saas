@@ -5,11 +5,11 @@ import Card from '../ui/Card';
 import Button from '../ui/Button';
 import Select from '../ui/Select';
 import DashboardPeriodSheet from './DashboardPeriodSheet';
-import { buildDashboardPeriodOptions, formatDashboardPeriodLabel, getDashboardPeriodKey, parseDashboardPeriodValue } from '../../utils/dashboardPeriod';
+import { buildAvailablePeriodOptions, formatDashboardPeriodLabel, getDashboardPeriodKey, parseDashboardPeriodValue } from '../../utils/dashboardPeriod';
 
-function DashboardPeriodHeader({ period, loading, onPrevious, onNext, onToday, onSelectPeriod }) {
+function DashboardPeriodHeader({ period, loading, availablePeriods, onPrevious, onNext, onToday, onSelectPeriod }) {
   const [sheetOpen, setSheetOpen] = useState(false);
-  const options = buildDashboardPeriodOptions(period);
+  const options = buildAvailablePeriodOptions(availablePeriods);
   const periodKey = getDashboardPeriodKey(period);
   const isToday = periodKey === getDashboardPeriodKey();
   const periodLabel = formatDashboardPeriodLabel(period.month, period.year);
@@ -148,6 +148,7 @@ function DashboardPeriodHeader({ period, loading, onPrevious, onNext, onToday, o
       {sheetOpen ? (
         <DashboardPeriodSheet
           period={period}
+          availablePeriods={availablePeriods}
           onSelect={onSelectPeriod}
           onClose={() => setSheetOpen(false)}
         />

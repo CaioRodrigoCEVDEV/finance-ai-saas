@@ -12,7 +12,8 @@ const {
   getAlerts,
   getTopExpenses,
   getBudgetStatus,
-  getGoalsProgress
+  getGoalsProgress,
+  getAvailablePeriods
 } = require('./dashboard-controller');
 
 const dashboardRoutes = Router();
@@ -28,5 +29,6 @@ dashboardRoutes.get('/dashboard/alerts', getAlerts);
 dashboardRoutes.get('/dashboard/top-expenses', getTopExpenses);
 dashboardRoutes.get('/dashboard/budget-status', getBudgetStatus);
 dashboardRoutes.get('/dashboard/goals-progress', getGoalsProgress);
+dashboardRoutes.get('/dashboard/available-periods', getAvailablePeriods);
 
 module.exports = dashboardRoutes;

@@ -24,7 +24,7 @@ import {
   getCurrentDashboardPeriod,
   normalizeDashboardPeriod,
   readStoredDashboardPeriod,
-  shiftDashboardPeriod,
+  shiftPeriodByList,
   writeStoredDashboardPeriod
 } from '../utils/dashboardPeriod';
 
@@ -36,7 +36,8 @@ import {
   getBudgetStatus,
   getGoalsProgress,
   getRecentTransactions,
-  getMonthlyFlow
+  getMonthlyFlow,
+  getAvailablePeriods
 } from '../services/dashboardService';
 import { getAccounts } from '../services/accountService';
 import { getCategories } from '../services/categoryService';
@@ -68,6 +69,7 @@ function Dashboard() {
   const [accounts, setAccounts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [creditCards, setCreditCards] = useState([]);
+  const [availablePeriods, setAvailablePeriods] = useState(null);
   const selectedPeriodLabel = useMemo(() => formatDashboardPeriodLabel(period.month, period.year), [period.month, period.year]);
 
   useEffect(() => {
@@ -87,27 +89,11 @@ function Dashboard() {
   };
 
   const goToPreviousPeriod = () => {
-    setPeriod((current) => {
-      const nextPeriod = shiftDashboardPeriod(current, -1);
-
-      if (current.month === nextPeriod.month && current.year === nextPeriod.year) {
-        return current;
-      }
-
-      return nextPeriod;
-    });
+    setPeriod((current) => shiftPeriodByList(availablePeriods, current, -1));
   };
 
   const goToNextPeriod = () => {
-    setPeriod((current) => {
-      const nextPeriod = shiftDashboardPeriod(current, 1);
-
-      if (current.month === nextPeriod.month && current.year === nextPeriod.year) {
-        return current;
-      }
-
-      return nextPeriod;
-    });
+    setPeriod((current) => shiftPeriodByList(availablePeriods, current, 1));
   };
 
   const goToToday = () => {
@@ -129,6 +115,7 @@ function Dashboard() {
         /* silent — form will show empty selects */
       }
     }
+
     loadReferences();
   }, []);
 
@@ -158,6 +145,15 @@ function Dashboard() {
   useEffect(() => {
     let isMounted = true;
 
+    async function loadAvailablePeriods() {
+      try {
+        const periods = await getAvailablePeriods();
+        if (isMounted) setAvailablePeriods(periods.length > 0 ? periods : null);
+      } catch (_error) {
+        /* silent */
+      }
+    }
+
     async function loadDashboard() {
       try {
         setLoading(true);
@@ -174,7 +170,10 @@ function Dashboard() {
           { name: 'monthlyFlow', fn: () => getMonthlyFlow(period) }
         ];
 
-        const results = await Promise.allSettled(endpoints.map(e => e.fn()));
+        const [results] = await Promise.all([
+          Promise.allSettled(endpoints.map(e => e.fn())),
+          loadAvailablePeriods()
+        ]);
 
         if (!isMounted) return;
 
@@ -251,6 +250,7 @@ function Dashboard() {
         <DashboardPeriodHeader
           period={period}
           loading={loading}
+          availablePeriods={availablePeriods}
           onPrevious={goToPreviousPeriod}
           onNext={goToNextPeriod}
           onToday={goToToday}

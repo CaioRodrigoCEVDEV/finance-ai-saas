@@ -195,11 +195,14 @@ async function getExpenseCategoryRows(tenantId, range) {
   const categories = categoryIds.length > 0
     ? await prisma.category.findMany({
       where: {
-        tenant_id: tenantId,
         deleted_at: null,
         id: {
           in: categoryIds
-        }
+        },
+        OR: [
+          { tenant_id: tenantId },
+          { tenant_id: null }
+        ]
       },
       select: {
         id: true,
@@ -352,12 +355,45 @@ async function getMonthlyFlow(tenantId, periodInput = {}) {
     }
   }
 
-  return months.map((month) => {
-    const monthData = monthlyTotals.get(month.key);
+  return months
+    .map((month) => {
+      const monthData = monthlyTotals.get(month.key);
 
-    monthData.economy = monthData.income - monthData.expense;
+      monthData.economy = monthData.income - monthData.expense;
 
-    return monthData;
+      return monthData;
+    })
+    .filter((m) => m.income > 0 || m.expense > 0);
+}
+
+async function getAvailablePeriods(tenantId) {
+  const rows = await prisma.$queryRaw`
+    SELECT
+      EXTRACT(YEAR FROM transaction_date)::int AS year,
+      EXTRACT(MONTH FROM transaction_date)::int AS month
+    FROM transactions
+    WHERE tenant_id = ${tenantId}::uuid
+      AND deleted_at IS NULL
+    GROUP BY
+      EXTRACT(YEAR FROM transaction_date),
+      EXTRACT(MONTH FROM transaction_date)
+    ORDER BY year DESC, month DESC
+  `;
+
+  return rows.map((r) => {
+    const year = Number(r.year);
+    const month = Number(r.month);
+    const date = new Date(Date.UTC(year, month - 1, 1));
+    const monthName = new Intl.DateTimeFormat('pt-BR', {
+      month: 'long',
+      timeZone: 'UTC'
+    }).format(date);
+
+    return {
+      year,
+      month,
+      label: `${monthName.charAt(0).toUpperCase()}${monthName.slice(1)} ${year}`
+    };
   });
 }
 
@@ -837,5 +873,6 @@ module.exports = {
   getAlerts,
   getTopExpenses,
   getBudgetStatus,
-  getGoalsProgress
+  getGoalsProgress,
+  getAvailablePeriods
 };

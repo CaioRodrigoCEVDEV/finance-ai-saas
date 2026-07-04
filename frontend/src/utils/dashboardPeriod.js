@@ -69,22 +69,75 @@ function formatDashboardPeriodLabel(month, year) {
   return `${monthName.charAt(0).toUpperCase()}${monthName.slice(1)} ${normalized.year}`;
 }
 
-function buildDashboardPeriodOptions(period, rangeYears = 2) {
-  const normalized = normalizeDashboardPeriod(period?.month, period?.year);
-  const options = [];
-  const startYear = Math.max(2000, normalized.year - rangeYears);
-  const endYear = Math.min(3000, normalized.year + rangeYears);
+function buildHojeLabel() {
+  const hoje = getCurrentDashboardPeriod();
+  return `Hoje (${formatDashboardPeriodLabel(hoje.month, hoje.year)})`;
+}
 
-  for (let year = startYear; year <= endYear; year += 1) {
-    for (let month = 1; month <= 12; month += 1) {
-      options.push({
-        value: `${year}-${String(month).padStart(2, '0')}`,
-        label: formatDashboardPeriodLabel(month, year)
-      });
+function buildNavList(periods) {
+  const hoje = getCurrentDashboardPeriod();
+  const hojeKey = getDashboardPeriodKey(hoje);
+  const seen = new Set([hojeKey]);
+  const list = [{ year: hoje.year, month: hoje.month }];
+
+  for (const p of periods) {
+    const key = `${p.year}-${String(p.month).padStart(2, '0')}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      list.push({ year: p.year, month: p.month });
     }
   }
 
-  return options;
+  return list.sort((a, b) => {
+    if (a.year !== b.year) return b.year - a.year;
+    return b.month - a.month;
+  });
+}
+
+function buildAvailablePeriodOptions(periods) {
+  const hoje = getCurrentDashboardPeriod();
+  const hojeKey = getDashboardPeriodKey(hoje);
+  const hojeLabel = buildHojeLabel();
+  const hojeOption = { value: hojeKey, label: hojeLabel };
+  const rest = (periods || [])
+    .filter((p) => {
+      const key = `${p.year}-${String(p.month).padStart(2, '0')}`;
+      return key !== hojeKey;
+    })
+    .map((p) => ({
+      value: `${p.year}-${String(p.month).padStart(2, '0')}`,
+      label: p.label
+    }));
+
+  return [hojeOption, ...rest];
+}
+
+function getPeriodIndex(periods, current) {
+  return periods.findIndex((p) => p.year === current.year && p.month === current.month);
+}
+
+function shiftPeriodByList(periods, current, direction) {
+  const navList = buildNavList(periods || []);
+
+  if (navList.length === 0) return current;
+
+  const idx = getPeriodIndex(navList, current);
+
+  if (idx === -1) {
+    return { month: navList[0].month, year: navList[0].year };
+  }
+
+  const target = idx - direction;
+
+  if (target < 0) {
+    return { month: navList[0].month, year: navList[0].year };
+  }
+
+  if (target >= navList.length) {
+    return { month: navList[navList.length - 1].month, year: navList[navList.length - 1].year };
+  }
+
+  return { month: navList[target].month, year: navList[target].year };
 }
 
 function readStoredDashboardPeriod() {
@@ -113,7 +166,7 @@ function writeStoredDashboardPeriod(period) {
 
 export {
   STORAGE_KEY,
-  buildDashboardPeriodOptions,
+  buildAvailablePeriodOptions,
   formatDashboardPeriodLabel,
   getCurrentDashboardPeriod,
   getDashboardPeriodKey,
@@ -121,5 +174,6 @@ export {
   parseDashboardPeriodValue,
   readStoredDashboardPeriod,
   shiftDashboardPeriod,
+  shiftPeriodByList,
   writeStoredDashboardPeriod
 };

@@ -31,7 +31,7 @@ function MonthlyFlow({ items }) {
   const { formatCurrencyPrivacy } = usePrivacy();
 
   if (!items.length) {
-    return <p className="text-sm text-slate-500 dark:text-slate-400">Fluxo mensal indisponível para o período selecionado.</p>;
+    return <p className="text-sm text-slate-500 dark:text-slate-400">Nenhuma movimentação encontrada neste período.</p>;
   }
 
   const maxValue = Math.max(

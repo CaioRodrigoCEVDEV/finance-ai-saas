@@ -43,6 +43,16 @@ async function getMonthlyFlow(request, response, next) {
   }
 }
 
+async function getAvailablePeriods(request, response, next) {
+  try {
+    const data = await dashboardService.getAvailablePeriods(request.tenant.id);
+
+    return response.json(data);
+  } catch (error) {
+    return next(error);
+  }
+}
+
 async function getOverview(request, response, next) {
   try {
     const data = await dashboardService.getOverview(request.tenant.id, request.query);
@@ -102,5 +112,6 @@ module.exports = {
   getAlerts,
   getTopExpenses,
   getBudgetStatus,
-  getGoalsProgress
+  getGoalsProgress,
+  getAvailablePeriods
 };

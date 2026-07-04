@@ -58,3 +58,8 @@ export async function getGoalsProgress(period) {
   const { data } = await api.get('/dashboard/goals-progress', buildPeriodParams(period));
   return data;
 }
+
+export async function getAvailablePeriods() {
+  const { data } = await api.get('/dashboard/available-periods');
+  return data;
+}
