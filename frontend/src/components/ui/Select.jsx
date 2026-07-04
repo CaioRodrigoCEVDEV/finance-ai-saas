@@ -53,6 +53,7 @@ function Select({
   const [menuStyle, setMenuStyle] = useState({});
   const rootRef = useRef(null);
   const buttonRef = useRef(null);
+  const menuRef = useRef(null);
 
   const selectedValue = value === undefined ? (internalValue ?? String(options[0]?.value ?? '')) : String(value ?? '');
   const selectedIndex = options.findIndex((option) => option.value === selectedValue);
@@ -92,9 +93,9 @@ function Select({
     updateMenuPosition();
 
     function handlePointerDown(event) {
-      if (!rootRef.current?.contains(event.target)) {
-        setOpen(false);
-      }
+      if (rootRef.current?.contains(event.target)) return;
+      if (menuRef.current?.contains(event.target)) return;
+      setOpen(false);
     }
 
     document.addEventListener('mousedown', handlePointerDown);
@@ -226,6 +227,7 @@ function Select({
 
       {open ? createPortal(
         <div
+          ref={menuRef}
           className="fixed z-50 min-w-0 overflow-y-auto overflow-x-hidden rounded-2xl border border-slate-200 bg-white p-1.5 shadow-2xl shadow-slate-900/10 ring-1 ring-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/30 dark:ring-white/10"
           id={listboxId}
           role="listbox"
