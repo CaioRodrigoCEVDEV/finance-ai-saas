@@ -14,7 +14,7 @@ export default defineConfig({
         description: 'Seu copiloto financeiro pessoal',
         theme_color: '#10b981',
         background_color: '#f8fafc',
-        display: 'standalone',
+        display: 'fullscreen',
         orientation: 'portrait',
         scope: '/',
         start_url: '/dashboard',
