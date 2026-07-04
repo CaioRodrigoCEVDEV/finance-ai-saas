@@ -16,23 +16,17 @@ function DashboardPeriodHeader({ period, loading, onPrevious, onNext, onToday, o
 
   return (
     <Card className="rounded-[28px] !border-slate-200/80 !bg-white/90 p-6 shadow-soft backdrop-blur transition-colors dark:!border-slate-700/80 dark:!bg-slate-800/90">
-      {/* Mobile (< md) — layout vertical empilhado */}
-      <div className="md:hidden" aria-busy={loading}>
-        <div className="space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-600 dark:text-emerald-400">
-            Finance AI
+      <div className="lg:hidden">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+            Dashboard Financeiro
+          </h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Resumo do período
           </p>
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">
-              Dashboard Financeiro
-            </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400 sm:text-base">
-              Resumo do período selecionado.
-            </p>
-          </div>
         </div>
 
-        <div className={`mt-6 flex flex-col items-center gap-2 ${loading ? 'pointer-events-none opacity-75' : ''}`}>
+        <div className={`mt-5 flex flex-col items-center gap-2 ${loading ? 'pointer-events-none opacity-75' : ''}`}>
           <span className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-600 dark:text-emerald-400">
             Período
           </span>
@@ -81,24 +75,23 @@ function DashboardPeriodHeader({ period, loading, onPrevious, onNext, onToday, o
         </div>
       </div>
 
-      {/* Desktop (>= lg) — layout horizontal com título à esquerda e controles à direita */}
       <div className={`hidden lg:flex lg:flex-row lg:items-end lg:justify-between ${loading ? 'pointer-events-none opacity-75' : ''}`} aria-busy={loading}>
         <div className="space-y-3">
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-600 dark:text-emerald-400">
             Finance AI
           </p>
           <div>
-            <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+            <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">
               Dashboard Financeiro
             </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400 sm:text-base">
               Resumo do período selecionado.
             </p>
           </div>
         </div>
 
-        <div className="flex flex-col items-end gap-3 shrink-0">
-          <div className="flex flex-nowrap items-end gap-3">
+        <div className={`flex flex-col gap-3 ${loading ? 'pointer-events-none opacity-75' : ''}`}>
+          <div className="flex flex-nowrap items-end gap-3 lg:flex-wrap">
             <Button
               aria-label="Mês anterior"
               className="!h-11 !w-11 shrink-0 !px-0"
@@ -110,7 +103,7 @@ function DashboardPeriodHeader({ period, loading, onPrevious, onNext, onToday, o
             </Button>
 
             <Select
-              className="min-w-[200px]"
+              className="min-w-0 flex-1 lg:min-w-[260px]"
               label="Período"
               onChange={(event) => {
                 const nextPeriod = parseDashboardPeriodValue(event.target.value);
@@ -137,11 +130,11 @@ function DashboardPeriodHeader({ period, loading, onPrevious, onNext, onToday, o
             </Button>
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex justify-center lg:justify-end">
             <Button
               disabled={loading || isToday}
               onClick={onToday}
-              variant="secondary"
+              variant="ghost"
               size="sm"
             >
               Hoje
