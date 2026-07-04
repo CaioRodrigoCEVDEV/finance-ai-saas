@@ -210,6 +210,17 @@ function FinancialTaskModal({ task, accounts, onSubmit, formId = 'financial-task
             <Input label="Titulo" name="title" error={errors.title} value={formValues.title} onChange={handleChange} className={fieldClassName} />
           </div>
 
+          <div className="border-t border-slate-200 pt-4 md:col-span-2 dark:border-slate-700">
+            <TaskChecklist
+              items={checklistItems}
+              onAdd={handleLocalItemAdd}
+              onUpdate={handleLocalItemUpdate}
+              onDelete={handleLocalItemDelete}
+              onReorder={handleLocalItemReorder}
+              saving={isSaving}
+            />
+          </div>
+
           <div className="md:col-span-2">
             <label className="block">
               <span className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Descricao</span>
@@ -218,9 +229,9 @@ function FinancialTaskModal({ task, accounts, onSubmit, formId = 'financial-task
                 value={formValues.description}
                 onChange={handleChange}
                 onKeyDown={handleDescriptionKeyDown}
-                placeholder="Lista mercado:&#10;&#8226; Arroz&#10;&#8226; Feijao&#10;&#8226; Carne&#10;&#10;Observacoes:&#10;Comprar na promocao."
+                placeholder="Adicione observacoes complementares (opcional)..."
                 className="w-full resize-y rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-slate-600 dark:bg-slate-700/40 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30"
-                style={{ minHeight: '120px', maxHeight: '250px' }}
+                style={{ minHeight: '100px', maxHeight: '250px' }}
               />
             </label>
           </div>
@@ -259,16 +270,6 @@ function FinancialTaskModal({ task, accounts, onSubmit, formId = 'financial-task
           </label>
         </div>
 
-        <div className="border-t border-slate-200 pt-4 dark:border-slate-700">
-          <TaskChecklist
-            items={checklistItems}
-            onAdd={handleLocalItemAdd}
-            onUpdate={handleLocalItemUpdate}
-            onDelete={handleLocalItemDelete}
-            onReorder={handleLocalItemReorder}
-            saving={isSaving}
-          />
-        </div>
       </form>
     </section>
   );
