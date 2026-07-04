@@ -455,6 +455,37 @@ async function updateTransaction(transactionId, tenantId, data) {
   return toTransactionResponse(transaction);
 }
 
+async function confirmTransaction(transactionId, tenantId) {
+  const existingTransaction = await prisma.transaction.findFirst({
+    where: {
+      id: transactionId,
+      tenant_id: tenantId,
+      deleted_at: null
+    },
+    include: getTransactionInclude()
+  });
+
+  if (!existingTransaction) {
+    throw new AppError('Transacao nao encontrada', 404);
+  }
+
+  if (existingTransaction.status !== 'PENDING') {
+    throw new AppError('Apenas transacoes pendentes podem ser confirmadas', 422);
+  }
+
+  const transaction = await prisma.transaction.update({
+    where: {
+      id: existingTransaction.id
+    },
+    data: {
+      status: 'CONFIRMED'
+    },
+    include: getTransactionInclude()
+  });
+
+  return toTransactionResponse(transaction);
+}
+
 async function deleteTransaction(transactionId, tenantId) {
   const existingTransaction = await prisma.transaction.findFirst({
     where: {
@@ -540,6 +571,7 @@ module.exports = {
   getTransactionById,
   createTransaction,
   updateTransaction,
+  confirmTransaction,
   deleteTransaction,
   getMonthSummary
 };

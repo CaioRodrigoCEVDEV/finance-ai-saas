@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import Input from '../ui/Input';
 import Select from '../ui/Select';
@@ -6,7 +6,7 @@ import Select from '../ui/Select';
 const CATEGORY_TYPES = [
   { value: 'INCOME', label: 'Receita' },
   { value: 'EXPENSE', label: 'Despesa' },
-  { value: 'TRANSFER', label: 'Transferência' },
+  { value: 'TRANSFER', label: 'Transferencia' },
   { value: 'INVESTMENT', label: 'Investimento' }
 ];
 
@@ -35,19 +35,22 @@ function buildFormValues(category) {
 }
 
 function CategoryForm({ category, categories, onSubmit, formId = 'category-form' }) {
+  const formRef = useRef(null);
   const [formValues, setFormValues] = useState(initialFormValues);
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState({});
   const fieldClassName = 'h-11 py-0 text-sm';
 
   useEffect(() => {
     setFormValues(buildFormValues(category));
-    setError('');
+    setErrors({});
   }, [category]);
 
   const parentOptions = categories.filter((item) => item.type === formValues.type && item.id !== category?.id);
 
   function handleChange(event) {
     const { name, value, type, checked } = event.target;
+
+    setErrors((prev) => ({ ...prev, [name]: '' }));
 
     setFormValues((currentValues) => ({
       ...currentValues,
@@ -56,11 +59,31 @@ function CategoryForm({ category, categories, onSubmit, formId = 'category-form'
     }));
   }
 
+  function scrollToFirstError() {
+    if (!formRef.current) {
+      return;
+    }
+
+    const firstError = formRef.current.querySelector('[data-error="true"]');
+
+    if (firstError) {
+      firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
 
+    const nextErrors = {};
+
     if (formValues.name.trim().length < 2) {
-      setError('Informe um nome com pelo menos 2 caracteres.');
+      nextErrors.name = 'Informe um nome com pelo menos 2 caracteres.';
+    }
+
+    setErrors(nextErrors);
+
+    if (Object.keys(nextErrors).length > 0) {
+      scrollToFirstError();
       return;
     }
 
@@ -76,16 +99,15 @@ function CategoryForm({ category, categories, onSubmit, formId = 'category-form'
       payload.isActive = formValues.isActive;
     }
 
-    setError('');
     await onSubmit(payload);
   }
 
   return (
     <section>
-      <form id={formId} className="space-y-4" onSubmit={handleSubmit}>
+      <form ref={formRef} id={formId} className="space-y-4" onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
           <div className="md:col-span-2">
-            <Input label="Nome" name="name" value={formValues.name} onChange={handleChange} className={fieldClassName} />
+            <Input label="Nome" name="name" error={errors.name} value={formValues.name} onChange={handleChange} className={fieldClassName} />
           </div>
 
           <Select label="Tipo" name="type" value={formValues.type} onChange={handleChange} className={fieldClassName}>
@@ -102,7 +124,7 @@ function CategoryForm({ category, categories, onSubmit, formId = 'category-form'
           </Select>
 
           <Input label="Cor" name="color" value={formValues.color} onChange={handleChange} className={fieldClassName} />
-          <Input label="Ícone" name="icon" value={formValues.icon} onChange={handleChange} className={fieldClassName} />
+          <Input label="Icone" name="icon" value={formValues.icon} onChange={handleChange} className={fieldClassName} />
         </div>
 
         {category ? (
@@ -111,13 +133,6 @@ function CategoryForm({ category, categories, onSubmit, formId = 'category-form'
             Categoria ativa
           </label>
         ) : null}
-
-        {error ? (
-          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-            {error}
-          </div>
-        ) : null}
-
       </form>
     </section>
   );

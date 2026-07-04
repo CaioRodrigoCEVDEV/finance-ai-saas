@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import Input from '../ui/Input';
 import Select from '../ui/Select';
@@ -64,14 +64,15 @@ function buildFormValues(transaction) {
   };
 }
 
-function TransactionForm({ transaction, accounts, categories, creditCards, serverError, onSubmit, formId = 'transaction-form' }) {
+function TransactionForm({ transaction, accounts, categories, creditCards, onSubmit, formId = 'transaction-form' }) {
+  const formRef = useRef(null);
   const [formValues, setFormValues] = useState(initialFormValues);
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState({});
   const fieldClassName = 'h-11 py-0 text-sm';
 
   useEffect(() => {
     setFormValues(buildFormValues(transaction));
-    setError('');
+    setErrors({});
   }, [transaction]);
 
   const filteredCategories = categories.filter((category) => category.type === formValues.type);
@@ -81,9 +82,7 @@ function TransactionForm({ transaction, accounts, categories, creditCards, serve
     const { name, value, type, checked } = event.target;
     const nextValue = type === 'checkbox' ? checked : value;
 
-    if (name === 'paymentMethod') {
-      setError('');
-    }
+    setErrors((prev) => ({ ...prev, [name]: '' }));
 
     setFormValues((currentValues) => {
       const nextValues = {
@@ -112,34 +111,44 @@ function TransactionForm({ transaction, accounts, categories, creditCards, serve
     });
   }
 
+  function scrollToFirstError() {
+    if (!formRef.current) {
+      return;
+    }
+
+    const firstError = formRef.current.querySelector('[data-error="true"]');
+
+    if (firstError) {
+      firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      firstError.focus();
+    }
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
 
+    const nextErrors = {};
+
     if (formValues.description.trim().length < 2) {
-      setError('Informe uma descrição com pelo menos 2 caracteres.');
-      return;
+      nextErrors.description = 'Informe uma descrição com pelo menos 2 caracteres.';
     }
 
     const amount = Number(formValues.amount);
 
     if (!Number.isFinite(amount) || amount <= 0) {
-      setError('Informe um valor positivo válido.');
-      return;
+      nextErrors.amount = 'Informe um valor positivo válido.';
     }
 
     if (!formValues.transactionDate) {
-      setError('Informe a data da transação.');
-      return;
+      nextErrors.transactionDate = 'Informe a data da transação.';
     }
 
     if (isCreditCardPayment && !formValues.creditCardId) {
-      setError('Informe o cartão de crédito da transação.');
-      return;
+      nextErrors.creditCardId = 'Informe o cartão de crédito da transação.';
     }
 
     if (!isCreditCardPayment && !formValues.accountId) {
-      setError('Informe a conta da transação.');
-      return;
+      nextErrors.accountId = 'Informe a conta da transação.';
     }
 
     if (formValues.isInstallment) {
@@ -147,14 +156,19 @@ function TransactionForm({ transaction, accounts, categories, creditCards, serve
       const installmentTotal = Number(formValues.installmentTotal);
 
       if (!Number.isInteger(installmentTotal) || installmentTotal <= 1) {
-        setError('Informe um total de parcelas maior que 1.');
-        return;
+        nextErrors.installmentTotal = 'Informe um total de parcelas maior que 1.';
       }
 
       if (!Number.isInteger(installmentNumber) || installmentNumber < 1 || installmentNumber > installmentTotal) {
-        setError('Número da parcela deve estar entre 1 e o total de parcelas.');
-        return;
+        nextErrors.installmentNumber = 'Número da parcela deve estar entre 1 e o total de parcelas.';
       }
+    }
+
+    setErrors(nextErrors);
+
+    if (Object.keys(nextErrors).length > 0) {
+      scrollToFirstError();
+      return;
     }
 
     const payload = {
@@ -173,21 +187,20 @@ function TransactionForm({ transaction, accounts, categories, creditCards, serve
       installmentTotal: formValues.isInstallment ? Number(formValues.installmentTotal) : null
     };
 
-    setError('');
     await onSubmit(payload);
   }
 
   return (
     <section>
-      <form id={formId} className="space-y-4" onSubmit={handleSubmit}>
+      <form ref={formRef} id={formId} className="space-y-4" onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
           <div className="md:col-span-2">
-            <Input label="Descrição" name="description" value={formValues.description} onChange={handleChange} className={fieldClassName} />
+            <Input label="Descrição" name="description" error={errors.description} value={formValues.description} onChange={handleChange} className={fieldClassName} />
           </div>
 
-          <Input label="Valor" name="amount" type="number" step="0.01" min="0" value={formValues.amount} onChange={handleChange} className={fieldClassName} />
+          <Input label="Valor" name="amount" type="number" step="0.01" min="0" error={errors.amount} value={formValues.amount} onChange={handleChange} className={fieldClassName} />
 
-          <Input label="Data" name="transactionDate" type="date" value={formValues.transactionDate} onChange={handleChange} className={fieldClassName} />
+          <Input label="Data" name="transactionDate" type="date" error={errors.transactionDate} value={formValues.transactionDate} onChange={handleChange} className={fieldClassName} />
 
           <Select label="Tipo" name="type" value={formValues.type} onChange={handleChange} className={fieldClassName}>
             {TYPE_OPTIONS.map((option) => (
@@ -216,7 +229,7 @@ function TransactionForm({ transaction, accounts, categories, creditCards, serve
 
           {isCreditCardPayment ? (
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3 transition dark:border-slate-600/70 dark:bg-slate-800/40">
-              <Select label="Cartão de crédito" name="creditCardId" value={formValues.creditCardId} onChange={handleChange} disabled={!creditCards.length} className={fieldClassName}>
+              <Select label="Cartão de crédito" name="creditCardId" error={errors.creditCardId} value={formValues.creditCardId} onChange={handleChange} disabled={!creditCards.length} className={fieldClassName}>
                 <option value="">{creditCards.length ? 'Selecione um cartão' : 'Nenhum cartão disponível'}</option>
                 {creditCards.map((creditCard) => (
                   <option key={creditCard.id} value={creditCard.id}>{creditCard.name}</option>
@@ -226,7 +239,7 @@ function TransactionForm({ transaction, accounts, categories, creditCards, serve
             </div>
           ) : (
             <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-3 transition dark:border-emerald-600/50 dark:bg-emerald-950/25">
-              <Select label="Conta" name="accountId" value={formValues.accountId} onChange={handleChange} className={fieldClassName}>
+              <Select label="Conta" name="accountId" error={errors.accountId} value={formValues.accountId} onChange={handleChange} className={fieldClassName}>
                 <option value="">Selecione uma conta</option>
                 {accounts.map((account) => (
                   <option key={account.id} value={account.id}>{account.name}</option>
@@ -259,14 +272,8 @@ function TransactionForm({ transaction, accounts, categories, creditCards, serve
 
         {formValues.isInstallment ? (
           <div className="grid gap-4 md:grid-cols-2">
-            <Input label="Número da parcela" name="installmentNumber" type="number" min="1" value={formValues.installmentNumber} onChange={handleChange} className={fieldClassName} />
-            <Input label="Total de parcelas" name="installmentTotal" type="number" min="2" value={formValues.installmentTotal} onChange={handleChange} className={fieldClassName} />
-          </div>
-        ) : null}
-
-        {error || serverError ? (
-          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-            {error || serverError}
+            <Input label="Número da parcela" name="installmentNumber" type="number" min="1" error={errors.installmentNumber} value={formValues.installmentNumber} onChange={handleChange} className={fieldClassName} />
+            <Input label="Total de parcelas" name="installmentTotal" type="number" min="2" error={errors.installmentTotal} value={formValues.installmentTotal} onChange={handleChange} className={fieldClassName} />
           </div>
         ) : null}
       </form>

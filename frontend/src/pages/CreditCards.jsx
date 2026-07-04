@@ -12,6 +12,7 @@ import EmptyState from '../components/ui/EmptyState';
 import LoadingSkeleton from '../components/ui/LoadingSkeleton';
 import FormModal from '../components/ui/FormModal';
 import PageHeader from '../components/ui/PageHeader';
+import { useToast } from '../contexts/ToastContext';
 import { getAccounts } from '../services/accountService';
 import {
   createCreditCard,
@@ -22,6 +23,7 @@ import {
 } from '../services/creditCardService';
 
 function CreditCards() {
+  const toast = useToast();
   const [creditCards, setCreditCards] = useState([]);
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -99,8 +101,10 @@ function CreditCards() {
 
       if (selectedCreditCard) {
         await updateCreditCard(selectedCreditCard.id, payload);
+        toast.success('Cartão atualizado com sucesso.');
       } else {
         await createCreditCard(payload);
+        toast.success('Cartão criado com sucesso.');
       }
 
       setFormVisible(false);
@@ -118,7 +122,7 @@ function CreditCards() {
           </>
         );
       } else {
-        setFormError(requestError.response?.data?.message || 'Não foi possível salvar o cartão.');
+        toast.error(requestError.response?.data?.message || 'Não foi possível salvar o cartão.');
       }
     } finally {
       setSaving(false);
@@ -239,13 +243,15 @@ function CreditCards() {
             </>
           )}
         >
+          {formError ? (
+            <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-300">
+              {formError}
+            </div>
+          ) : null}
           <CreditCardForm
             creditCard={selectedCreditCard}
             accounts={accounts}
             loadingAccounts={accountsLoading}
-            loading={saving}
-            serverError={formError}
-            onCancel={handleCancelForm}
             onSubmit={handleSubmit}
           />
         </FormModal>

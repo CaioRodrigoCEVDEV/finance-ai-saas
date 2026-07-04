@@ -11,6 +11,7 @@ import EmptyState from '../components/ui/EmptyState';
 import LoadingSkeleton from '../components/ui/LoadingSkeleton';
 import FormModal from '../components/ui/FormModal';
 import PageHeader from '../components/ui/PageHeader';
+import { useToast } from '../contexts/ToastContext';
 import {
   createCategory,
   deleteCategory,
@@ -20,6 +21,7 @@ import {
 } from '../services/categoryService';
 
 function Categories() {
+  const toast = useToast();
   const [categories, setCategories] = useState([]);
   const [allActiveCategories, setAllActiveCategories] = useState([]);
   const [activeType, setActiveType] = useState('ALL');
@@ -91,15 +93,17 @@ function Categories() {
 
       if (selectedCategory) {
         await updateCategory(selectedCategory.id, payload);
+        toast.success('Categoria atualizada com sucesso.');
       } else {
         await createCategory(payload);
+        toast.success('Categoria criada com sucesso.');
       }
 
       setFormVisible(false);
       setSelectedCategory(null);
       await loadCategories(activeType);
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Não foi possível salvar a categoria.');
+      toast.error(requestError.response?.data?.message || 'Não foi possível salvar a categoria.');
     } finally {
       setSaving(false);
     }
@@ -214,8 +218,6 @@ function Categories() {
           <CategoryForm
             category={selectedCategory}
             categories={allActiveCategories}
-            loading={saving}
-            onCancel={handleCancelForm}
             onSubmit={handleSubmit}
           />
         </FormModal>

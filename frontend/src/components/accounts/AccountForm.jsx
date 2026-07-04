@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Briefcase,
   Building2,
@@ -123,11 +123,12 @@ function buildFormValues(account) {
   };
 }
 
-function AccountForm({ account, onSubmit, serverError, formId = 'account-form' }) {
+function AccountForm({ account, onSubmit, formId = 'account-form' }) {
+  const formRef = useRef(null);
   const [formValues, setFormValues] = useState(initialFormValues);
   const [selectedBank, setSelectedBank] = useState('');
   const [customBankName, setCustomBankName] = useState('');
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState({});
   const fieldClassName = 'h-11 py-0 text-sm';
 
   useEffect(() => {
@@ -135,11 +136,13 @@ function AccountForm({ account, onSubmit, serverError, formId = 'account-form' }
     const bank = resolveBank(account);
     setSelectedBank(bank.selectedBank);
     setCustomBankName(bank.customBankName);
-    setError('');
+    setErrors({});
   }, [account]);
 
   function handleChange(event) {
     const { name, value, type, checked } = event.target;
+
+    setErrors((prev) => ({ ...prev, [name]: '' }));
 
     setFormValues((currentValues) => ({
       ...currentValues,
@@ -151,12 +154,26 @@ function AccountForm({ account, onSubmit, serverError, formId = 'account-form' }
     setSelectedBank(event.target.value);
   }
 
+  function scrollToFirstError() {
+    if (!formRef.current) {
+      return;
+    }
+
+    const firstError = formRef.current.querySelector('[data-error="true"]');
+
+    if (firstError) {
+      firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      firstError.focus();
+    }
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
 
+    const nextErrors = {};
+
     if (formValues.name.trim().length < 2) {
-      setError('Informe um nome com pelo menos 2 caracteres.');
-      return;
+      nextErrors.name = 'Informe um nome com pelo menos 2 caracteres.';
     }
 
     const finalBankName =
@@ -178,19 +195,24 @@ function AccountForm({ account, onSubmit, serverError, formId = 'account-form' }
       (payload.initialBalance !== undefined && Number.isNaN(payload.initialBalance))
       || (payload.currentBalance !== undefined && Number.isNaN(payload.currentBalance))
     ) {
-      setError('Informe valores numericos validos para os saldos.');
+      nextErrors.initialBalance = 'Informe valores numéricos válidos para os saldos.';
+    }
+
+    setErrors(nextErrors);
+
+    if (Object.keys(nextErrors).length > 0) {
+      scrollToFirstError();
       return;
     }
 
-    setError('');
     await onSubmit(payload);
   }
 
   return (
     <section>
-      <form id={formId} className="space-y-4" onSubmit={handleSubmit}>
+      <form ref={formRef} id={formId} className="space-y-4" onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
-          <Input label="Nome" name="name" value={formValues.name} onChange={handleChange} className={fieldClassName} />
+          <Input label="Nome" name="name" error={errors.name} value={formValues.name} onChange={handleChange} className={fieldClassName} />
 
           <Select label="Tipo" name="type" value={formValues.type} onChange={handleChange} className={fieldClassName}>
             {ACCOUNT_TYPES.map((typeOption) => (
@@ -224,8 +246,8 @@ function AccountForm({ account, onSubmit, serverError, formId = 'account-form' }
             ))}
           </Select>
 
-          <Input label="Saldo inicial" name="initialBalance" type="number" step="0.01" value={formValues.initialBalance} onChange={handleChange} className={fieldClassName} />
-          <Input label="Saldo atual" name="currentBalance" type="number" step="0.01" value={formValues.currentBalance} onChange={handleChange} className={fieldClassName} />
+          <Input label="Saldo inicial" name="initialBalance" type="number" step="0.01" error={errors.initialBalance} value={formValues.initialBalance} onChange={handleChange} className={fieldClassName} />
+          <Input label="Saldo atual" name="currentBalance" type="number" step="0.01" error={errors.currentBalance} value={formValues.currentBalance} onChange={handleChange} className={fieldClassName} />
 
           <div>
             <span className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Cor</span>
@@ -287,13 +309,6 @@ function AccountForm({ account, onSubmit, serverError, formId = 'account-form' }
           <input name="isActive" type="checkbox" checked={formValues.isActive} onChange={handleChange} className="h-4 w-4 rounded border-slate-300 text-emerald-600 dark:border-slate-500 dark:bg-slate-700" />
           Conta ativa
         </label>
-
-        {error || serverError ? (
-          <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-300">
-            {error || serverError}
-          </div>
-        ) : null}
-
       </form>
     </section>
   );

@@ -36,6 +36,15 @@ async function updateTransaction(request, response, next) {
   }
 }
 
+async function confirmTransaction(request, response, next) {
+  try {
+    const data = await transactionsService.confirmTransaction(request.params.id, request.tenant.id);
+    return response.json(data);
+  } catch (error) {
+    return next(error);
+  }
+}
+
 async function deleteTransaction(request, response, next) {
   try {
     const data = await transactionsService.deleteTransaction(request.params.id, request.tenant.id);
@@ -59,6 +68,7 @@ module.exports = {
   getTransaction,
   createTransaction,
   updateTransaction,
+  confirmTransaction,
   deleteTransaction,
   getMonthSummary
 };

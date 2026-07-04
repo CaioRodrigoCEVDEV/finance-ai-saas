@@ -11,6 +11,7 @@ import EmptyState from '../components/ui/EmptyState';
 import LoadingSkeleton from '../components/ui/LoadingSkeleton';
 import FormModal from '../components/ui/FormModal';
 import PageHeader from '../components/ui/PageHeader';
+import { useToast } from '../contexts/ToastContext';
 import {
   createAccount,
   deleteAccount,
@@ -20,6 +21,7 @@ import {
 } from '../services/accountService';
 
 function Accounts() {
+  const toast = useToast();
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -78,8 +80,10 @@ function Accounts() {
 
       if (selectedAccount) {
         await updateAccount(selectedAccount.id, payload);
+        toast.success('Conta atualizada com sucesso.');
       } else {
         await createAccount(payload);
+        toast.success('Conta criada com sucesso.');
       }
 
       setFormVisible(false);
@@ -97,7 +101,7 @@ function Accounts() {
           </>
         );
       } else {
-        setFormError(requestError.response?.data?.message || 'Não foi possível salvar a conta.');
+        toast.error(requestError.response?.data?.message || 'Não foi possível salvar a conta.');
       }
     } finally {
       setSaving(false);
@@ -207,7 +211,12 @@ function Accounts() {
             </>
           )}
         >
-          <AccountForm account={selectedAccount} loading={saving} serverError={formError} onCancel={handleCancelForm} onSubmit={handleSubmit} />
+          {formError ? (
+            <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-300">
+              {formError}
+            </div>
+          ) : null}
+          <AccountForm account={selectedAccount} onSubmit={handleSubmit} />
         </FormModal>
       </div>
     </AppLayout>

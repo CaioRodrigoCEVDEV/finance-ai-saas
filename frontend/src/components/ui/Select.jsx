@@ -178,6 +178,7 @@ function Select({
     <label
       ref={rootRef}
       className="relative block min-w-0"
+      data-error={error ? 'true' : undefined}
       onBlur={(event) => {
         if (rootRef.current?.contains(event.relatedTarget)) return;
         if (menuRef.current?.contains(event.relatedTarget)) return;

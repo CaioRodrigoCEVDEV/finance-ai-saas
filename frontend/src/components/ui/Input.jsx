@@ -2,7 +2,7 @@ import { cn } from '../../utils/cn';
 
 function Input({ label, error, className = '', id, ...props }) {
   return (
-    <label className="block">
+    <label className="block" data-error={error ? 'true' : undefined}>
       {label ? <span className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">{label}</span> : null}
       <input
         id={id}

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AlertCircle, ArrowLeftRight, Plus } from 'lucide-react';
+import { AlertCircle, ArrowLeftRight, CheckCircle, Plus, Trash2 } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 
 import TransactionFilters from '../components/transactions/TransactionFilters';
@@ -13,11 +13,15 @@ import Card from '../components/ui/Card';
 import EmptyState from '../components/ui/EmptyState';
 import LoadingSkeleton from '../components/ui/LoadingSkeleton';
 import FormModal from '../components/ui/FormModal';
+import Modal from '../components/ui/Modal';
 import PageHeader from '../components/ui/PageHeader';
+import { useToast } from '../contexts/ToastContext';
+import { formatCurrencyBRL, formatDateBR } from '../utils/formatters';
 import { getAccounts } from '../services/accountService';
 import { getCategories } from '../services/categoryService';
 import { getCreditCards } from '../services/creditCardService';
 import {
+  confirmTransaction,
   createTransaction,
   deleteTransaction,
   getTransaction,
@@ -84,6 +88,7 @@ function buildListParams(filters, page) {
 function Transactions() {
   const hasInitializedFilters = useRef(false);
   const location = useLocation();
+  const toast = useToast();
   const [transactions, setTransactions] = useState([]);
   const [accounts, setAccounts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -100,6 +105,8 @@ function Transactions() {
   const [formVisible, setFormVisible] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [pendingNewTransaction, setPendingNewTransaction] = useState(false);
+  const [confirmTarget, setConfirmTarget] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   async function loadReferences() {
     const [accountData, categoryData, creditCardData] = await Promise.all([
@@ -234,6 +241,33 @@ function Transactions() {
     }
   }
 
+  function handleConfirmClick(transaction) {
+    setConfirmTarget(transaction);
+  }
+
+  async function handleConfirmSubmit() {
+    if (!confirmTarget) {
+      return;
+    }
+
+    try {
+      setSaving(true);
+      setError('');
+      await confirmTransaction(confirmTarget.id);
+      setConfirmTarget(null);
+      toast.success('Transação confirmada com sucesso.');
+      await Promise.all([
+        loadTransactionsData(filters, page),
+        loadSummary()
+      ]);
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || 'Não foi possível confirmar a transação.');
+      toast.error(requestError.response?.data?.message || 'Erro ao confirmar transação.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function handleSubmit(payload) {
     try {
       setSaving(true);
@@ -259,29 +293,34 @@ function Transactions() {
     }
   }
 
-  async function handleDelete(transaction) {
-    const confirmed = window.confirm(`Deseja realmente excluir a transação "${transaction.description}"?`);
+  function handleDeleteClick(transaction) {
+    setDeleteTarget(transaction);
+  }
 
-    if (!confirmed) {
+  async function handleDeleteSubmit() {
+    if (!deleteTarget) {
       return;
     }
 
     try {
       setSaving(true);
       setError('');
-      await deleteTransaction(transaction.id);
+      await deleteTransaction(deleteTarget.id);
 
-      if (selectedTransaction?.id === transaction.id) {
+      if (selectedTransaction?.id === deleteTarget.id) {
         setSelectedTransaction(null);
         setFormVisible(false);
       }
 
+      setDeleteTarget(null);
+      toast.success('Transação excluída com sucesso.');
       await Promise.all([
         loadTransactionsData(filters, page),
         loadSummary()
       ]);
     } catch (requestError) {
       setError(requestError.response?.data?.message || 'Não foi possível excluir a transação.');
+      toast.error(requestError.response?.data?.message || 'Erro ao excluir transação.');
     } finally {
       setSaving(false);
     }
@@ -444,7 +483,7 @@ function Transactions() {
             <>
               <div className="grid gap-4 lg:hidden">
                 {transactions.map((transaction) => (
-                  <TransactionMobileCard key={transaction.id} transaction={transaction} loading={saving} onEdit={handleEdit} onDelete={handleDelete} />
+                  <TransactionMobileCard key={transaction.id} transaction={transaction} loading={saving} onEdit={handleEdit} onDelete={handleDeleteClick} onConfirm={handleConfirmClick} />
                 ))}
               </div>
 
@@ -465,12 +504,87 @@ function Transactions() {
                 pagination={pagination}
                 loading={saving}
                 onEdit={handleEdit}
-                onDelete={handleDelete}
+                onDelete={handleDeleteClick}
                 onPageChange={handlePageChange}
+                onConfirm={handleConfirmClick}
               />
             </>
           ) : null}
         </div>
+
+        <Modal
+          isOpen={!!confirmTarget}
+          title="Confirmar transação"
+          description="Deseja realmente confirmar esta transação?"
+          onClose={() => setConfirmTarget(null)}
+          footer={(
+            <>
+              <Button type="button" variant="secondary" onClick={() => setConfirmTarget(null)}>Cancelar</Button>
+              <Button type="button" disabled={saving} onClick={handleConfirmSubmit}>
+                {saving ? 'Confirmando...' : 'Confirmar transação'}
+              </Button>
+            </>
+          )}
+        >
+          {confirmTarget ? (
+            <div className="space-y-4">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-600 dark:bg-slate-800/50">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-slate-500 dark:text-slate-400">Descrição</span>
+                    <span className="text-sm font-medium text-slate-900 dark:text-slate-100">{confirmTarget.description}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-slate-500 dark:text-slate-400">Valor</span>
+                    <span className="text-base font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyBRL(confirmTarget.amount)}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-slate-500 dark:text-slate-400">Data</span>
+                    <span className="text-sm font-medium text-slate-900 dark:text-slate-100">{formatDateBR(confirmTarget.transactionDate)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : null}
+        </Modal>
+
+        <Modal
+          isOpen={!!deleteTarget}
+          title="Excluir transação"
+          description="Deseja realmente excluir esta transação?"
+          onClose={() => setDeleteTarget(null)}
+          footer={(
+            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <Button type="button" variant="secondary" size="md" onClick={() => setDeleteTarget(null)}>Cancelar</Button>
+              <Button type="button" variant="danger" size="md" disabled={saving} onClick={handleDeleteSubmit}>
+                <Trash2 className="h-4 w-4" />
+                {saving ? 'Excluindo...' : 'Excluir transação'}
+              </Button>
+            </div>
+          )}
+        >
+          {deleteTarget ? (
+            <div className="space-y-4">
+              <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 dark:border-rose-900/30 dark:bg-rose-900/10">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-slate-500 dark:text-slate-400">Descrição</span>
+                    <span className="text-sm font-medium text-slate-900 dark:text-slate-100">{deleteTarget.description}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-slate-500 dark:text-slate-400">Valor</span>
+                    <span className="text-base font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyBRL(deleteTarget.amount)}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-slate-500 dark:text-slate-400">Data</span>
+                    <span className="text-sm font-medium text-slate-900 dark:text-slate-100">{formatDateBR(deleteTarget.transactionDate)}</span>
+                  </div>
+                </div>
+              </div>
+              <p className="text-sm text-rose-600 dark:text-rose-400">Esta ação não poderá ser desfeita.</p>
+            </div>
+          ) : null}
+        </Modal>
 
         <FormModal
           isOpen={formVisible}

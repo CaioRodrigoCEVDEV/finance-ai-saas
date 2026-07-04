@@ -13,6 +13,7 @@ import EmptyState from '../components/ui/EmptyState';
 import LoadingSkeleton from '../components/ui/LoadingSkeleton';
 import FormModal from '../components/ui/FormModal';
 import PageHeader from '../components/ui/PageHeader';
+import { useToast } from '../contexts/ToastContext';
 import {
   createGoal,
   deleteGoal,
@@ -43,6 +44,7 @@ function buildListParams(filters) {
 }
 
 function Goals() {
+  const toast = useToast();
   const hasInitializedFilters = useRef(false);
   const [goals, setGoals] = useState([]);
   const [filters, setFilters] = useState(initialFilters);
@@ -59,7 +61,6 @@ function Goals() {
   const [summaryLoading, setSummaryLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [formError, setFormError] = useState('');
   const [formVisible, setFormVisible] = useState(false);
   const [progressModalVisible, setProgressModalVisible] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState(null);
@@ -135,7 +136,6 @@ function Goals() {
     setSelectedGoal(null);
     setFormVisible(true);
     setError('');
-    setFormError('');
   }
 
   function handleFilterChange(event) {
@@ -151,7 +151,6 @@ function Goals() {
     try {
       setSaving(true);
       setError('');
-      setFormError('');
       const data = await getGoal(goal.id);
       setSelectedGoal(data);
       setFormVisible(true);
@@ -166,12 +165,13 @@ function Goals() {
     try {
       setSaving(true);
       setError('');
-      setFormError('');
 
       if (selectedGoal) {
         await updateGoal(selectedGoal.id, payload);
+        toast.success('Meta atualizada com sucesso.');
       } else {
         await createGoal(payload);
+        toast.success('Meta criada com sucesso.');
       }
 
       setFormVisible(false);
@@ -181,7 +181,7 @@ function Goals() {
         loadSummary()
       ]);
     } catch (requestError) {
-      setFormError(requestError.response?.data?.message || 'Não foi possível salvar a meta.');
+      toast.error(requestError.response?.data?.message || 'Não foi possível salvar a meta.');
     } finally {
       setSaving(false);
     }
@@ -255,7 +255,6 @@ function Goals() {
   function handleCancelForm() {
     setFormVisible(false);
     setSelectedGoal(null);
-    setFormError('');
   }
 
   function handleCancelProgress() {
@@ -358,9 +357,6 @@ function Goals() {
         >
           <GoalForm
             goal={selectedGoal}
-            loading={saving}
-            serverError={formError}
-            onCancel={handleCancelForm}
             onSubmit={handleSubmit}
           />
         </FormModal>

@@ -19,6 +19,7 @@ transactionsRoutes.get('/transactions/summary/month', validateMonthSummaryQuery,
 transactionsRoutes.get('/transactions', validateListTransactionsQuery, transactionsController.listTransactions);
 transactionsRoutes.get('/transactions/:id', validateTransactionParams, transactionsController.getTransaction);
 transactionsRoutes.post('/transactions', requireWrite, validateCreateTransaction, transactionsController.createTransaction);
+transactionsRoutes.patch('/transactions/:id/confirm', requireWrite, validateTransactionParams, transactionsController.confirmTransaction);
 transactionsRoutes.put('/transactions/:id', requireWrite, validateTransactionParams, validateUpdateTransaction, transactionsController.updateTransaction);
 transactionsRoutes.delete('/transactions/:id', requireWrite, validateTransactionParams, transactionsController.deleteTransaction);
 

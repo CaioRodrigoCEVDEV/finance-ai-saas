@@ -1,4 +1,4 @@
-import { Pencil, Trash2 } from 'lucide-react';
+import { CheckCircle, Pencil, Trash2 } from 'lucide-react';
 
 import Badge from '../ui/Badge';
 import Button from '../ui/Button';
@@ -39,7 +39,7 @@ function getStatusVariant(status) {
   return 'warning';
 }
 
-function TransactionTable({ transactions, pagination, loading, onEdit, onDelete, onPageChange }) {
+function TransactionTable({ transactions, pagination, loading, onEdit, onDelete, onPageChange, onConfirm }) {
   const { formatCurrencyPrivacy } = usePrivacy();
 
   return (
@@ -84,6 +84,12 @@ function TransactionTable({ transactions, pagination, loading, onEdit, onDelete,
                   </td>
                   <td className="px-3 py-3">
                     <div className="flex justify-end gap-2 whitespace-nowrap">
+                      {transaction.status === 'PENDING' ? (
+                        <Button variant="secondary" className="h-8 px-2.5 text-xs gap-1.5 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700" onClick={() => onConfirm(transaction)} disabled={loading}>
+                          <CheckCircle className="h-3.5 w-3.5" />
+                          Confirmar
+                        </Button>
+                      ) : null}
                       <Button variant="secondary" className="h-8 px-2.5 text-xs gap-1.5" onClick={() => onEdit(transaction)} disabled={loading}>
                         <Pencil className="h-3.5 w-3.5" />
                         Editar

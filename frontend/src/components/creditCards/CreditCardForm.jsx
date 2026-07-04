@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import Input from '../ui/Input';
 import Select from '../ui/Select';
@@ -54,18 +54,21 @@ function buildFormValues(creditCard) {
   };
 }
 
-function CreditCardForm({ creditCard, accounts, loadingAccounts, serverError, onSubmit, formId = 'credit-card-form' }) {
+function CreditCardForm({ creditCard, accounts, loadingAccounts, onSubmit, formId = 'credit-card-form' }) {
+  const formRef = useRef(null);
   const [formValues, setFormValues] = useState(initialFormValues);
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState({});
   const fieldClassName = 'h-11 py-0 text-sm';
 
   useEffect(() => {
     setFormValues(buildFormValues(creditCard));
-    setError('');
+    setErrors({});
   }, [creditCard]);
 
   function handleChange(event) {
     const { name, value, type, checked } = event.target;
+
+    setErrors((prev) => ({ ...prev, [name]: '' }));
 
     setFormValues((currentValues) => ({
       ...currentValues,
@@ -73,12 +76,25 @@ function CreditCardForm({ creditCard, accounts, loadingAccounts, serverError, on
     }));
   }
 
+  function scrollToFirstError() {
+    if (!formRef.current) {
+      return;
+    }
+
+    const firstError = formRef.current.querySelector('[data-error="true"]');
+
+    if (firstError) {
+      firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
 
+    const nextErrors = {};
+
     if (formValues.name.trim().length < 2) {
-      setError('Informe um nome com pelo menos 2 caracteres.');
-      return;
+      nextErrors.name = 'Informe um nome com pelo menos 2 caracteres.';
     }
 
     const limitAmount = Number(formValues.limitAmount);
@@ -86,21 +102,24 @@ function CreditCardForm({ creditCard, accounts, loadingAccounts, serverError, on
     const dueDay = Number(formValues.dueDay);
 
     if (!Number.isFinite(limitAmount) || limitAmount < 0) {
-      setError('Informe um limite maior ou igual a zero.');
-      return;
+      nextErrors.limitAmount = 'Informe um limite maior ou igual a zero.';
     }
 
     if (!Number.isInteger(closingDay) || closingDay < 1 || closingDay > 31) {
-      setError('Informe um dia de fechamento entre 1 e 31.');
-      return;
+      nextErrors.closingDay = 'Informe um dia de fechamento entre 1 e 31.';
     }
 
     if (!Number.isInteger(dueDay) || dueDay < 1 || dueDay > 31) {
-      setError('Informe um dia de vencimento entre 1 e 31.');
+      nextErrors.dueDay = 'Informe um dia de vencimento entre 1 e 31.';
+    }
+
+    setErrors(nextErrors);
+
+    if (Object.keys(nextErrors).length > 0) {
+      scrollToFirstError();
       return;
     }
 
-    setError('');
     await onSubmit({
       name: formValues.name.trim(),
       brand: formValues.brand || null,
@@ -115,9 +134,9 @@ function CreditCardForm({ creditCard, accounts, loadingAccounts, serverError, on
 
   return (
     <section>
-      <form id={formId} className="space-y-4" onSubmit={handleSubmit}>
+      <form ref={formRef} id={formId} className="space-y-4" onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
-          <Input label="Nome" name="name" value={formValues.name} onChange={handleChange} className={fieldClassName} />
+          <Input label="Nome" name="name" error={errors.name} value={formValues.name} onChange={handleChange} className={fieldClassName} />
 
           <Select label="Bandeira" name="brand" value={formValues.brand} onChange={handleChange} className={fieldClassName}>
             {BRAND_OPTIONS.map((option) => (
@@ -125,9 +144,9 @@ function CreditCardForm({ creditCard, accounts, loadingAccounts, serverError, on
             ))}
           </Select>
 
-          <Input label="Limite" name="limitAmount" type="number" step="0.01" min="0" value={formValues.limitAmount} onChange={handleChange} className={fieldClassName} />
-          <Input label="Dia de fechamento" name="closingDay" type="number" min="1" max="31" value={formValues.closingDay} onChange={handleChange} className={fieldClassName} />
-          <Input label="Dia de vencimento" name="dueDay" type="number" min="1" max="31" value={formValues.dueDay} onChange={handleChange} className={fieldClassName} />
+          <Input label="Limite" name="limitAmount" type="number" step="0.01" min="0" error={errors.limitAmount} value={formValues.limitAmount} onChange={handleChange} className={fieldClassName} />
+          <Input label="Dia de fechamento" name="closingDay" type="number" min="1" max="31" error={errors.closingDay} value={formValues.closingDay} onChange={handleChange} className={fieldClassName} />
+          <Input label="Dia de vencimento" name="dueDay" type="number" min="1" max="31" error={errors.dueDay} value={formValues.dueDay} onChange={handleChange} className={fieldClassName} />
 
           <Select label="Conta vinculada" name="accountId" value={formValues.accountId} onChange={handleChange} disabled={loadingAccounts} className={fieldClassName}>
             <option value="">Nenhuma conta vinculada</option>
@@ -137,7 +156,7 @@ function CreditCardForm({ creditCard, accounts, loadingAccounts, serverError, on
           </Select>
 
           <div>
-            <span className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Cor do cartão</span>
+            <span className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Cor do cartao</span>
             <div className="flex flex-wrap gap-2">
               {(() => {
                 const currentColorInList = COLORS.some(
@@ -186,19 +205,6 @@ function CreditCardForm({ creditCard, accounts, loadingAccounts, serverError, on
           <input name="isActive" type="checkbox" checked={formValues.isActive} onChange={handleChange} className="h-4 w-4 rounded border-slate-300 text-emerald-600 dark:border-slate-500 dark:bg-slate-700" />
           Cartao ativo
         </label>
-
-        {error ? (
-          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-            {error}
-          </div>
-        ) : null}
-
-        {!error && serverError ? (
-          <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-300">
-            {serverError}
-          </div>
-        ) : null}
-
       </form>
     </section>
   );

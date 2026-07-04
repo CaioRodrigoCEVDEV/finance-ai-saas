@@ -25,6 +25,11 @@ export async function deleteTransaction(id) {
   return data;
 }
 
+export async function confirmTransaction(id) {
+  const { data } = await api.patch(`/transactions/${id}/confirm`);
+  return data;
+}
+
 export async function getTransactionMonthSummary(params = {}) {
   const { data } = await api.get('/transactions/summary/month', { params });
   return data;

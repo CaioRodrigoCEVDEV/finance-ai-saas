@@ -12,6 +12,7 @@ import EmptyState from '../components/ui/EmptyState';
 import LoadingSkeleton from '../components/ui/LoadingSkeleton';
 import FormModal from '../components/ui/FormModal';
 import PageHeader from '../components/ui/PageHeader';
+import { useToast } from '../contexts/ToastContext';
 import { getCategories } from '../services/categoryService';
 import {
   createBudget,
@@ -56,6 +57,7 @@ function buildListParams(filters) {
 }
 
 function Budgets() {
+  const toast = useToast();
   const hasInitializedFilters = useRef(false);
   const [budgets, setBudgets] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -65,7 +67,6 @@ function Budgets() {
   const [summaryLoading, setSummaryLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [formError, setFormError] = useState('');
   const [formVisible, setFormVisible] = useState(false);
   const [selectedBudget, setSelectedBudget] = useState(null);
 
@@ -144,7 +145,6 @@ function Budgets() {
     setSelectedBudget(null);
     setFormVisible(true);
     setError('');
-    setFormError('');
   }
 
   function handleFilterChange(event) {
@@ -160,7 +160,6 @@ function Budgets() {
     try {
       setSaving(true);
       setError('');
-      setFormError('');
       const data = await getBudget(budget.id);
       setSelectedBudget(data);
       setFormVisible(true);
@@ -175,12 +174,13 @@ function Budgets() {
     try {
       setSaving(true);
       setError('');
-      setFormError('');
 
       if (selectedBudget) {
         await updateBudget(selectedBudget.id, payload);
+        toast.success('Orçamento atualizado com sucesso.');
       } else {
         await createBudget(payload);
+        toast.success('Orçamento criado com sucesso.');
       }
 
       setFormVisible(false);
@@ -190,7 +190,7 @@ function Budgets() {
         loadSummary(filters)
       ]);
     } catch (requestError) {
-      setFormError(requestError.response?.data?.message || 'Não foi possível salvar o orçamento.');
+      toast.error(requestError.response?.data?.message || 'Não foi possível salvar o orçamento.');
     } finally {
       setSaving(false);
     }
@@ -235,7 +235,6 @@ function Budgets() {
   function handleCancelForm() {
     setFormVisible(false);
     setSelectedBudget(null);
-    setFormError('');
   }
 
   return (
@@ -327,9 +326,6 @@ function Budgets() {
           <BudgetForm
             budget={selectedBudget}
             categories={categories}
-            loading={saving}
-            serverError={formError}
-            onCancel={handleCancelForm}
             onSubmit={handleSubmit}
           />
         </FormModal>

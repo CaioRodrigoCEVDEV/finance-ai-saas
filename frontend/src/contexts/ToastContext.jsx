@@ -67,7 +67,7 @@ function ToastProvider({ children }) {
     <ToastContext.Provider value={toast}>
       {children}
       {createPortal(
-        <div className="pointer-events-none fixed bottom-4 right-4 z-[100] flex flex-col gap-2">
+        <div className="pointer-events-none fixed right-4 z-[100] flex flex-col gap-2 max-md:bottom-24 md:bottom-4">
           {toasts.map(t => (
             <div key={t.id} className="pointer-events-auto">
               <Toast id={t.id} type={t.type} message={t.message} onClose={removeToast} />
