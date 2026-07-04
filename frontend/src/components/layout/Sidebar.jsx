@@ -3,6 +3,7 @@ import {
   BarChart3,
   Bell,
   CalendarDays,
+  CheckSquare,
   CreditCard,
   Crown,
   FileUp,
@@ -46,7 +47,8 @@ const navigationGroups = [
     items: [
       { to: '/budgets', label: 'Orçamentos', icon: BadgeDollarSign },
       { to: '/goals', label: 'Metas', icon: Target },
-      { to: '/recurrences', label: 'Recorrências', icon: Repeat }
+      { to: '/recurrences', label: 'Recorrências', icon: Repeat },
+      { to: '/financial-tasks', label: 'Tarefas', icon: CheckSquare }
     ]
   },
   {

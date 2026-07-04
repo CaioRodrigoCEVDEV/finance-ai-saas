@@ -13,6 +13,7 @@ import DashboardAlerts from '../components/dashboard/DashboardAlerts';
 import CreditCardWidget from '../components/dashboard/CreditCardWidget';
 import BudgetStatusWidget from '../components/dashboard/BudgetStatusWidget';
 import GoalsProgressWidget from '../components/dashboard/GoalsProgressWidget';
+import FinancialTasksWidget from '../components/dashboard/FinancialTasksWidget';
 import ExpensesByCategory from '../components/dashboard/ExpensesByCategory';
 import TopExpensesWidget from '../components/dashboard/TopExpensesWidget';
 import RecentTransactions from '../components/dashboard/RecentTransactions';
@@ -44,6 +45,7 @@ import { getCategories } from '../services/categoryService';
 import { getCreditCards } from '../services/creditCardService';
 import { createTransaction } from '../services/transactionService';
 import { formatDateBR } from '../utils/formatters';
+import { getFinancialTaskDashboard } from '../services/financialTaskService';
 
 const initialState = {
   overview: null,
@@ -53,7 +55,8 @@ const initialState = {
   budgetStatus: [],
   goalsProgress: [],
   recentTransactions: [],
-  monthlyFlow: []
+  monthlyFlow: [],
+  financialTasks: null
 };
 
 function Dashboard() {
@@ -167,7 +170,8 @@ function Dashboard() {
           { name: 'budgetStatus', fn: () => getBudgetStatus(period) },
           { name: 'goalsProgress', fn: () => getGoalsProgress(period) },
           { name: 'recentTransactions', fn: () => getRecentTransactions(period) },
-          { name: 'monthlyFlow', fn: () => getMonthlyFlow(period) }
+          { name: 'monthlyFlow', fn: () => getMonthlyFlow(period) },
+          { name: 'financialTasks', fn: () => getFinancialTaskDashboard() }
         ];
 
         const [results] = await Promise.all([
@@ -199,7 +203,8 @@ function Dashboard() {
           budgetStatusRes,
           goalsProgressRes,
           transactionsRes,
-          monthlyFlowRes
+          monthlyFlowRes,
+          financialTasksRes
         ] = results.map(r => r.value);
 
         setData({
@@ -210,7 +215,8 @@ function Dashboard() {
           budgetStatus: budgetStatusRes,
           goalsProgress: goalsProgressRes,
           recentTransactions: transactionsRes,
-          monthlyFlow: monthlyFlowRes
+          monthlyFlow: monthlyFlowRes,
+          financialTasks: financialTasksRes
         });
       } catch (requestError) {
         if (!isMounted) return;
@@ -300,10 +306,11 @@ function Dashboard() {
               tenantName={tenant?.name}
             />
 
-            <section className="grid gap-5 md:grid-cols-3">
+            <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
               <CreditCardWidget data={data.overview?.creditCards} />
               <BudgetStatusWidget data={data.overview?.budgets} />
               <GoalsProgressWidget data={data.overview?.goals} />
+              <FinancialTasksWidget data={data.financialTasks} />
             </section>
 
             <DashboardAlerts alerts={data.alerts} />

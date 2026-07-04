@@ -24,6 +24,8 @@ const feedbacksRoutes = require('../modules/feedbacks/feedbacks.routes');
 const adminRoutes = require('../modules/admin/admin.routes');
 const paymentSettingsRoutes = require('../modules/admin/paymentSettings.routes');
 const billingRoutes = require('../modules/billing/billing.routes');
+const financialTaskRoutes = require('../modules/financial-tasks/financial-task-routes');
+const pushRoutes = require('../modules/push-subscriptions/push-subscription-routes');
 
 const router = Router();
 
@@ -51,5 +53,7 @@ router.use(feedbacksRoutes);
 router.use(adminRoutes);
 router.use(paymentSettingsRoutes);
 router.use(billingRoutes);
+router.use(financialTaskRoutes);
+router.use(pushRoutes);
 
 module.exports = router;

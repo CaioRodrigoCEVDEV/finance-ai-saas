@@ -118,12 +118,27 @@ enum RuleMatchType {
   REGEX
 }
 
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
 enum NotificationType {
   BUDGET_WARNING
   BUDGET_EXCEEDED
   UNCATEGORIZED_TRANSACTIONS
   GOAL_COMPLETED
   CREDIT_CARD_LIMIT
+  TASK_REMINDER
 }
 
 enum ReferralInviteStatus {
@@ -204,6 +219,7 @@ model Tenant {
   feedbacks                Feedback[]
   subscriptions            Subscription[]
   paymentEventLogs         PaymentEventLog[]
+  financialTasks           FinancialTask[]
 
   @@index([status])
   @@map("tenants")
@@ -276,11 +292,12 @@ model Account {
   deleted_at      DateTime?
   tenant          Tenant      @relation(fields: [tenant_id], references: [id])
   user            User?       @relation(fields: [user_id], references: [id])
-  credit_cards    CreditCard[]
+  credit_cards       CreditCard[]
   transactions       Transaction[]
   defaultInSettings  TenantSettings[]     @relation("AccountDefaultInSettings")
   recurrences        Recurrence[]
   paymentInvoices    CreditCardInvoice[]  @relation("InvoicePaymentAccount")
+  financialTasks     FinancialTask[]
 
   @@index([tenant_id])
   @@index([tenant_id, is_active])
@@ -411,6 +428,7 @@ model Transaction {
   category           Category?          @relation(fields: [category_id], references: [id])
   recurrence         Recurrence?         @relation(fields: [recurrence_id], references: [id], onDelete: SetNull)
   creditCardInvoicePayment CreditCardInvoice? @relation("InvoicePaymentTransaction")
+  financialTask      FinancialTask?
 
   @@index([tenant_id])
   @@index([tenant_id, transaction_date])
@@ -466,6 +484,48 @@ model Goal {
   @@index([tenant_id, status])
   @@index([user_id])
   @@map("goals")
+}
+
+model FinancialTask {
+  id               String       @id @default(uuid()) @db.Uuid
+
+  tenantId         String       @map("tenant_id") @db.Uuid
+  tenant           Tenant       @relation(fields: [tenantId], references: [id])
+
+  title            String
+  description      String?
+
+  priority         TaskPriority @default(MEDIUM)
+  status           TaskStatus   @default(PENDING)
+
+  dueDate          DateTime?    @map("due_date")
+
+  estimatedAmount  Decimal?     @db.Decimal(12, 2) @map("estimated_amount")
+
+  accountId        String?      @map("account_id") @db.Uuid
+  account          Account?     @relation(fields: [accountId], references: [id])
+
+  completedAt      DateTime?    @map("completed_at")
+
+  reminderAt       DateTime?    @map("reminder_at")
+  notificationSent Boolean      @default(false) @map("notification_sent")
+
+  autoComplete     Boolean      @default(false) @map("auto_complete")
+
+  generatedTransactionId String? @unique @map("generated_transaction_id") @db.Uuid
+  generatedTransaction   Transaction? @relation(fields: [generatedTransactionId], references: [id])
+
+  items            FinancialTaskItem[]
+
+  createdAt        DateTime     @default(now()) @map("created_at")
+  updatedAt        DateTime     @updatedAt @map("updated_at")
+  deletedAt        DateTime?    @map("deleted_at")
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, priority])
+  @@index([tenantId, dueDate])
+  @@map("financial_tasks")
 }
 
 model Recurrence {
@@ -774,4 +834,37 @@ model TenantSettings {
   defaultExpenseCategory  Category? @relation("CategoryDefaultExpenseInSettings", fields: [default_expense_category_id], references: [id], onDelete: SetNull)
 
   @@map("tenant_settings")
+}
+
+model PushSubscription {
+  id        String   @id @default(uuid()) @db.Uuid
+  tenantId  String   @map("tenant_id") @db.Uuid
+  userId    String?  @map("user_id") @db.Uuid
+
+  endpoint  String
+  p256dh    String
+  auth      String
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([tenantId, endpoint])
+  @@index([tenantId])
+  @@index([userId])
+  @@map("push_subscriptions")
+}
+
+model FinancialTaskItem {
+  id          String   @id @default(uuid()) @db.Uuid
+  taskId      String   @map("task_id") @db.Uuid
+  description String
+  completed   Boolean  @default(false)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  task        FinancialTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@index([taskId, completed])
+  @@index([taskId, order])
+  @@map("financial_task_items")
 }

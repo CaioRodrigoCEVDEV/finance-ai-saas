@@ -526,6 +526,40 @@ async function getOverview(tenantId, periodInput = {}) {
   const totalCurrentAmount = goals.reduce((sum, g) => sum + toNumber(g.current_amount), 0);
   const overallProgressPercentage = totalTargetAmount > 0 ? Number(((totalCurrentAmount / totalTargetAmount) * 100).toFixed(2)) : 0;
 
+  const now = new Date();
+
+  const financialTasks = await prisma.financialTask.findMany({
+    where: {
+      tenantId,
+      deletedAt: null,
+      createdAt: { lte: range.end }
+    },
+    select: {
+      id: true,
+      status: true,
+      priority: true,
+      dueDate: true,
+      title: true,
+      estimatedAmount: true,
+      account: { select: { name: true } }
+    }
+  });
+
+  const startOfToday = new Date(now);
+  startOfToday.setHours(0, 0, 0, 0);
+  const endOfToday = new Date(now);
+  endOfToday.setHours(23, 59, 59, 999);
+
+  const totalTasks = financialTasks.length;
+  const pendingTasks = financialTasks.filter((t) => t.status !== 'COMPLETED' && t.status !== 'CANCELLED').length;
+  const completedTasks = financialTasks.filter((t) => t.status === 'COMPLETED').length;
+  const overdueTasks = financialTasks.filter(
+    (t) => t.status !== 'COMPLETED' && t.status !== 'CANCELLED' && t.dueDate && t.dueDate < now
+  ).length;
+  const todayTasks = financialTasks.filter(
+    (t) => t.status !== 'COMPLETED' && t.status !== 'CANCELLED' && t.dueDate && t.dueDate >= startOfToday && t.dueDate <= endOfToday
+  ).length;
+
   return {
     summary,
     comparison: summaryData.comparison,
@@ -557,6 +591,13 @@ async function getOverview(tenantId, periodInput = {}) {
       totalTargetAmount,
       totalCurrentAmount,
       overallProgressPercentage
+    },
+    financialTasks: {
+      totalTasks,
+      pendingTasks,
+      completedTasks,
+      overdueTasks,
+      todayTasks
     }
   };
 }
@@ -720,6 +761,27 @@ async function getAlerts(tenantId, periodInput = {}) {
       entityType: 'summary'
     });
   }
+
+  const overdueTasks = await prisma.financialTask.findMany({
+    where: {
+      tenantId,
+      deletedAt: null,
+      status: { notIn: ['COMPLETED', 'CANCELLED'] },
+      dueDate: { lt: range.end }
+    },
+    select: { id: true, title: true, dueDate: true }
+  });
+
+  overdueTasks.forEach((t) => {
+    alerts.push({
+      type: 'TASK_OVERDUE',
+      severity: 'danger',
+      title: 'Tarefa financeira atrasada',
+      message: `A tarefa "${t.title}" venceu em ${t.dueDate.toISOString().split('T')[0]} e ainda não foi concluída.`,
+      entityId: t.id,
+      entityType: 'financialTask'
+    });
+  });
 
   const totalBalance = await computeTotalBalance(tenantId, range.end);
 

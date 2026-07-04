@@ -26,6 +26,7 @@ import RecurrencesPage from '../pages/RecurrencesPage';
 import FinancialCalendarPage from '../pages/FinancialCalendarPage';
 import InvitesPage from '../pages/InvitesPage';
 import InvoicesPage from '../pages/InvoicesPage';
+import FinancialTasksPage from '../pages/FinancialTasksPage';
 import Plans from '../pages/Plans';
 import BillingSuccess from '../pages/BillingSuccess';
 import BillingCancel from '../pages/BillingCancel';
@@ -256,6 +257,14 @@ function AppRoutes() {
           element={(
             <ProtectedRoute>
               <InvoicesPage />
+            </ProtectedRoute>
+          )}
+        />
+        <Route
+          path="/financial-tasks"
+          element={(
+            <ProtectedRoute>
+              <FinancialTasksPage />
             </ProtectedRoute>
           )}
         />
