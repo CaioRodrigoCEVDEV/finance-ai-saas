@@ -1,4 +1,5 @@
 import { Children, isValidElement, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Check, ChevronDown } from 'lucide-react';
 
 import { cn } from '../../utils/cn';
@@ -223,7 +224,7 @@ function Select({
         <ChevronDown className={cn('pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 transition text-slate-400 dark:text-slate-500', open ? 'rotate-180 text-emerald-500 dark:text-emerald-400' : '')} />
       </span>
 
-      {open ? (
+      {open ? createPortal(
         <div
           className="fixed z-50 min-w-0 overflow-y-auto overflow-x-hidden rounded-2xl border border-slate-200 bg-white p-1.5 shadow-2xl shadow-slate-900/10 ring-1 ring-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/30 dark:ring-white/10"
           id={listboxId}
@@ -258,7 +259,8 @@ function Select({
               </button>
             );
           })}
-        </div>
+        </div>,
+        document.body
       ) : null}
       {error ? <span className="mt-2 block text-sm text-rose-600">{error}</span> : null}
     </label>
