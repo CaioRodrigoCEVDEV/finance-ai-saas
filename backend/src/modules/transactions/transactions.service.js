@@ -243,6 +243,14 @@ function buildListWhere(tenantId, filters) {
     if (filters.endDate) {
       where.transaction_date.lte = getEndOfDay(filters.endDate);
     }
+  } else {
+    const now = new Date();
+    const range = getMonthRange(now.getMonth() + 1, now.getFullYear());
+
+    where.transaction_date = {
+      gte: range.start,
+      lte: range.end
+    };
   }
 
   if (filters.search) {

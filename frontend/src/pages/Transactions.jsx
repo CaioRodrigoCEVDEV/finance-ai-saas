@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AlertCircle, ArrowLeftRight, Plus } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 
@@ -26,14 +26,27 @@ import {
   updateTransaction
 } from '../services/transactionService';
 
+function getFirstDayOfMonth() {
+  const now = new Date();
+
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+}
+
+function getLastDayOfMonth() {
+  const now = new Date();
+  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+  return `${lastDay.getFullYear()}-${String(lastDay.getMonth() + 1).padStart(2, '0')}-${String(lastDay.getDate()).padStart(2, '0')}`;
+}
+
 const initialFilters = {
   search: '',
   type: '',
   status: '',
   accountId: '',
   categoryId: '',
-  startDate: '',
-  endDate: ''
+  startDate: getFirstDayOfMonth(),
+  endDate: getLastDayOfMonth()
 };
 
 const initialSummary = {
@@ -275,10 +288,86 @@ function Transactions() {
   }
 
   async function handleClearFilters() {
-    setFilters(initialFilters);
+    const next = {
+      ...initialFilters,
+      startDate: getFirstDayOfMonth(),
+      endDate: getLastDayOfMonth()
+    };
+
+    setFilters(next);
     setPage(1);
-    await loadTransactionsData(initialFilters, 1);
+    await loadTransactionsData(next, 1);
   }
+
+  const handlePeriodPreset = useCallback(async (preset) => {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    const today = `${y}-${m}-${d}`;
+    let startDate = '';
+    let endDate = today;
+
+    switch (preset) {
+      case 'today':
+        startDate = today;
+        endDate = today;
+        break;
+
+      case 'last7': {
+        const d7 = new Date(now);
+        d7.setDate(d7.getDate() - 6);
+        startDate = `${d7.getFullYear()}-${String(d7.getMonth() + 1).padStart(2, '0')}-${String(d7.getDate()).padStart(2, '0')}`;
+        break;
+      }
+
+      case 'last30': {
+        const d30 = new Date(now);
+        d30.setDate(d30.getDate() - 29);
+        startDate = `${d30.getFullYear()}-${String(d30.getMonth() + 1).padStart(2, '0')}-${String(d30.getDate()).padStart(2, '0')}`;
+        break;
+      }
+
+      case 'thisMonth':
+        startDate = getFirstDayOfMonth();
+        endDate = getLastDayOfMonth();
+        break;
+
+      case 'lastMonth': {
+        const firstPrev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const lastPrev = new Date(now.getFullYear(), now.getMonth(), 0);
+        startDate = `${firstPrev.getFullYear()}-${String(firstPrev.getMonth() + 1).padStart(2, '0')}-01`;
+        endDate = `${lastPrev.getFullYear()}-${String(lastPrev.getMonth() + 1).padStart(2, '0')}-${String(lastPrev.getDate()).padStart(2, '0')}`;
+        break;
+      }
+
+      case 'last3Months': {
+        const d3m = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+        startDate = `${d3m.getFullYear()}-${String(d3m.getMonth() + 1).padStart(2, '0')}-01`;
+        endDate = getLastDayOfMonth();
+        break;
+      }
+
+      case 'thisYear':
+        startDate = `${now.getFullYear()}-01-01`;
+        endDate = getLastDayOfMonth();
+        break;
+
+      case 'custom':
+        startDate = '';
+        endDate = '';
+        break;
+
+      default:
+        return;
+    }
+
+    const nextFilters = { ...filters, startDate, endDate };
+
+    setFilters(nextFilters);
+    setPage(1);
+    await loadTransactionsData(nextFilters, 1);
+  }, [filters]);
 
   function handleCancelForm() {
     setFormVisible(false);
@@ -315,6 +404,7 @@ function Transactions() {
           loading={loading}
           onChange={handleFilterChange}
           onClear={handleClearFilters}
+          onPeriodPreset={handlePeriodPreset}
         />
 
         <div className="space-y-6">

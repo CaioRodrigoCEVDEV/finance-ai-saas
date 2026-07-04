@@ -18,7 +18,18 @@ const STATUS_OPTIONS = [
   { value: 'CANCELED', label: 'Cancelada' }
 ];
 
-function TransactionFilters({ filters, accounts, categories, loading, onChange, onClear }) {
+const PRESETS = [
+  { key: 'today', label: 'Hoje' },
+  { key: 'last7', label: 'Últimos 7 dias' },
+  { key: 'last30', label: 'Últimos 30 dias' },
+  { key: 'thisMonth', label: 'Este mês' },
+  { key: 'lastMonth', label: 'Mês anterior' },
+  { key: 'last3Months', label: 'Últimos 3 meses' },
+  { key: 'thisYear', label: 'Este ano' },
+  { key: 'custom', label: 'Personalizado' }
+];
+
+function TransactionFilters({ filters, accounts, categories, loading, onChange, onClear, onPeriodPreset }) {
   return (
     <Card className="rounded-[28px] p-5">
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -56,7 +67,21 @@ function TransactionFilters({ filters, accounts, categories, loading, onChange, 
         <Input label="Data final" name="endDate" type="date" value={filters.endDate} onChange={onChange} />
       </div>
 
-      <div className="mt-5 flex flex-wrap gap-3">
+      <div className="mt-4 flex flex-wrap gap-2">
+        {PRESETS.map((preset) => (
+          <button
+            key={preset.key}
+            type="button"
+            onClick={() => onPeriodPreset(preset.key)}
+            disabled={loading}
+            className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700 disabled:opacity-60 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-400 dark:hover:border-emerald-700 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-400"
+          >
+            {preset.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-3">
         <Button type="button" variant="secondary" onClick={onClear} disabled={loading}>Limpar filtros</Button>
       </div>
     </Card>
