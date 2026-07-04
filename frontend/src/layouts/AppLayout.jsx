@@ -1,18 +1,25 @@
 import {
   BadgeDollarSign,
+  BarChart3,
   Bell,
   CalendarDays,
+  CheckSquare,
   CircleUser,
   CreditCard,
+  Crown,
+  FileUp,
   FolderKanban,
   Landmark,
   LayoutDashboard,
   LogOut,
   Receipt,
+  Repeat,
   Settings,
+  Share2,
   Sparkles,
   Target,
   WalletCards,
+  Wand2,
   X
 } from 'lucide-react';
 import { useState } from 'react';
@@ -49,7 +56,29 @@ const drawerGroups = [
     title: 'Planejamento',
     items: [
       { to: '/budgets', label: 'Orçamentos', icon: BadgeDollarSign },
-      { to: '/goals', label: 'Metas', icon: Target }
+      { to: '/goals', label: 'Metas', icon: Target },
+      { to: '/recurrences', label: 'Recorrências', icon: Repeat },
+      { to: '/financial-tasks', label: 'Tarefas', icon: CheckSquare }
+    ]
+  },
+  {
+    title: 'Automação',
+    items: [
+      { to: '/imports', label: 'Importar', icon: FileUp },
+      { to: '/categorization-rules', label: 'Regras', icon: Wand2 }
+    ]
+  },
+  {
+    title: 'Análises',
+    items: [
+      { to: '/reports', label: 'Relatórios', icon: BarChart3 }
+    ]
+  },
+  {
+    title: 'Conta',
+    items: [
+      { to: '/invites', label: 'Convites', icon: Share2 },
+      { to: '/plans', label: 'Plano / Assinatura', icon: Crown }
     ]
   },
   {
