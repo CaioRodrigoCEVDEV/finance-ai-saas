@@ -588,8 +588,7 @@ function Transactions() {
 
         <FormModal
           isOpen={formVisible}
-          eyebrow={selectedTransaction ? 'EDITAR TRANSAÇÃO' : 'NOVA TRANSAÇÃO'}
-          title={selectedTransaction ? 'Atualize os dados da movimentação financeira' : 'Cadastre uma nova movimentação financeira'}
+          title={selectedTransaction ? 'Editar transação' : 'Nova transação'}
           onClose={handleCancelForm}
           footer={(
             <>
