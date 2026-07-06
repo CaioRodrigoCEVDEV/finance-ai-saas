@@ -11,7 +11,7 @@ const items = [
   { to: null, label: 'Mais', icon: Menu, isMore: true },
 ];
 
-function BottomNavigation({ onMoreClick }) {
+function BottomNavigation({ onMoreClick, onQuickAdd }) {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -54,9 +54,9 @@ function BottomNavigation({ onMoreClick }) {
 
         <div className="relative flex-1">
           <button
-            onClick={() => navigate('/transactions', { state: { openNewTransaction: true } })}
+            onClick={onQuickAdd}
             className="absolute left-1/2 -top-3 -translate-x-1/2 flex h-[52px] w-[52px] items-center justify-center rounded-full bg-emerald-600 text-white shadow-lg shadow-emerald-600/25 transition hover:bg-emerald-700 active:scale-95 dark:bg-emerald-500 dark:shadow-emerald-500/25 dark:hover:bg-emerald-400"
-            aria-label="Nova transação"
+            aria-label="Adicionar lançamento"
           >
             <Plus className="h-5 w-5" />
           </button>

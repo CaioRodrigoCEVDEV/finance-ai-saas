@@ -73,4 +73,16 @@ html.dark ::-webkit-scrollbar-thumb:hover { background: #475569; }
   .animate-glow-2 { animation: glow-drift-2 10s ease-in-out infinite; will-change: transform; }
   .animate-glow-3 { animation: glow-drift-3 14s ease-in-out infinite; will-change: transform; }
   .animate-glow-4 { animation: glow-drift-4 18s ease-in-out infinite; will-change: transform; }
+
+  @keyframes fade-in-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in-up {
+    animation: fade-in-up 300ms ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in-up { animation: none; }
 }

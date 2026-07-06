@@ -1,12 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Plus } from 'lucide-react';
 
 import AppLayout from '../layouts/AppLayout';
 import Card from '../components/ui/Card';
 import LoadingSkeleton from '../components/ui/LoadingSkeleton';
 import Button from '../components/ui/Button';
-import FormModal from '../components/ui/FormModal';
-import TransactionForm from '../components/transactions/TransactionForm';
 import { useAuth } from '../contexts/AuthContext';
 import DashboardOverviewCards from '../components/dashboard/DashboardOverviewCards';
 import DashboardAlerts from '../components/dashboard/DashboardAlerts';
@@ -40,10 +37,6 @@ import {
   getMonthlyFlow,
   getAvailablePeriods
 } from '../services/dashboardService';
-import { getAccounts } from '../services/accountService';
-import { getCategories } from '../services/categoryService';
-import { getCreditCards } from '../services/creditCardService';
-import { createTransaction } from '../services/transactionService';
 import { formatDateBR } from '../utils/formatters';
 import { getFinancialTaskDashboard } from '../services/financialTaskService';
 
@@ -66,12 +59,6 @@ function Dashboard() {
   const [period, setPeriod] = useState(() => readStoredDashboardPeriod() || getCurrentDashboardPeriod());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [formVisible, setFormVisible] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [formError, setFormError] = useState('');
-  const [accounts, setAccounts] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [creditCards, setCreditCards] = useState([]);
   const [availablePeriods, setAvailablePeriods] = useState(null);
   const selectedPeriodLabel = useMemo(() => formatDashboardPeriodLabel(period.month, period.year), [period.month, period.year]);
 
@@ -102,48 +89,6 @@ function Dashboard() {
   const goToToday = () => {
     setPeriod(getCurrentDashboardPeriod());
   };
-
-  useEffect(() => {
-    async function loadReferences() {
-      try {
-        const [accountData, categoryData, creditCardData] = await Promise.all([
-          getAccounts(),
-          getCategories({ includeInactive: false }),
-          getCreditCards()
-        ]);
-        setAccounts(accountData);
-        setCategories(categoryData);
-        setCreditCards(creditCardData);
-      } catch (_error) {
-        /* silent — form will show empty selects */
-      }
-    }
-
-    loadReferences();
-  }, []);
-
-  function handleOpenForm() {
-    setFormVisible(true);
-    setFormError('');
-  }
-
-  function handleCloseForm() {
-    setFormVisible(false);
-    setFormError('');
-  }
-
-  async function handleSubmit(payload) {
-    try {
-      setSaving(true);
-      setFormError('');
-      await createTransaction(payload);
-      setFormVisible(false);
-    } catch (requestError) {
-      setFormError(requestError.response?.data?.error || requestError.message || 'Erro ao criar transação.');
-    } finally {
-      setSaving(false);
-    }
-  }
 
   useEffect(() => {
     let isMounted = true;
@@ -427,36 +372,6 @@ function Dashboard() {
         ) : null}
       </div>
 
-      <button
-        className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-600 text-white shadow-lg transition hover:bg-emerald-700 active:scale-95 dark:bg-emerald-500 dark:hover:bg-emerald-400 max-md:hidden"
-        onClick={handleOpenForm}
-        aria-label="Nova transação"
-      >
-        <Plus className="h-6 w-6" />
-      </button>
-
-      <FormModal
-        isOpen={formVisible}
-        eyebrow="NOVA TRANSAÇÃO"
-        title="Cadastre uma nova movimentação financeira"
-        onClose={handleCloseForm}
-        footer={(
-          <>
-            <Button type="button" variant="secondary" onClick={handleCloseForm} disabled={saving}>Cancelar</Button>
-            <Button type="submit" form="transaction-form" disabled={saving}>
-              {saving ? 'Salvando...' : 'Criar transação'}
-            </Button>
-          </>
-        )}
-      >
-        <TransactionForm
-          accounts={accounts}
-          categories={categories}
-          creditCards={creditCards}
-          serverError={formError}
-          onSubmit={handleSubmit}
-        />
-      </FormModal>
     </AppLayout>
   );
 }

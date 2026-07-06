@@ -30,6 +30,7 @@ import MobileTopbar from '../components/layout/MobileTopbar';
 import Sidebar from '../components/layout/Sidebar';
 import Topbar from '../components/layout/Topbar';
 import AnimatedBackground from '../components/ui/AnimatedBackground';
+import QuickAddHub from '../components/quickadd/QuickAddHub';
 import { useAuth } from '../contexts/AuthContext';
 import { cn } from '../utils/cn';
 
@@ -104,6 +105,7 @@ const sectionTitleClass =
 
 function AppLayout({ children }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();
@@ -142,7 +144,11 @@ function AppLayout({ children }) {
         </section>
       </div>
 
-      <BottomNavigation onMoreClick={() => setMobileMenuOpen(true)} />
+      <QuickAddHub open={quickAddOpen} onOpenChange={setQuickAddOpen} />
+      <BottomNavigation
+        onMoreClick={() => setMobileMenuOpen(true)}
+        onQuickAdd={() => setQuickAddOpen(true)}
+      />
 
       <div
         className={cn(
