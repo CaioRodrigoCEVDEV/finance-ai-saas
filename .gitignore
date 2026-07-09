@@ -75,3 +75,9 @@ tmp/
 temp/
 .cache/
 graphify-out/
+
+# =========================
+# Accidental root installs
+# =========================
+/package.json
+/package-lock.json
