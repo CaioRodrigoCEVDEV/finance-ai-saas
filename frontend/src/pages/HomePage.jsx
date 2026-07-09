@@ -582,6 +582,12 @@ function HomePage() {
                   >
                     Segurança
                   </a>
+                  <Link
+                    to="/privacy"
+                    className="text-sm text-slate-600 transition hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
+                  >
+                    Política de Privacidade
+                  </Link>
                 </div>
               </div>
               <div>

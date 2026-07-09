@@ -9,6 +9,7 @@ import CreditCards from '../pages/CreditCards';
 import Dashboard from '../pages/Dashboard';
 import Goals from '../pages/Goals';
 import HomePage from '../pages/HomePage';
+import PrivacyPolicy from '../pages/PrivacyPolicy';
 import CategorizationRules from '../pages/CategorizationRules';
 import Imports from '../pages/Imports';
 import Login from '../pages/Login';
@@ -106,6 +107,7 @@ function AppRoutes() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route
           path="/login"
           element={(
