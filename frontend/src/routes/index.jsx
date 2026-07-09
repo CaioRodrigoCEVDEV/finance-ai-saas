@@ -60,7 +60,17 @@ function ProtectedRoute({ children }) {
 }
 
 function GuestRoute({ children }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading, initialized, ensureAuth } = useAuth();
+
+  useEffect(() => {
+    if (!initialized && !loading) {
+      ensureAuth();
+    }
+  }, [initialized, loading, ensureAuth]);
+
+  if (!initialized || loading) {
+    return null;
+  }
 
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
