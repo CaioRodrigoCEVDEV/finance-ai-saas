@@ -1,5 +1,6 @@
 const prisma = require('../../config/prisma');
 const AppError = require('../../utils/app-error');
+const { formatDateOnly } = require('../../utils/date-utils');
 
 function toDecimalString(value) {
   return Number(value || 0).toFixed(2);
@@ -57,7 +58,7 @@ function enrichGoalResponse(goal) {
   const currentAmount = toNumber(goal.current_amount);
   const progressPercentage = targetAmount > 0 ? (currentAmount / targetAmount) * 100 : 0;
   const remainingAmount = targetAmount - currentAmount;
-  const deadline = goal.deadline ? goal.deadline.toISOString() : null;
+  const deadline = formatDateOnly(goal.deadline);
   const daysRemaining = getDaysRemaining(goal.deadline);
   const suggestedMonthlyContribution = goal.status === 'ACTIVE'
     ? getSuggestedMonthlyContribution(targetAmount, currentAmount, goal.deadline)

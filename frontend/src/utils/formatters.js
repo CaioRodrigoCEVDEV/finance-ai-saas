@@ -18,12 +18,31 @@ export function formatCurrencyBRL(value) {
   return currencyFormatter.format(Number(value || 0));
 }
 
+const DATE_ONLY_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+
+function parseSafeDate(value) {
+  if (!value) return null;
+
+  if (DATE_ONLY_REGEX.test(value)) {
+    const [y, m, d] = value.split('-').map(Number);
+    return new Date(y, m - 1, d, 12, 0, 0, 0);
+  }
+
+  return new Date(value);
+}
+
 export function formatDateBR(date) {
   if (!date) {
     return '--';
   }
 
-  return dateFormatter.format(new Date(date));
+  const d = parseSafeDate(date);
+
+  if (Number.isNaN(d.getTime())) {
+    return '--';
+  }
+
+  return dateFormatter.format(d);
 }
 
 export function formatPercentage(value) {

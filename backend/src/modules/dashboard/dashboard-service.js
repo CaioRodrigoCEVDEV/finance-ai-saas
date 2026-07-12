@@ -5,7 +5,8 @@ const {
   resolveDashboardPeriod
 } = require('./dashboard-date-helper');
 const { getCreditCardExpenseAmountMap } = require('../../utils/credit-card-limit');
-const { calculateCreditCardBillingPeriod } = require('../../utils/credit-card-billing');
+const { calculateCreditCardBillingPeriod, calculateInvoiceAmountForCards } = require('../../utils/credit-card-invoice');
+const { formatDateOnly } = require('../../utils/date-utils');
 
 const UNCATEGORIZED_LABEL = 'Sem categoria';
 
@@ -303,7 +304,7 @@ async function getRecentTransactions(tenantId, periodInput = {}) {
     categoryName: transaction.category?.name || UNCATEGORIZED_LABEL,
     accountName: transaction.account?.name || null,
     creditCardName: transaction.credit_card?.name || null,
-    transactionDate: transaction.transaction_date.toISOString()
+    transactionDate: formatDateOnly(transaction.transaction_date)
   }));
 }
 
@@ -441,7 +442,7 @@ async function getOverview(tenantId, periodInput = {}) {
     });
 
     [currentInvoiceMap, usedLimitMap] = await Promise.all([
-      getCreditCardExpenseAmountMap(prisma, tenantId, creditCardIds, { cardRanges }),
+      calculateInvoiceAmountForCards(prisma, tenantId, creditCardIds, cardRanges),
       getCreditCardExpenseAmountMap(prisma, tenantId, creditCardIds, { cardRanges, excludePaidInvoices: true })
     ]);
   }
@@ -720,7 +721,7 @@ async function getAlerts(tenantId, periodInput = {}) {
       type: 'GOAL_OVERDUE',
       severity: 'warning',
       title: 'Meta vencida',
-      message: `A meta ${g.name} venceu em ${g.deadline.toISOString().split('T')[0]} e ainda não foi concluída.`,
+      message: `A meta ${g.name} venceu em ${formatDateOnly(g.deadline)} e ainda não foi concluída.`,
       entityId: g.id,
       entityType: 'goal'
     });
@@ -777,7 +778,7 @@ async function getAlerts(tenantId, periodInput = {}) {
       type: 'TASK_OVERDUE',
       severity: 'danger',
       title: 'Tarefa financeira atrasada',
-      message: `A tarefa "${t.title}" venceu em ${t.dueDate.toISOString().split('T')[0]} e ainda não foi concluída.`,
+      message: `A tarefa "${t.title}" venceu em ${formatDateOnly(t.dueDate)} e ainda não foi concluída.`,
       entityId: t.id,
       entityType: 'financialTask'
     });
@@ -826,7 +827,7 @@ async function getTopExpenses(tenantId, periodInput = {}) {
     description: t.description,
     amount: toNumber(t.amount),
     categoryName: t.category?.name || UNCATEGORIZED_LABEL,
-    transactionDate: t.transaction_date.toISOString()
+    transactionDate: formatDateOnly(t.transaction_date)
   }));
 }
 
@@ -921,7 +922,7 @@ async function getGoalsProgress(tenantId, periodInput = {}) {
       targetAmount: target,
       currentAmount: current,
       progressPercentage,
-      deadline: g.deadline ? g.deadline.toISOString() : null
+      deadline: formatDateOnly(g.deadline)
     };
   });
 }

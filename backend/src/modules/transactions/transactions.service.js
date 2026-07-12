@@ -1,5 +1,7 @@
 const prisma = require('../../config/prisma');
 const AppError = require('../../utils/app-error');
+const { formatDateOnly } = require('../../utils/date-utils');
+const { syncTransactionInvoiceChanges } = require('../../utils/credit-card-invoice');
 
 function toDecimalString(value) {
   return Number(value || 0).toFixed(2);
@@ -63,7 +65,7 @@ function toTransactionResponse(transaction) {
     amount: toNumber(transaction.amount),
     type: transaction.type,
     status: transaction.status,
-    transactionDate: transaction.transaction_date.toISOString(),
+    transactionDate: formatDateOnly(transaction.transaction_date),
     paymentMethod: transaction.payment_method,
     source: transaction.source,
     isRecurring: transaction.is_recurring,
@@ -410,6 +412,8 @@ async function createTransaction(data, tenantId, userId) {
     include: getTransactionInclude()
   });
 
+  await syncTransactionInvoiceChanges(tenantId, null, transaction);
+
   return toTransactionResponse(transaction);
 }
 
@@ -452,6 +456,8 @@ async function updateTransaction(transactionId, tenantId, data) {
     include: getTransactionInclude()
   });
 
+  await syncTransactionInvoiceChanges(tenantId, existingTransaction, transaction);
+
   return toTransactionResponse(transaction);
 }
 
@@ -483,6 +489,8 @@ async function confirmTransaction(transactionId, tenantId) {
     include: getTransactionInclude()
   });
 
+  await syncTransactionInvoiceChanges(tenantId, existingTransaction, transaction);
+
   return toTransactionResponse(transaction);
 }
 
@@ -507,6 +515,8 @@ async function deleteTransaction(transactionId, tenantId) {
       deleted_at: new Date()
     }
   });
+
+  await syncTransactionInvoiceChanges(tenantId, existingTransaction, null);
 
   return {
     message: 'Transacao excluida com sucesso'

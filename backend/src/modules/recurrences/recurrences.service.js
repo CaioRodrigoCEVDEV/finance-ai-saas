@@ -1,5 +1,7 @@
 const prisma = require('../../config/prisma');
 const AppError = require('../../utils/app-error');
+const { formatDateOnly } = require('../../utils/date-utils');
+const { syncTransactionInvoiceChanges } = require('../../utils/credit-card-invoice');
 
 function toDecimalString(value) {
   return Number(value || 0).toFixed(2);
@@ -89,13 +91,13 @@ function toTransactionResponse(transaction) {
     amount: toNumber(transaction.amount),
     type: transaction.type,
     status: transaction.status,
-    transactionDate: transaction.transaction_date.toISOString(),
+    transactionDate: formatDateOnly(transaction.transaction_date),
     paymentMethod: transaction.payment_method,
     source: transaction.source,
     notes: transaction.notes,
     recurrenceId: transaction.recurrence_id,
     recurrenceOccurrenceDate: transaction.recurrence_occurrence_date
-      ? transaction.recurrence_occurrence_date.toISOString()
+      ? formatDateOnly(transaction.recurrence_occurrence_date)
       : null,
     category: transaction.category ? {
       id: transaction.category.id,
@@ -485,6 +487,8 @@ async function generateTransaction(recurrenceId, tenantId, userId) {
     },
     include: getTransactionInclude()
   });
+
+  await syncTransactionInvoiceChanges(tenantId, null, transaction);
 
   const nextRun = calculateNextRunDate(existing.nextRunDate, existing.frequency);
 

@@ -1,4 +1,5 @@
 const prisma = require('../../config/prisma');
+const { formatDateOnly } = require('../../utils/date-utils');
 const { calculateNextRunDate } = require('../recurrences/recurrences.service');
 
 function toNumber(value) {
@@ -68,7 +69,7 @@ function buildEventFromTransaction(transaction) {
     type: transaction.type,
     status: transaction.status === 'CONFIRMED' ? 'PAID' : (transaction.status === 'PENDING' ? 'PENDING' : 'SCHEDULED'),
     amount: toNumber(transaction.amount),
-    date: transaction.transaction_date.toISOString(),
+    date: formatDateOnly(transaction.transaction_date),
     category: transaction.category ? {
       id: transaction.category.id,
       name: transaction.category.name,
@@ -96,7 +97,7 @@ function buildEventFromRecurrencePreview(recurrence, date) {
     type: recurrence.type,
     status: 'SCHEDULED',
     amount: toNumber(recurrence.amount),
-    date: new Date(date).toISOString(),
+    date: date,
     category: recurrence.category ? {
       id: recurrence.category.id,
       name: recurrence.category.name,

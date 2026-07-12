@@ -1,5 +1,7 @@
 const prisma = require('../../config/prisma');
 const AppError = require('../../utils/app-error');
+const { parseLocalDate } = require('../../utils/date-utils');
+const { syncTransactionInvoiceChanges } = require('../../utils/credit-card-invoice');
 const { parseCsv } = require('./parsers/csvParser');
 const { parseOfx } = require('./parsers/ofxParser');
 const { suggestCategoriesForTransactions } = require('../categorization-rules/categorization-rules.service');
@@ -129,7 +131,7 @@ async function confirmImport(data, tenantId, userId) {
       continue;
     }
 
-    await prisma.transaction.create({
+    const transaction = await prisma.transaction.create({
       data: {
         tenant_id: tenantId,
         user_id: userId,
@@ -140,7 +142,7 @@ async function confirmImport(data, tenantId, userId) {
         amount: toDecimalString(t.amount),
         type: t.type,
         status: t.status || 'CONFIRMED',
-        transaction_date: new Date(t.transactionDate),
+        transaction_date: parseLocalDate(t.transactionDate),
         payment_method: t.paymentMethod || 'OTHER',
         notes: t.notes || `Importado via ${source}`,
         source: source,
@@ -149,6 +151,8 @@ async function confirmImport(data, tenantId, userId) {
         is_installment: false
       }
     });
+
+    await syncTransactionInvoiceChanges(tenantId, null, transaction);
 
     created += 1;
   }

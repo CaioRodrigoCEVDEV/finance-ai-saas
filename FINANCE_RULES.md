@@ -19,12 +19,12 @@ Qualquer alteração nestas regras pode corromper saldos, limites, faturas ou re
 - Tem `limit_amount`, `closing_day`, `due_day`.
 - **Não armazena dinheiro** — tem limite disponível calculado: `max(limitAmount - usedAmount, 0)`.
 - Opcionalmente vinculado a uma conta (`account_id`) para pagamento da fatura.
-- `usedAmount` considera despesas PENDING + CONFIRMED, excluindo períodos de faturas já pagas.
+- `usedAmount` considera despesas menos estornos/reembolsos PENDING + CONFIRMED, excluindo períodos de faturas já pagas.
 
 ### Regra fundamental
 - Transação com `paymentMethod === 'CREDIT_CARD'` **nunca** tem `account_id` preenchido — apenas `credit_card_id`.
 - Transação **sem** cartão de crédito **nunca** tem `credit_card_id` preenchido — apenas `account_id`.
-- Uma receita **nunca** pode ser associada a cartão de crédito.
+- Uma receita pode ser associada a cartão de crédito **somente** quando representar estorno/reembolso/crédito na fatura.
 
 ---
 
@@ -58,7 +58,8 @@ WHERE status = 'CONFIRMED'
 const LIMIT_IMPACTING_STATUSES = ['CONFIRMED', 'PENDING'];
 ```
 
-- `usedAmount` = soma de todas as despesas **PENDING + CONFIRMED** vinculadas ao cartão.
+- `usedAmount` = soma de todas as despesas **PENDING + CONFIRMED** vinculadas ao cartão **MENOS** a soma de todas as receitas (estornos/reembolsos) **PENDING + CONFIRMED** vinculadas ao cartão.
+- `usedAmount = SUM(EXPENSE) - SUM(INCOME)` para transações PENDING e CONFIRMED.
 - `availableLimit = max(limitAmount - usedAmount, 0)`.
 - **CANCELED não impacta** limite.
 
@@ -72,13 +73,15 @@ const LIMIT_IMPACTING_STATUSES = ['CONFIRMED', 'PENDING'];
 - O limite disponível nunca fica negativo: `Math.max(limitAmount - usedAmount, 0)`.
 
 ### Período de fatura por ciclo de fechamento
-- `calculateCreditCardBillingPeriod(closingDay, referenceDate)` em `credit-card-billing.js` calcula o período da fatura atual com base no dia de fechamento do cartão, não no mês calendário.
+- `buildInvoicePeriod()` em `credit-card-invoice.js` é a função canônica para calcular o período da fatura com base no dia de fechamento do cartão, não no mês calendário.
+- `calculateCreditCardBillingPeriod(closingDay, referenceDate)` em `credit-card-invoice.js` é um wrapper que delega para `buildInvoicePeriod()` — usada pelo dashboard e credit-cards.
 - Regra:
   - Se `referenceDate <= closingDay` do mês: período = (fechamento anterior + 1 dia) até (fechamento deste mês).
   - Se `referenceDate > closingDay` do mês: período = (fechamento deste mês + 1 dia) até (fechamento do próximo mês).
 - `safeDay()` ajusta o dia de fechamento para o último dia do mês quando o dia não existe (ex.: 31/fev → 28/fev).
-- Usado por: `credit-cards.service.js` (list, getById, update), `dashboard-service.js` (overview, alerts).
+- Usado por: `credit-cards.service.js` (list, getById, update), `dashboard-service.js` (overview, alerts), `credit-card-invoice.js` (cálculo de fatura).
 - **Nunca use mês calendário para filtrar transações de cartão.** Todo cálculo de fatura/limite deve usar o ciclo de fechamento.
+- A lista de faturas (InvoicesPage) exibe por padrão as faturas **atuais** (ciclo vigente via `getCurrentInvoices()`). A filtragem por mês calendário só ocorre quando o usuário navega explicitamente para outro mês.
 
 ---
 
@@ -100,10 +103,16 @@ const LIMIT_IMPACTING_STATUSES = ['CONFIRMED', 'PENDING'];
 - `balance = income - expense - investment`.
 
 ### Fatura de cartão
-- `calculateInvoiceTotal()`: soma **todas** as transações EXPENSE do período (sem filtrar por status).
-- **Todas as despesas** no período da fatura entram no cálculo, independente do status.
+- `calculateInvoiceAmount()`: função centralizada que calcula o valor líquido da fatura.
+  - Soma transações `EXPENSE` (despesas).
+  - Subtrai transações `INCOME` (estornos/reembolsos).
+  - Resultado = total de despesas - total de estornos.
+  - **Comportamento adotado:** a fatura pode ficar negativa (saldo a favor do usuário).
+- **Todas as transações** no período da fatura entram no cálculo (EXPENSE soma, INCOME subtrai), independente do status.
 - O período da fatura é definido pelo **ciclo de fechamento** do cartão (`calculateCreditCardBillingPeriod`), não pelo mês calendário.
 - `currentInvoiceAmount` no dashboard e resumo de cartões reflete o período do ciclo, não o mês civil.
+- `usedAmount` (limite utilizado) também considera INCOME como redutor: `usedAmount = SUM(EXPENSE) - SUM(INCOME)`.
+- `availableLimit = max(limitAmount - usedAmount, 0)`.
 
 ---
 
@@ -111,6 +120,12 @@ const LIMIT_IMPACTING_STATUSES = ['CONFIRMED', 'PENDING'];
 
 ### Saldo de conta
 - Aumentam o saldo: `currentBalance` soma todas as receitas CONFIRMED.
+
+### Receitas em cartão de crédito (estornos/reembolsos)
+- Uma transação do tipo INCOME com `paymentMethod === 'CREDIT_CARD'` **reduz** o valor da fatura do cartão.
+- No cálculo de limite, a receita reduz o `usedAmount`, liberando limite do cartão.
+- Exemplo: despesa de R$ 500 + estorno de R$ 120 → fatura = R$ 380, usedAmount = R$ 380.
+- Refund/reimbursement maior que despesas pode resultar em fatura negativa (crédito na fatura).
 
 ### Podem ser recorrentes
 - Recorrências do tipo `INCOME` geram transações de receita normalmente.
@@ -139,7 +154,7 @@ OPEN → (após closing_date) → OVERDUE/CLOSED* → (após pagamento) → PAID
 - O campo `status` no banco só armazena `OPEN` ou `PAID`. `CLOSED` e `OVERDUE` são calculados.
 
 ### Abertura (getCurrentInvoices / generateInvoice)
-- `getCurrentInvoices()`: para cada cartão ativo, busca fatura do mês corrente. Se não existir, **cria automaticamente** com status `OPEN` e `totalAmount` calculado.
+- `getCurrentInvoices()`: para cada cartão ativo, busca fatura da competência atual pelo ciclo de fechamento. Se não existir, **cria automaticamente** com status `OPEN` e `totalAmount` calculado.
 - `generateInvoice()`: cria ou atualiza (upsert) uma fatura. **Não permite recalcular fatura PAID** (erro 422).
 
 ### Fechamento

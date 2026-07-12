@@ -7,16 +7,19 @@ function normalizeDate(value) {
   // Tenta ISO ou yyyy-mm-dd
   const iso = new Date(str);
   if (!Number.isNaN(iso.getTime())) {
-    return iso.toISOString().split('T')[0];
+    const y = iso.getFullYear();
+    const m = String(iso.getMonth() + 1).padStart(2, '0');
+    const d = String(iso.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
 
   // Tenta dd/mm/yyyy
   const br = str.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
   if (br) {
-    const d = new Date(Number(br[3]), Number(br[2]) - 1, Number(br[1]));
-    if (!Number.isNaN(d.getTime())) {
-      return d.toISOString().split('T')[0];
-    }
+    const y = Number(br[3]);
+    const m = String(Number(br[2])).padStart(2, '0');
+    const d = String(Number(br[1])).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
 
   return null;

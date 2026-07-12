@@ -15,7 +15,7 @@ import {
   WalletCards,
   XCircle
 } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import AppLayout from '../layouts/AppLayout';
@@ -553,7 +553,6 @@ function InvoicesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [summaryLoading, setSummaryLoading] = useState(true);
-  const initialized = useRef(false);
 
   const [creditCardId, setCreditCardId] = useState(searchParams.get('creditCardId') || '');
   const currentDate = new Date();
@@ -564,6 +563,7 @@ function InvoicesPage() {
   const [detailOpen, setDetailOpen] = useState(false);
   const [payInvoice, setPayInvoice] = useState(null);
   const [payOpen, setPayOpen] = useState(false);
+  const [isCurrentView, setIsCurrentView] = useState(true);
 
   async function loadSummary() {
     try {
@@ -576,9 +576,23 @@ function InvoicesPage() {
     }
   }
 
+  async function loadCurrentInvoices() {
+    try {
+      setError('');
+      setIsCurrentView(true);
+      const data = await invoiceService.getCurrentInvoices();
+      setInvoices(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError(err?.response?.data?.message || 'Erro ao carregar faturas atuais');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   const loadInvoices = useCallback(async () => {
     try {
       setError('');
+      setIsCurrentView(false);
       const params = {};
       if (creditCardId) params.creditCardId = creditCardId;
       params.month = month;
@@ -594,18 +608,12 @@ function InvoicesPage() {
   }, [creditCardId, month, year]);
 
   useEffect(() => {
-    initialized.current = true;
     loadSummary();
+    loadCurrentInvoices();
     getCreditCards()
       .then((data) => setCards(data?.creditCards || data || []))
       .catch(() => {});
   }, []);
-
-  useEffect(() => {
-    if (!initialized.current) return;
-    setLoading(true);
-    loadInvoices();
-  }, [loadInvoices]);
 
   async function handleGenerate() {
     if (!creditCardId) return;
@@ -624,7 +632,11 @@ function InvoicesPage() {
   async function handleRecalculate(invoiceId) {
     try {
       await invoiceService.recalculateInvoice(invoiceId);
-      await loadInvoices();
+      if (isCurrentView) {
+        await loadCurrentInvoices();
+      } else {
+        await loadInvoices();
+      }
       if (detailOpen) {
         setDetailOpen(false);
       }
@@ -636,11 +648,20 @@ function InvoicesPage() {
   async function handleCancelPayment(invoiceId) {
     try {
       await invoiceService.cancelInvoicePayment(invoiceId);
-      await loadInvoices();
+      if (isCurrentView) {
+        await loadCurrentInvoices();
+      } else {
+        await loadInvoices();
+      }
       await loadSummary();
     } catch (err) {
       setError(err?.response?.data?.message || 'Erro ao cancelar pagamento');
     }
+  }
+
+  async function handleFilter() {
+    setLoading(true);
+    await loadInvoices();
   }
 
   function handleView(invoiceId) {
@@ -654,7 +675,11 @@ function InvoicesPage() {
   }
 
   function handlePaid() {
-    loadInvoices();
+    if (isCurrentView) {
+      loadCurrentInvoices();
+    } else {
+      loadInvoices();
+    }
     loadSummary();
   }
 
@@ -665,6 +690,7 @@ function InvoicesPage() {
     } else {
       setMonth(month - 1);
     }
+    handleFilter();
   }
 
   function nextMonth() {
@@ -674,6 +700,17 @@ function InvoicesPage() {
     } else {
       setMonth(month + 1);
     }
+    handleFilter();
+  }
+
+  function handleMonthChange(value) {
+    setMonth(parseInt(value, 10));
+    handleFilter();
+  }
+
+  function handleYearChange(value) {
+    setYear(parseInt(value, 10) || currentDate.getFullYear());
+    handleFilter();
   }
 
   return (
@@ -719,7 +756,7 @@ function InvoicesPage() {
                 <Select
                   label="Mês"
                   value={month}
-                  onChange={(e) => setMonth(parseInt(e.target.value, 10))}
+                  onChange={(e) => handleMonthChange(e.target.value)}
                 >
                   {MONTHS.map((m) => (
                     <option key={m.value} value={m.value}>{m.label}</option>
@@ -731,7 +768,7 @@ function InvoicesPage() {
                   label="Ano"
                   type="number"
                   value={year}
-                  onChange={(e) => setYear(parseInt(e.target.value, 10) || currentDate.getFullYear())}
+                  onChange={(e) => handleYearChange(e.target.value)}
                 />
               </div>
               <Button variant="ghost" size="sm" onClick={nextMonth}>
@@ -739,8 +776,14 @@ function InvoicesPage() {
               </Button>
             </div>
 
-            {!loading && (
+            {!isCurrentView && !loading && (
               <Button variant="ghost" size="sm" onClick={loadInvoices}>
+                <RefreshCw className="mr-1 h-4 w-4" />
+                Atualizar
+              </Button>
+            )}
+            {isCurrentView && !loading && (
+              <Button variant="ghost" size="sm" onClick={loadCurrentInvoices}>
                 <RefreshCw className="mr-1 h-4 w-4" />
                 Atualizar
               </Button>
@@ -764,8 +807,11 @@ function InvoicesPage() {
         ) : invoices.length === 0 ? (
           <EmptyState
             icon={CreditCard}
-            title="Nenhuma fatura encontrada"
-            description="Gere faturas a partir dos seus cartões de crédito para acompanhar vencimentos e pagamentos."
+            title={isCurrentView ? 'Nenhuma fatura atual encontrada' : 'Nenhuma fatura encontrada'}
+            description={isCurrentView
+              ? 'Suas faturas aparecerão aqui automaticamente após cadastrar transações no cartão de crédito.'
+              : 'Nenhuma fatura encontrada para o período selecionado. Tente outro mês ou gere manualmente.'
+            }
             action={
               canWrite && creditCardId ? (
                 <Button onClick={handleGenerate}>

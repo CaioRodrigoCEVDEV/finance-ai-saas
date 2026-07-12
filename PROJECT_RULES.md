@@ -91,7 +91,7 @@ Este documento define regras obrigatórias para qualquer IA ou desenvolvedor que
 
 ### Cartões de Crédito
 - **Limite disponível:** `max(limitAmount - usedAmount, 0)`.
-- **`usedAmount`:** soma de despesas PENDING + CONFIRMED (excluindo períodos de fatura já pagos).
+- **`usedAmount`:** soma de despesas menos estornos/reembolsos PENDING + CONFIRMED (excluindo períodos de fatura já pagos).
 - **Não pode deletar cartão com transações vinculadas.** Verificar `count > 0` e bloquear.
 - **Cartão tem `account_id` opcional** (conta para pagamento da fatura).
 - **`closing_day` e `due_day`** controlam o ciclo da fatura.
@@ -247,6 +247,7 @@ Este documento define regras obrigatórias para qualquer IA ou desenvolvedor que
 - `backend/src/utils/validate-request.js`
 - `backend/src/utils/cookie-options.js`
 - `backend/src/utils/credit-card-limit.js`
+- `backend/src/utils/credit-card-invoice.js`
 - `ARCHITECTURE.md`
 - `DESIGN.md`
 - `graphify-out/GRAPH_REPORT.md`

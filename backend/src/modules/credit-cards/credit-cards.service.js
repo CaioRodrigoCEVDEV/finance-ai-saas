@@ -4,7 +4,7 @@ const {
   buildCreditCardExpenseWhere,
   getCreditCardExpenseAmountMap
 } = require('../../utils/credit-card-limit');
-const { calculateCreditCardBillingPeriod } = require('../../utils/credit-card-billing');
+const { calculateCreditCardBillingPeriod, calculateInvoiceAmountForCards } = require('../../utils/credit-card-invoice');
 const planService = require('../plans/plan.service');
 
 function toDecimalString(value) {
@@ -135,7 +135,7 @@ async function listCreditCards(tenantId) {
   const cardRanges = buildCardRanges(creditCards);
   const creditCardIds = creditCards.map((creditCard) => creditCard.id);
   const [invoiceAmountMap, usedAmountMap] = await Promise.all([
-    getCreditCardExpenseAmountMap(prisma, tenantId, creditCardIds, { cardRanges }),
+    calculateInvoiceAmountForCards(prisma, tenantId, creditCardIds, cardRanges),
     getCreditCardExpenseAmountMap(prisma, tenantId, creditCardIds, { cardRanges, excludePaidInvoices: true })
   ]);
 
@@ -155,7 +155,7 @@ async function getCreditCardById(creditCardId, tenantId) {
   const cardPeriod = calculateCreditCardBillingPeriod(creditCard.closing_day, new Date());
   const cardRange = { start: cardPeriod.startDate, end: cardPeriod.endDate };
   const [invoiceAmountMap, usedAmountMap, expenseCountCurrentMonth] = await Promise.all([
-    getCreditCardExpenseAmountMap(prisma, tenantId, creditCard.id, { range: cardRange }),
+    calculateInvoiceAmountForCards(prisma, tenantId, creditCard.id, { range: cardRange }),
     getCreditCardExpenseAmountMap(prisma, tenantId, creditCard.id, { range: cardRange, excludePaidInvoices: true }),
     prisma.transaction.count({
       where: buildCreditCardExpenseWhere(tenantId, creditCard.id, cardRange)

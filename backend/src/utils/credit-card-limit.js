@@ -1,4 +1,6 @@
-const LIMIT_IMPACTING_STATUSES = ['CONFIRMED', 'PENDING'];
+const { INVOICE_IMPACTING_STATUSES } = require('./credit-card-invoice');
+
+const LIMIT_IMPACTING_STATUSES = INVOICE_IMPACTING_STATUSES;
 
 function toNumber(value) {
   return Number(value || 0);
@@ -17,6 +19,28 @@ function buildCreditCardExpenseWhere(tenantId, creditCardIds, range) {
       in: LIMIT_IMPACTING_STATUSES
     },
     type: 'EXPENSE',
+    credit_card_id: ids.length === 1 ? ids[0] : { in: ids }
+  };
+
+  if (range) {
+    where.transaction_date = {
+      gte: range.start,
+      lte: range.end
+    };
+  }
+
+  return where;
+}
+
+function buildCreditCardNetWhere(tenantId, creditCardIds, range) {
+  const ids = normalizeCreditCardIds(creditCardIds);
+  const where = {
+    tenant_id: tenantId,
+    deleted_at: null,
+    status: {
+      in: LIMIT_IMPACTING_STATUSES
+    },
+    type: { in: ['EXPENSE', 'INCOME'] },
     credit_card_id: ids.length === 1 ? ids[0] : { in: ids }
   };
 
@@ -57,10 +81,11 @@ async function queryCardExpenses(prisma, tenantId, ids, range, excludePaidInvoic
 
   const [transactions, paidInvoices] = await Promise.all([
     prisma.transaction.findMany({
-      where: buildCreditCardExpenseWhere(tenantId, ids, range),
+      where: buildCreditCardNetWhere(tenantId, ids, range),
       select: {
         credit_card_id: true,
         amount: true,
+        type: true,
         transaction_date: true
       }
     }),
@@ -88,9 +113,12 @@ async function queryCardExpenses(prisma, tenantId, ids, range, excludePaidInvoic
       return accumulator;
     }
 
+    const amount = toNumber(transaction.amount);
+    const netAmount = transaction.type === 'INCOME' ? -amount : amount;
+
     accumulator.set(
       transaction.credit_card_id,
-      (accumulator.get(transaction.credit_card_id) || 0) + Math.abs(toNumber(transaction.amount))
+      (accumulator.get(transaction.credit_card_id) || 0) + netAmount
     );
 
     return accumulator;
@@ -125,5 +153,6 @@ async function getCreditCardExpenseAmountMap(prisma, tenantId, creditCardIds, { 
 
 module.exports = {
   buildCreditCardExpenseWhere,
+  buildCreditCardNetWhere,
   getCreditCardExpenseAmountMap
 };

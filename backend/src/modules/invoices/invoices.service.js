@@ -1,6 +1,14 @@
 const prisma = require('../../config/prisma');
 const AppError = require('../../utils/app-error');
-const { buildInvoicePeriod, computeEffectiveStatus, formatMonthYear } = require('./invoices.helper');
+const { formatDateOnly, parseLocalDate } = require('../../utils/date-utils');
+const {
+  INVOICE_IMPACTING_STATUSES,
+  countInvoicePurchases,
+  getInvoiceReferenceForDate,
+  recalculateInvoiceTotal,
+  upsertInvoiceForCardPeriod
+} = require('../../utils/credit-card-invoice');
+const { computeEffectiveStatus, formatMonthYear, calculateInvoiceAmount } = require('./invoices.helper');
 
 function toInvoiceResponse(invoice) {
   return {
@@ -25,7 +33,7 @@ function toInvoiceResponse(invoice) {
     paidAmount: Number(invoice.paidAmount),
     status: invoice.status,
     effectiveStatus: computeEffectiveStatus(invoice),
-    paidAt: invoice.paidAt,
+    paidAt: invoice.paidAt ? formatDateOnly(invoice.paidAt) : null,
     paymentAccountId: invoice.paymentAccountId,
     paymentAccount: invoice.paymentAccount ? {
       id: invoice.paymentAccount.id,
@@ -67,23 +75,14 @@ async function findInvoiceByTenant(tenantId, invoiceId) {
   return invoice;
 }
 
-async function calculateInvoiceTotal(creditCardId, periodStart, periodEnd) {
-  const transactions = await prisma.transaction.findMany({
-    where: {
-      credit_card_id: creditCardId,
-      transaction_date: { gte: periodStart, lte: periodEnd },
-      type: 'EXPENSE',
-      deleted_at: null
-    }
-  });
-  return transactions.reduce((sum, t) => sum + Number(t.amount), 0);
-}
-
-async function getInvoiceTransactions(creditCardId, periodStart, periodEnd) {
+async function getInvoiceTransactions(tenantId, creditCardId, periodStart, periodEnd) {
   return prisma.transaction.findMany({
     where: {
+      tenant_id: tenantId,
       credit_card_id: creditCardId,
       transaction_date: { gte: periodStart, lte: periodEnd },
+      status: { in: INVOICE_IMPACTING_STATUSES },
+      type: { in: ['EXPENSE', 'INCOME'] },
       deleted_at: null
     },
     include: {
@@ -100,11 +99,14 @@ async function listInvoices(tenantId, query = {}) {
   const defaultYear = year || now.getFullYear();
   const defaultMonth = month || (now.getMonth() + 1);
 
+  const monthStart = new Date(defaultYear, defaultMonth - 1, 1, 0, 0, 0, 0);
+  const monthEnd = new Date(defaultYear, defaultMonth, 0, 23, 59, 59, 999);
+
   const where = {
     tenantId,
     deletedAt: null,
-    referenceYear: defaultYear,
-    referenceMonth: defaultMonth
+    periodStart: { lte: monthEnd },
+    periodEnd: { gte: monthStart }
   };
   if (creditCardId) where.creditCardId = creditCardId;
   if (status) where.status = status;
@@ -120,15 +122,10 @@ async function listInvoices(tenantId, query = {}) {
 
   const enriched = await Promise.all(
     invoices.map(async (inv) => {
-      const transactionCount = await prisma.transaction.count({
-        where: {
-          credit_card_id: inv.creditCardId,
-          transaction_date: { gte: inv.periodStart, lte: inv.periodEnd },
-          deleted_at: null
-        }
-      });
+      const invoice = await recalculateInvoiceTotal(inv);
+      const transactionCount = await countInvoicePurchases(tenantId, invoice.creditCardId, invoice.periodStart, invoice.periodEnd);
       return {
-        ...toInvoiceResponse(inv),
+        ...toInvoiceResponse(invoice),
         transactionCount
       };
     })
@@ -139,8 +136,6 @@ async function listInvoices(tenantId, query = {}) {
 
 async function getCurrentInvoices(tenantId) {
   const now = new Date();
-  const currentMonth = now.getMonth() + 1;
-  const currentYear = now.getFullYear();
 
   const activeCards = await prisma.creditCard.findMany({
     where: { tenant_id: tenantId, is_active: true, deleted_at: null }
@@ -148,59 +143,36 @@ async function getCurrentInvoices(tenantId) {
 
   const results = [];
   for (const card of activeCards) {
+    const reference = getInvoiceReferenceForDate(card.closing_day, now);
     const existing = await prisma.creditCardInvoice.findFirst({
       where: {
         tenantId,
         creditCardId: card.id,
-        referenceMonth: currentMonth,
-        referenceYear: currentYear,
+        referenceMonth: reference.referenceMonth,
+        referenceYear: reference.referenceYear,
         deletedAt: null
       },
       include: { creditCard: true, paymentAccount: true }
     });
 
     if (existing) {
-      const transactionCount = await prisma.transaction.count({
-        where: {
-          credit_card_id: card.id,
-          transaction_date: { gte: existing.periodStart, lte: existing.periodEnd },
-          deleted_at: null
-        }
-      });
-      results.push({ ...toInvoiceResponse(existing), transactionCount });
+      const invoice = await recalculateInvoiceTotal(existing);
+      const transactionCount = await countInvoicePurchases(tenantId, card.id, invoice.periodStart, invoice.periodEnd);
+      results.push({ ...toInvoiceResponse(invoice), transactionCount });
     } else {
-      const period = buildInvoicePeriod({
-        referenceMonth: currentMonth,
-        referenceYear: currentYear,
-        closingDay: card.closing_day,
-        dueDay: card.due_day
-      });
-      const totalAmount = await calculateInvoiceTotal(card.id, period.periodStart, period.periodEnd);
-
-      const created = await prisma.creditCardInvoice.create({
-        data: {
-          tenantId,
-          creditCardId: card.id,
-          referenceMonth: currentMonth,
-          referenceYear: currentYear,
-          periodStart: period.periodStart,
-          periodEnd: period.periodEnd,
-          closingDate: period.closingDate,
-          dueDate: period.dueDate,
-          totalAmount,
-          status: 'OPEN'
-        },
+      const created = await upsertInvoiceForCardPeriod(
+        tenantId,
+        card,
+        reference.referenceMonth,
+        reference.referenceYear
+      );
+      const createdWithRelations = await prisma.creditCardInvoice.findFirst({
+        where: { id: created.id, tenantId, deletedAt: null },
         include: { creditCard: true, paymentAccount: true }
       });
 
-      const transactionCount = await prisma.transaction.count({
-        where: {
-          credit_card_id: card.id,
-          transaction_date: { gte: created.periodStart, lte: created.periodEnd },
-          deleted_at: null
-        }
-      });
-      results.push({ ...toInvoiceResponse(created), transactionCount });
+      const transactionCount = await countInvoicePurchases(tenantId, card.id, created.periodStart, created.periodEnd);
+      results.push({ ...toInvoiceResponse(createdWithRelations), transactionCount });
     }
   }
 
@@ -209,18 +181,19 @@ async function getCurrentInvoices(tenantId) {
 }
 
 async function getInvoice(tenantId, invoiceId) {
-  const invoice = await findInvoiceByTenant(tenantId, invoiceId);
-  const transactions = await getInvoiceTransactions(invoice.creditCardId, invoice.periodStart, invoice.periodEnd);
+  const invoice = await recalculateInvoiceTotal(await findInvoiceByTenant(tenantId, invoiceId));
+  const transactions = await getInvoiceTransactions(tenantId, invoice.creditCardId, invoice.periodStart, invoice.periodEnd);
 
   const totalAmount = Number(invoice.totalAmount);
   const paidAmount = Number(invoice.paidAmount);
   const remainingAmount = totalAmount - paidAmount;
+  const transactionCount = await countInvoicePurchases(tenantId, invoice.creditCardId, invoice.periodStart, invoice.periodEnd);
 
   return {
     invoice: toInvoiceResponse(invoice),
     transactions: transactions.map((t) => ({
       id: t.id,
-      date: t.transaction_date,
+      date: formatDateOnly(t.transaction_date),
       description: t.description,
       amount: Number(t.amount),
       type: t.type,
@@ -230,7 +203,7 @@ async function getInvoice(tenantId, invoiceId) {
     })),
     summary: {
       totalAmount,
-      transactionCount: transactions.length,
+      transactionCount,
       paidAmount,
       remainingAmount
     }
@@ -254,45 +227,13 @@ async function generateInvoice(tenantId, { creditCardId, referenceMonth, referen
     throw new AppError('Fatura paga não pode ser recalculada', 422);
   }
 
-  const period = buildInvoicePeriod({
-    referenceMonth,
-    referenceYear,
-    closingDay: card.closing_day,
-    dueDay: card.due_day
-  });
-  const totalAmount = await calculateInvoiceTotal(creditCardId, period.periodStart, period.periodEnd);
-
-  const invoice = await prisma.creditCardInvoice.upsert({
-    where: existing ? { id: existing.id } : { id: '' },
-    create: {
-      tenantId,
-      creditCardId,
-      referenceMonth,
-      referenceYear,
-      periodStart: period.periodStart,
-      periodEnd: period.periodEnd,
-      closingDate: period.closingDate,
-      dueDate: period.dueDate,
-      totalAmount,
-      status: 'OPEN'
-    },
-    update: {
-      periodStart: period.periodStart,
-      periodEnd: period.periodEnd,
-      closingDate: period.closingDate,
-      dueDate: period.dueDate,
-      totalAmount
-    },
+  const generated = await upsertInvoiceForCardPeriod(tenantId, card, referenceMonth, referenceYear);
+  const invoice = await prisma.creditCardInvoice.findFirst({
+    where: { id: generated.id, tenantId, deletedAt: null },
     include: { creditCard: true, paymentAccount: true }
   });
 
-  const transactionCount = await prisma.transaction.count({
-    where: {
-      credit_card_id: creditCardId,
-      transaction_date: { gte: period.periodStart, lte: period.periodEnd },
-      deleted_at: null
-    }
-  });
+  const transactionCount = await countInvoicePurchases(tenantId, creditCardId, invoice.periodStart, invoice.periodEnd);
 
   return { ...toInvoiceResponse(invoice), transactionCount };
 }
@@ -304,21 +245,29 @@ async function recalculateInvoice(tenantId, invoiceId) {
     throw new AppError('Fatura paga não pode ser recalculada', 422);
   }
 
-  const totalAmount = await calculateInvoiceTotal(invoice.creditCardId, invoice.periodStart, invoice.periodEnd);
+  const { buildInvoicePeriod } = require('../../utils/credit-card-invoice');
+  const period = buildInvoicePeriod({
+    referenceMonth: invoice.referenceMonth,
+    referenceYear: invoice.referenceYear,
+    closingDay: invoice.creditCard.closing_day,
+    dueDay: invoice.creditCard.due_day
+  });
+
+  const totalAmount = await calculateInvoiceAmount(tenantId, invoice.creditCardId, period.periodStart, period.periodEnd);
 
   const updated = await prisma.creditCardInvoice.update({
     where: { id: invoiceId },
-    data: { totalAmount },
+    data: {
+      totalAmount,
+      periodStart: period.periodStart,
+      periodEnd: period.periodEnd,
+      closingDate: period.closingDate,
+      dueDate: period.dueDate
+    },
     include: { creditCard: true, paymentAccount: true }
   });
 
-  const transactionCount = await prisma.transaction.count({
-    where: {
-      credit_card_id: invoice.creditCardId,
-      transaction_date: { gte: updated.periodStart, lte: updated.periodEnd },
-      deleted_at: null
-    }
-  });
+  const transactionCount = await countInvoicePurchases(tenantId, invoice.creditCardId, updated.periodStart, updated.periodEnd);
 
   return { ...toInvoiceResponse(updated), transactionCount };
 }
@@ -353,7 +302,7 @@ async function payInvoice(tenantId, invoiceId, userId, { accountId, paymentDate,
       amount: paymentAmount,
       type: 'EXPENSE',
       status: 'CONFIRMED',
-      transaction_date: new Date(paymentDate),
+      transaction_date: parseLocalDate(paymentDate),
       payment_method: 'OTHER',
       source: 'CREDIT_CARD_PAYMENT',
       notes: notes || null
@@ -365,20 +314,14 @@ async function payInvoice(tenantId, invoiceId, userId, { accountId, paymentDate,
     data: {
       status: 'PAID',
       paidAmount: paymentAmount,
-      paidAt: new Date(paymentDate),
+      paidAt: parseLocalDate(paymentDate),
       paymentAccountId: accountId,
       paymentTransactionId: paymentTransaction.id
     },
     include: { creditCard: true, paymentAccount: true }
   });
 
-  const transactionCount = await prisma.transaction.count({
-    where: {
-      credit_card_id: invoice.creditCardId,
-      transaction_date: { gte: updated.periodStart, lte: updated.periodEnd },
-      deleted_at: null
-    }
-  });
+  const transactionCount = await countInvoicePurchases(tenantId, invoice.creditCardId, updated.periodStart, updated.periodEnd);
 
   return { ...toInvoiceResponse(updated), transactionCount };
 }
@@ -409,13 +352,7 @@ async function cancelInvoicePayment(tenantId, invoiceId) {
     include: { creditCard: true, paymentAccount: true }
   });
 
-  const transactionCount = await prisma.transaction.count({
-    where: {
-      credit_card_id: invoice.creditCardId,
-      transaction_date: { gte: updated.periodStart, lte: updated.periodEnd },
-      deleted_at: null
-    }
-  });
+  const transactionCount = await countInvoicePurchases(tenantId, invoice.creditCardId, updated.periodStart, updated.periodEnd);
 
   return { ...toInvoiceResponse(updated), transactionCount };
 }
@@ -436,8 +373,9 @@ async function getInvoiceSummary(tenantId) {
   let overdueCount = 0;
 
   for (const inv of invoices) {
-    const effectiveStatus = computeEffectiveStatus(inv);
-    const amount = Number(inv.totalAmount) - Number(inv.paidAmount);
+    const invoice = await recalculateInvoiceTotal(inv);
+    const effectiveStatus = computeEffectiveStatus(invoice);
+    const amount = Number(invoice.totalAmount) - Number(invoice.paidAmount);
 
     if (effectiveStatus !== 'PAID') {
       totalOpen += amount;
@@ -447,8 +385,8 @@ async function getInvoiceSummary(tenantId) {
       overdueCount += 1;
     }
 
-    if (effectiveStatus !== 'PAID' && (!nextDue || new Date(inv.dueDate) < new Date(nextDue))) {
-      nextDue = inv.dueDate;
+    if (effectiveStatus !== 'PAID' && (!nextDue || new Date(invoice.dueDate) < new Date(nextDue))) {
+      nextDue = invoice.dueDate;
     }
   }
 

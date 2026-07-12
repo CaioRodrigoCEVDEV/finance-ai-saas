@@ -1,5 +1,6 @@
 const { z } = require('zod');
 const AppError = require('../../utils/app-error');
+const { parseLocalDate } = require('../../utils/date-utils');
 
 function normalizeOptionalText(value) {
   if (value === undefined || value === null) {
@@ -13,8 +14,8 @@ function normalizeOptionalDate(value) {
   if (value === undefined || value === null || value === '') {
     return undefined;
   }
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
+  const date = parseLocalDate(value);
+  if (!date || Number.isNaN(date.getTime())) {
     return Number.NaN;
   }
   return date;

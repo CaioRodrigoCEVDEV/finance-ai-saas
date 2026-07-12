@@ -1,6 +1,7 @@
 const { z } = require('zod');
 
 const AppError = require('../../utils/app-error');
+const { parseLocalDate } = require('../../utils/date-utils');
 
 const RECURRENCE_TYPES = ['INCOME', 'EXPENSE'];
 const RECURRENCE_FREQUENCIES = ['DAILY', 'WEEKLY', 'BIWEEKLY', 'MONTHLY', 'BIMONTHLY', 'QUARTERLY', 'SEMIANNUAL', 'YEARLY'];
@@ -71,9 +72,9 @@ function normalizeOptionalDate(value) {
     return undefined;
   }
 
-  const parsedDate = new Date(value);
+  const parsedDate = parseLocalDate(value);
 
-  if (Number.isNaN(parsedDate.getTime())) {
+  if (!parsedDate || Number.isNaN(parsedDate.getTime())) {
     return new Date('invalid');
   }
 

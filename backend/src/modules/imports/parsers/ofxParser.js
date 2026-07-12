@@ -3,12 +3,10 @@ function parseOfxDate(value) {
   const str = String(value).trim();
   // OFX format: YYYYMMDDHHMMSS or YYYYMMDD
   const y = Number(str.substring(0, 4));
-  const m = Number(str.substring(4, 6)) - 1;
-  const d = Number(str.substring(6, 8));
-  if (Number.isNaN(y) || Number.isNaN(m) || Number.isNaN(d)) return null;
-  const date = new Date(y, m, d);
-  if (Number.isNaN(date.getTime())) return null;
-  return date.toISOString().split('T')[0];
+  const m = String(Number(str.substring(4, 6))).padStart(2, '0');
+  const d = String(Number(str.substring(6, 8))).padStart(2, '0');
+  if (Number.isNaN(y) || Number.isNaN(Number(m)) || Number.isNaN(Number(d))) return null;
+  return `${y}-${m}-${d}`;
 }
 
 function parseOfx(buffer) {
