@@ -529,49 +529,56 @@ async function getMonthSummary(tenantId, filters) {
   const year = filters.year || now.getFullYear();
   const range = getMonthRange(month, year);
 
-  const [totals, totalTransactions] = await Promise.all([
-    prisma.transaction.groupBy({
-      by: ['type'],
+  const baseWhere = {
+    tenant_id: tenantId,
+    deleted_at: null,
+    status: 'CONFIRMED',
+    transaction_date: {
+      gte: range.start,
+      lte: range.end
+    }
+  };
+
+  const [incomeResult, expensePaidResult, creditCardSpentResult, totalTransactions] = await Promise.all([
+    prisma.transaction.aggregate({
       where: {
-        tenant_id: tenantId,
-        deleted_at: null,
-        status: 'CONFIRMED',
-        transaction_date: {
-          gte: range.start,
-          lte: range.end
-        },
-        type: {
-          in: ['INCOME', 'EXPENSE', 'INVESTMENT']
-        }
+        ...baseWhere,
+        type: 'INCOME'
       },
-      _sum: {
-        amount: true
-      }
+      _sum: { amount: true }
+    }),
+    prisma.transaction.aggregate({
+      where: {
+        ...baseWhere,
+        type: 'EXPENSE',
+        payment_method: { not: 'CREDIT_CARD' }
+      },
+      _sum: { amount: true }
+    }),
+    prisma.transaction.aggregate({
+      where: {
+        ...baseWhere,
+        type: 'EXPENSE',
+        payment_method: 'CREDIT_CARD'
+      },
+      _sum: { amount: true }
     }),
     prisma.transaction.count({
-      where: {
-        tenant_id: tenantId,
-        deleted_at: null,
-        status: 'CONFIRMED',
-        transaction_date: {
-          gte: range.start,
-          lte: range.end
-        }
-      }
+      where: baseWhere
     })
   ]);
 
-  const income = toNumber(totals.find((item) => item.type === 'INCOME')?._sum.amount);
-  const expense = toNumber(totals.find((item) => item.type === 'EXPENSE')?._sum.amount);
-  const investment = toNumber(totals.find((item) => item.type === 'INVESTMENT')?._sum.amount);
+  const income = toNumber(incomeResult._sum.amount);
+  const expensePaid = toNumber(expensePaidResult._sum.amount);
+  const creditCardSpent = toNumber(creditCardSpentResult._sum.amount);
 
   return {
     month,
     year,
     income,
-    expense,
-    investment,
-    balance: income - expense - investment,
+    expensePaid,
+    creditCardSpent,
+    balance: income - expensePaid,
     totalTransactions
   };
 }

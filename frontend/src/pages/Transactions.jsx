@@ -57,8 +57,8 @@ const initialSummary = {
   month: null,
   year: null,
   income: 0,
-  expense: 0,
-  investment: 0,
+  expensePaid: 0,
+  creditCardSpent: 0,
   balance: 0,
   totalTransactions: 0
 };
