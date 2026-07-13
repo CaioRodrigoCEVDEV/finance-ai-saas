@@ -1,26 +1,8 @@
 const prisma = require('../../config/prisma');
 const { formatDateOnly } = require('../../utils/date-utils');
-const { calculateNextRunDate } = require('../recurrences/recurrences.service');
 
 function toNumber(value) {
   return Number(value || 0);
-}
-
-function toISOString(date) {
-  if (!date) return null;
-  return new Date(date).toISOString();
-}
-
-function getStartOfDay(date) {
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
-function getEndOfDay(date) {
-  const d = new Date(date);
-  d.setHours(23, 59, 59, 999);
-  return d;
 }
 
 function getMonthRange(year, month) {
@@ -39,23 +21,6 @@ function getTransactionInclude() {
     },
     credit_card: {
       select: { id: true, name: true, brand: true, closing_day: true, due_day: true }
-    },
-    recurrence: {
-      select: { id: true }
-    }
-  };
-}
-
-function getRecurrenceInclude() {
-  return {
-    account: {
-      select: { id: true, name: true }
-    },
-    creditCard: {
-      select: { id: true, name: true, brand: true, closing_day: true, due_day: true }
-    },
-    category: {
-      select: { id: true, name: true, color: true, type: true }
     }
   };
 }
@@ -83,69 +48,8 @@ function buildEventFromTransaction(transaction) {
       id: transaction.credit_card.id,
       name: transaction.credit_card.name,
       brand: transaction.credit_card.brand
-    } : null,
-    recurrenceId: transaction.recurrence_id || null
+    } : null
   };
-}
-
-function buildEventFromRecurrencePreview(recurrence, date) {
-  return {
-    id: `recurrence-preview-${recurrence.id}-${date}`,
-    kind: 'RECURRENCE_PREVIEW',
-    title: recurrence.description,
-    description: recurrence.description,
-    type: recurrence.type,
-    status: 'SCHEDULED',
-    amount: toNumber(recurrence.amount),
-    date: date,
-    category: recurrence.category ? {
-      id: recurrence.category.id,
-      name: recurrence.category.name,
-      color: recurrence.category.color
-    } : null,
-    account: recurrence.account ? {
-      id: recurrence.account.id,
-      name: recurrence.account.name
-    } : null,
-    creditCard: recurrence.creditCard ? {
-      id: recurrence.creditCard.id,
-      name: recurrence.creditCard.name,
-      brand: recurrence.creditCard.brand
-    } : null,
-    recurrenceId: recurrence.id
-  };
-}
-
-function getRecurringDatesInMonth(recurrence, year, month) {
-  const { monthStart, monthEnd } = getMonthRange(year, month);
-  const dates = [];
-
-  if (recurrence.status !== 'ACTIVE') return dates;
-
-  const startDate = new Date(recurrence.startDate);
-  const endDate = recurrence.endDate ? new Date(recurrence.endDate) : null;
-
-  let currentDate = new Date(startDate);
-  currentDate.setHours(0, 0, 0, 0);
-
-  const monthEndTime = monthEnd.getTime();
-
-  const MAX_ITERATIONS = 1000;
-  let iterations = 0;
-
-  while (currentDate.getTime() <= monthEndTime) {
-    if (iterations++ > MAX_ITERATIONS) break;
-    if (endDate && currentDate.getTime() > endDate.getTime()) break;
-
-    if (currentDate.getTime() >= monthStart.getTime() && currentDate.getTime() <= monthEndTime) {
-      dates.push(new Date(currentDate).toISOString().split('T')[0]);
-    }
-
-    currentDate = calculateNextRunDate(currentDate, recurrence.frequency);
-    currentDate.setHours(0, 0, 0, 0);
-  }
-
-  return dates;
 }
 
 async function buildFinancialCalendar({ tenantId, year, month }) {
@@ -155,7 +59,6 @@ async function buildFinancialCalendar({ tenantId, year, month }) {
     where: {
       tenant_id: tenantId,
       deleted_at: null,
-      status: { not: 'CANCELED' },
       transaction_date: {
         gte: monthStart,
         lte: monthEnd
@@ -164,29 +67,6 @@ async function buildFinancialCalendar({ tenantId, year, month }) {
     include: getTransactionInclude(),
     orderBy: { transaction_date: 'asc' }
   });
-
-  const recurrences = await prisma.recurrence.findMany({
-    where: {
-      tenantId,
-      deletedAt: null,
-      status: 'ACTIVE',
-      startDate: { lte: monthEnd }
-    },
-    include: getRecurrenceInclude()
-  });
-
-  const generatedOccurrenceIds = new Map();
-
-  for (const tx of transactions) {
-    if (!tx.recurrence_id) continue;
-
-    const occurrenceKey = tx.recurrence_occurrence_date
-      ? tx.recurrence_occurrence_date.toISOString().split('T')[0]
-      : tx.transaction_date.toISOString().split('T')[0];
-
-    const compositeKey = `${tx.recurrence_id}::${occurrenceKey}`;
-    generatedOccurrenceIds.set(compositeKey, true);
-  }
 
   const eventsByDay = new Map();
 
@@ -205,31 +85,6 @@ async function buildFinancialCalendar({ tenantId, year, month }) {
       dayData.expense += toNumber(tx.amount);
     }
     dayData.events.push(event);
-  }
-
-  for (const recurrence of recurrences) {
-    const recurringDates = getRecurringDatesInMonth(recurrence, year, month);
-
-    for (const dateStr of recurringDates) {
-      const compositeKey = `${recurrence.id}::${dateStr}`;
-      if (generatedOccurrenceIds.has(compositeKey)) {
-        continue;
-      }
-
-      const event = buildEventFromRecurrencePreview(recurrence, dateStr);
-
-      if (!eventsByDay.has(dateStr)) {
-        eventsByDay.set(dateStr, { income: 0, expense: 0, events: [] });
-      }
-
-      const dayData = eventsByDay.get(dateStr);
-      if (recurrence.type === 'INCOME') {
-        dayData.income += toNumber(recurrence.amount);
-      } else {
-        dayData.expense += toNumber(recurrence.amount);
-      }
-      dayData.events.push(event);
-    }
   }
 
   const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
@@ -280,6 +135,17 @@ async function buildFinancialCalendar({ tenantId, year, month }) {
 
   const projectedBalance = scheduledIncome - scheduledExpense;
 
+  const debugInfo = {
+    transactionCount: transactions.length,
+    transactionIds: transactions.map(tx => tx.id),
+    transactionDates: transactions.map(tx => formatDateOnly(tx.transaction_date)),
+    transactionAmounts: transactions.map(tx => ({ id: tx.id, amount: toNumber(tx.amount), type: tx.type })),
+    totalIncomeCalculated: Math.round(totalIncome * 100) / 100,
+    totalExpenseCalculated: Math.round(totalExpense * 100) / 100
+  };
+
+  console.log('[Calendar Debug]', JSON.stringify(debugInfo, null, 2));
+
   return {
     year,
     month,
@@ -295,11 +161,11 @@ async function buildFinancialCalendar({ tenantId, year, month }) {
       projectedBalance: Math.round(projectedBalance * 100) / 100,
       eventCount
     },
-    days
+    days,
+    _debug: debugInfo
   };
 }
 
 module.exports = {
-  buildFinancialCalendar,
-  getRecurringDatesInMonth
+  buildFinancialCalendar
 };

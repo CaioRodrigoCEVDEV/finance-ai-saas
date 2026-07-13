@@ -28,8 +28,7 @@ const FILTER_OPTIONS = [
   { value: 'all', label: 'Todos' },
   { value: 'INCOME', label: 'Receitas' },
   { value: 'EXPENSE', label: 'Despesas' },
-  { value: 'PENDING', label: 'Pendentes' },
-  { value: 'RECURRENCE_PREVIEW', label: 'Previsões' }
+  { value: 'PENDING', label: 'Pendentes' }
 ];
 
 function getMonthName(year, month) {
@@ -130,7 +129,6 @@ export default function FinancialCalendarPage() {
     if (filter === 'INCOME') return events.filter((e) => e.type === 'INCOME');
     if (filter === 'EXPENSE') return events.filter((e) => e.type === 'EXPENSE');
     if (filter === 'PENDING') return events.filter((e) => e.status === 'PENDING');
-    if (filter === 'RECURRENCE_PREVIEW') return events.filter((e) => e.kind === 'RECURRENCE_PREVIEW');
     return events;
   }
 
