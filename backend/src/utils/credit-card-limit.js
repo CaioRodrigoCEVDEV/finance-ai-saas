@@ -19,7 +19,8 @@ function buildCreditCardExpenseWhere(tenantId, creditCardIds, range) {
       in: LIMIT_IMPACTING_STATUSES
     },
     type: 'EXPENSE',
-    credit_card_id: ids.length === 1 ? ids[0] : { in: ids }
+    credit_card_id: ids.length === 1 ? ids[0] : { in: ids },
+    source: { not: 'CREDIT_CARD_PAYMENT' }
   };
 
   if (range) {
@@ -41,7 +42,8 @@ function buildCreditCardNetWhere(tenantId, creditCardIds, range) {
       in: LIMIT_IMPACTING_STATUSES
     },
     type: { in: ['EXPENSE', 'INCOME'] },
-    credit_card_id: ids.length === 1 ? ids[0] : { in: ids }
+    credit_card_id: ids.length === 1 ? ids[0] : { in: ids },
+    source: { not: 'CREDIT_CARD_PAYMENT' }
   };
 
   if (range) {

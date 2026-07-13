@@ -328,7 +328,8 @@ async function getReportByCreditCard(tenantId, filters) {
       credit_card_id: {
         not: null
       },
-      type: 'EXPENSE'
+      type: 'EXPENSE',
+      source: { not: 'CREDIT_CARD_PAYMENT' }
     },
     _sum: {
       amount: true

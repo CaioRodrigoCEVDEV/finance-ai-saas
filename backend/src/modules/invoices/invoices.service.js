@@ -83,6 +83,7 @@ async function getInvoiceTransactions(tenantId, creditCardId, periodStart, perio
       transaction_date: { gte: periodStart, lte: periodEnd },
       status: { in: INVOICE_IMPACTING_STATUSES },
       type: { in: ['EXPENSE', 'INCOME'] },
+      source: { not: 'CREDIT_CARD_PAYMENT' },
       deleted_at: null
     },
     include: {
@@ -291,13 +292,14 @@ async function payInvoice(tenantId, invoiceId, userId, { accountId, paymentDate,
   }
 
   const creditCardName = invoice.creditCard?.name || 'Cartão';
-  const description = `Pagamento fatura ${creditCardName} - ${formatMonthYear(invoice.referenceMonth, invoice.referenceYear)}`;
+  const description = `Pagamento da Fatura - ${creditCardName} - ${formatMonthYear(invoice.referenceMonth, invoice.referenceYear)}`;
 
   const paymentTransaction = await prisma.transaction.create({
     data: {
       tenant_id: tenantId,
       user_id: userId,
       account_id: accountId,
+      credit_card_id: invoice.creditCardId,
       description,
       amount: paymentAmount,
       type: 'EXPENSE',

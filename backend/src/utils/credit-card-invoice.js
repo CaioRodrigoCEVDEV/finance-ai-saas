@@ -103,6 +103,7 @@ function buildInvoiceTransactionWhere(tenantId, creditCardId, periodStart, perio
     transaction_date: { gte: periodStart, lte: periodEnd },
     status: { in: INVOICE_IMPACTING_STATUSES },
     type: { in: ['EXPENSE', 'INCOME'] },
+    source: { not: 'CREDIT_CARD_PAYMENT' },
     deleted_at: null
   };
 }
@@ -124,6 +125,7 @@ async function countInvoicePurchases(tenantId, creditCardId, periodStart, period
       transaction_date: { gte: periodStart, lte: periodEnd },
       status: { in: INVOICE_IMPACTING_STATUSES },
       type: 'EXPENSE',
+      source: { not: 'CREDIT_CARD_PAYMENT' },
       deleted_at: null
     }
   });
@@ -263,6 +265,7 @@ async function calculateInvoiceAmountForCards(prisma, tenantId, cardIds, { cardR
           transaction_date: { gte: cardRange.start, lte: cardRange.end },
           status: { in: INVOICE_IMPACTING_STATUSES },
           type: { in: ['EXPENSE', 'INCOME'] },
+          source: { not: 'CREDIT_CARD_PAYMENT' },
           deleted_at: null
         },
         select: { amount: true, type: true }
