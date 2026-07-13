@@ -42,15 +42,15 @@ function DashboardOverviewCards({ data, tenantName, periodLabel, comparison }) {
     },
     {
       title: 'Despesas do período',
-      value: formatCurrencyPrivacy(data.monthlyExpense),
-      description: `${formatPercentage(data.expensePercentage)} da receita do período.`,
+      value: formatCurrencyPrivacy(data.monthlyExpensePaid),
+      description: `Saídas efetivamente pagas em ${periodLabel || 'o período selecionado'}.`,
       variant: 'negative',
-      comparison: formatComparison(comparison?.monthlyExpense)
+      comparison: formatComparison(comparison?.monthlyExpensePaid)
     },
     {
       title: 'Economia do período',
       value: formatCurrencyPrivacy(data.monthlyEconomy),
-      description: `Receitas menos despesas e investimentos confirmados em ${periodLabel || 'o período selecionado'}.`,
+      description: `Receitas menos despesas pagas em ${periodLabel || 'o período selecionado'}.`,
       variant: data.monthlyEconomy >= 0 ? 'positive' : 'negative',
       comparison: formatComparison(comparison?.monthlyEconomy)
     }

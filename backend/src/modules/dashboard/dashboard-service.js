@@ -14,6 +14,14 @@ function toNumber(value) {
   return Number(value || 0);
 }
 
+function buildCashFlowExpenseWhere(baseWhere) {
+  return {
+    ...baseWhere,
+    type: 'EXPENSE',
+    payment_method: { not: 'CREDIT_CARD' }
+  };
+}
+
 function buildComparison(current, previous) {
   const currentValue = toNumber(current);
   const previousValue = toNumber(previous);
@@ -95,37 +103,43 @@ async function computeTotalBalance(tenantId, endDate) {
 }
 
 async function getPeriodSummaryMetrics(tenantId, range) {
-  const transactionTotals = await prisma.transaction.groupBy({
-    by: ['type'],
-    where: {
-      tenant_id: tenantId,
-      deleted_at: null,
-      status: 'CONFIRMED',
-      transaction_date: {
-        gte: range.start,
-        lte: range.end
-      },
-      type: {
-        in: ['INCOME', 'EXPENSE', 'INVESTMENT']
-      }
-    },
-    _sum: {
-      amount: true
+  const baseWhere = {
+    tenant_id: tenantId,
+    deleted_at: null,
+    status: 'CONFIRMED',
+    transaction_date: {
+      gte: range.start,
+      lte: range.end
     }
-  });
+  };
 
-  const monthlyIncome = toNumber(transactionTotals.find((item) => item.type === 'INCOME')?._sum.amount);
-  const monthlyExpense = toNumber(transactionTotals.find((item) => item.type === 'EXPENSE')?._sum.amount);
-  const monthlyInvestment = toNumber(transactionTotals.find((item) => item.type === 'INVESTMENT')?._sum.amount);
-  const monthlyEconomy = Number((monthlyIncome - monthlyExpense - monthlyInvestment).toFixed(2));
+  const [incomeResult, expensePaidResult, creditCardSpentResult] = await Promise.all([
+    prisma.transaction.aggregate({
+      where: { ...baseWhere, type: 'INCOME' },
+      _sum: { amount: true }
+    }),
+    prisma.transaction.aggregate({
+      where: buildCashFlowExpenseWhere(baseWhere),
+      _sum: { amount: true }
+    }),
+    prisma.transaction.aggregate({
+      where: { ...baseWhere, type: 'EXPENSE', payment_method: 'CREDIT_CARD' },
+      _sum: { amount: true }
+    })
+  ]);
+
+  const monthlyIncome = toNumber(incomeResult._sum.amount);
+  const monthlyExpensePaid = toNumber(expensePaidResult._sum.amount);
+  const monthlyCreditCardSpent = toNumber(creditCardSpentResult._sum.amount);
+  const monthlyEconomy = Number((monthlyIncome - monthlyExpensePaid).toFixed(2));
   const expensePercentage = monthlyIncome > 0
-    ? Number(((monthlyExpense / monthlyIncome) * 100).toFixed(2))
+    ? Number(((monthlyExpensePaid / monthlyIncome) * 100).toFixed(2))
     : 0;
 
   return {
     monthlyIncome,
-    monthlyExpense,
-    monthlyInvestment,
+    monthlyExpensePaid,
+    monthlyCreditCardSpent,
     monthlyEconomy,
     expensePercentage
   };
@@ -159,8 +173,8 @@ async function getSummary(tenantId, periodInput = {}) {
     comparison: {
       totalBalance: buildComparison(totalBalance, previousTotalBalance),
       monthlyIncome: buildComparison(transactionTotals.monthlyIncome, previousSummary.monthlyIncome),
-      monthlyExpense: buildComparison(transactionTotals.monthlyExpense, previousSummary.monthlyExpense),
-      monthlyInvestment: buildComparison(transactionTotals.monthlyInvestment, previousSummary.monthlyInvestment),
+      monthlyExpensePaid: buildComparison(transactionTotals.monthlyExpensePaid, previousSummary.monthlyExpensePaid),
+      monthlyCreditCardSpent: buildComparison(transactionTotals.monthlyCreditCardSpent, previousSummary.monthlyCreditCardSpent),
       monthlyEconomy: buildComparison(transactionTotals.monthlyEconomy, previousSummary.monthlyEconomy)
     }
   };
@@ -174,6 +188,7 @@ async function getExpenseCategoryRows(tenantId, range) {
       deleted_at: null,
       status: 'CONFIRMED',
       type: 'EXPENSE',
+      payment_method: { not: 'CREDIT_CARD' },
       transaction_date: {
         gte: range.start,
         lte: range.end
@@ -323,7 +338,8 @@ async function getMonthlyFlow(tenantId, periodInput = {}) {
       },
       type: {
         in: ['INCOME', 'EXPENSE']
-      }
+      },
+      payment_method: { not: 'CREDIT_CARD' }
     },
     select: {
       amount: true,
@@ -738,26 +754,27 @@ async function getAlerts(tenantId, periodInput = {}) {
     _sum: { amount: true }
   });
 
-  const expenseAgg = await prisma.transaction.aggregate({
+  const expensePaidAgg = await prisma.transaction.aggregate({
     where: {
       tenant_id: tenantId,
       deleted_at: null,
       status: 'CONFIRMED',
       transaction_date: { gte: range.start, lte: range.end },
-      type: 'EXPENSE'
+      type: 'EXPENSE',
+      payment_method: { not: 'CREDIT_CARD' }
     },
     _sum: { amount: true }
   });
 
   const monthlyIncome = toNumber(incomeAgg._sum.amount);
-  const monthlyExpense = toNumber(expenseAgg._sum.amount);
+  const monthlyExpensePaid = toNumber(expensePaidAgg._sum.amount);
 
-  if (monthlyExpense > monthlyIncome) {
+  if (monthlyExpensePaid > monthlyIncome) {
     alerts.push({
       type: 'EXPENSE_GREATER_THAN_INCOME',
       severity: 'danger',
       title: 'Despesas superam receitas',
-      message: `Suas despesas (${monthlyExpense.toFixed(2)}) são maiores que suas receitas (${monthlyIncome.toFixed(2)}) no período selecionado.`,
+      message: `Suas despesas pagas (${monthlyExpensePaid.toFixed(2)}) são maiores que suas receitas (${monthlyIncome.toFixed(2)}) no período selecionado.`,
       entityId: null,
       entityType: 'summary'
     });
@@ -809,6 +826,7 @@ async function getTopExpenses(tenantId, periodInput = {}) {
       deleted_at: null,
       status: 'CONFIRMED',
       type: 'EXPENSE',
+      payment_method: { not: 'CREDIT_CARD' },
       transaction_date: { gte: period.range.start, lte: period.range.end }
     },
     orderBy: { amount: 'desc' },
