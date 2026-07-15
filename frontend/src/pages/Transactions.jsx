@@ -47,7 +47,9 @@ const initialFilters = {
   search: '',
   type: '',
   status: '',
+  origin: '',
   accountId: '',
+  creditCardId: '',
   categoryId: '',
   startDate: getFirstDayOfMonth(),
   endDate: getLastDayOfMonth()
@@ -193,10 +195,25 @@ function Transactions() {
   function handleFilterChange(event) {
     const { name, value } = event.target;
 
-    setFilters((currentFilters) => ({
-      ...currentFilters,
-      [name]: value
-    }));
+    setFilters((currentFilters) => {
+      const nextFilters = {
+        ...currentFilters,
+        [name]: value
+      };
+
+      if (name === 'origin') {
+        if (value === 'credit_card') {
+          nextFilters.accountId = '';
+        } else if (value === 'account') {
+          nextFilters.creditCardId = '';
+        } else {
+          nextFilters.accountId = '';
+          nextFilters.creditCardId = '';
+        }
+      }
+
+      return nextFilters;
+    });
   }
 
   async function applyFilters() {
@@ -440,6 +457,7 @@ function Transactions() {
           filters={filters}
           accounts={accounts}
           categories={categories.filter((category) => !filters.type || category.type === filters.type)}
+          creditCards={creditCards}
           loading={loading}
           onChange={handleFilterChange}
           onClear={handleClearFilters}

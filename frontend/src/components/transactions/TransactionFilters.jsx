@@ -18,6 +18,12 @@ const STATUS_OPTIONS = [
   { value: 'CANCELED', label: 'Cancelada' }
 ];
 
+const ORIGIN_OPTIONS = [
+  { value: '', label: 'Todas' },
+  { value: 'account', label: 'Conta bancária' },
+  { value: 'credit_card', label: 'Cartão de crédito' }
+];
+
 const PRESETS = [
   { key: 'today', label: 'Hoje' },
   { key: 'last7', label: 'Últimos 7 dias' },
@@ -29,13 +35,22 @@ const PRESETS = [
   { key: 'custom', label: 'Personalizado' }
 ];
 
-function TransactionFilters({ filters, accounts, categories, loading, onChange, onClear, onPeriodPreset }) {
+function TransactionFilters({ filters, accounts, categories, creditCards, loading, onChange, onClear, onPeriodPreset }) {
+  const showAccountFilter = !filters.origin || filters.origin === 'account';
+  const showCreditCardFilter = !filters.origin || filters.origin === 'credit_card';
+
   return (
     <Card className="rounded-[28px] p-5">
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <div className="xl:col-span-2">
           <Input label="Busca" name="search" placeholder="Descrição ou observações" value={filters.search} onChange={onChange} />
         </div>
+
+        <Select label="Origem" name="origin" value={filters.origin} onChange={onChange}>
+          {ORIGIN_OPTIONS.map((option) => (
+            <option key={option.value || 'all'} value={option.value}>{option.label}</option>
+          ))}
+        </Select>
 
         <Select label="Tipo" name="type" value={filters.type} onChange={onChange}>
           {TYPE_OPTIONS.map((option) => (
@@ -49,12 +64,23 @@ function TransactionFilters({ filters, accounts, categories, loading, onChange, 
           ))}
         </Select>
 
-        <Select label="Conta" name="accountId" value={filters.accountId} onChange={onChange}>
-          <option value="">Todas as contas</option>
-          {accounts.map((account) => (
-            <option key={account.id} value={account.id}>{account.name}</option>
-          ))}
-        </Select>
+        {showAccountFilter && (
+          <Select label="Conta" name="accountId" value={filters.accountId} onChange={onChange}>
+            <option value="">Todas as contas</option>
+            {accounts.map((account) => (
+              <option key={account.id} value={account.id}>{account.name}</option>
+            ))}
+          </Select>
+        )}
+
+        {showCreditCardFilter && (
+          <Select label="Cartão" name="creditCardId" value={filters.creditCardId} onChange={onChange}>
+            <option value="">Todos os cartões</option>
+            {creditCards.map((card) => (
+              <option key={card.id} value={card.id}>{card.name}</option>
+            ))}
+          </Select>
+        )}
 
         <Select label="Categoria" name="categoryId" value={filters.categoryId} onChange={onChange}>
           <option value="">Todas as categorias</option>

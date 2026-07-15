@@ -227,6 +227,14 @@ function buildListWhere(tenantId, filters) {
     where.credit_card_id = filters.creditCardId;
   }
 
+  if (filters.origin === 'account') {
+    where.account_id = { not: null };
+    where.credit_card_id = null;
+  } else if (filters.origin === 'credit_card') {
+    where.credit_card_id = { not: null };
+    where.account_id = null;
+  }
+
   if (filters.categoryId) {
     where.category_id = filters.categoryId;
   }

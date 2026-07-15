@@ -7,6 +7,7 @@ const TRANSACTION_TYPES = ['INCOME', 'EXPENSE', 'TRANSFER', 'INVESTMENT'];
 const TRANSACTION_STATUSES = ['PENDING', 'CONFIRMED', 'CANCELED'];
 const PAYMENT_METHODS = ['PIX', 'DEBIT_CARD', 'CREDIT_CARD', 'CASH', 'BANK_SLIP', 'TRANSFER', 'OTHER'];
 const TRANSACTION_SOURCES = ['MANUAL', 'CSV', 'OFX', 'OPEN_FINANCE', 'API'];
+const TRANSACTION_ORIGINS = ['account', 'credit_card'];
 
 function normalizeOptionalText(value) {
   if (value === undefined || value === null) {
@@ -198,7 +199,8 @@ const listTransactionsQuerySchema = z.object({
   startDate: z.preprocess(normalizeOptionalDate, z.date({ message: 'Data inicial invalida' }).optional()),
   endDate: z.preprocess(normalizeOptionalDate, z.date({ message: 'Data final invalida' }).optional()),
   search: z.preprocess(normalizeOptionalText, z.string().min(1).optional()),
-  source: z.enum(TRANSACTION_SOURCES).optional()
+  source: z.enum(TRANSACTION_SOURCES).optional(),
+  origin: z.enum(TRANSACTION_ORIGINS).optional()
 }).superRefine((data, context) => {
   if (data.startDate && data.endDate && data.startDate > data.endDate) {
     context.addIssue({
