@@ -197,7 +197,7 @@ function Dashboard() {
 
   return (
     <AppLayout>
-      <div className="space-y-7 pb-8">
+      <div className="space-y-7 pb-8 bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-slate-950 dark:to-slate-900/50">
         <DashboardPeriodHeader
           period={period}
           loading={loading}

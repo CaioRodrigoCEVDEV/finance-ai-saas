@@ -11,12 +11,8 @@ function formatComparison(comparison) {
   return {
     value: signedValue,
     label: 'versus mês anterior',
-    icon: trend === 'up' ? '▲' : trend === 'down' ? '▼' : '•',
-    tone: trend === 'up'
-      ? 'text-emerald-600 dark:text-emerald-400'
-      : trend === 'down'
-        ? 'text-rose-600 dark:text-rose-400'
-        : 'text-slate-500 dark:text-slate-400'
+    trend,
+    icon: trend === 'up' ? '▲' : trend === 'down' ? '▼' : '•'
   };
 }
 
@@ -31,6 +27,7 @@ function DashboardOverviewCards({ data, tenantName, periodLabel, comparison }) {
       value: formatCurrencyPrivacy(data.totalBalance),
       description: `Posição consolidada das contas de ${tenantName || 'Finance AI'} até ${periodLabel || 'o período selecionado'}.`,
       variant: 'highlight',
+      cardType: 'balance',
       comparison: formatComparison(comparison?.totalBalance)
     },
     {
@@ -38,6 +35,7 @@ function DashboardOverviewCards({ data, tenantName, periodLabel, comparison }) {
       value: formatCurrencyPrivacy(data.monthlyIncome),
       description: `Entradas confirmadas em ${periodLabel || 'o período selecionado'}.`,
       variant: 'positive',
+      cardType: 'income',
       comparison: formatComparison(comparison?.monthlyIncome)
     },
     {
@@ -45,6 +43,7 @@ function DashboardOverviewCards({ data, tenantName, periodLabel, comparison }) {
       value: formatCurrencyPrivacy(data.monthlyExpensePaid),
       description: `Saídas efetivamente pagas em ${periodLabel || 'o período selecionado'}.`,
       variant: 'negative',
+      cardType: 'expense',
       comparison: formatComparison(comparison?.monthlyExpensePaid)
     },
     {
@@ -52,6 +51,7 @@ function DashboardOverviewCards({ data, tenantName, periodLabel, comparison }) {
       value: formatCurrencyPrivacy(data.monthlyEconomy),
       description: `Receitas menos despesas pagas em ${periodLabel || 'o período selecionado'}.`,
       variant: data.monthlyEconomy >= 0 ? 'positive' : 'negative',
+      cardType: 'savings',
       comparison: formatComparison(comparison?.monthlyEconomy)
     }
   ];

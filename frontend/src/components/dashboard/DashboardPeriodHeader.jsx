@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, LayoutDashboard, CalendarDays, CircleDot } from 'lucide-react';
 import { useState } from 'react';
 
 import Card from '../ui/Card';
@@ -6,6 +6,15 @@ import Button from '../ui/Button';
 import Select from '../ui/Select';
 import DashboardPeriodSheet from './DashboardPeriodSheet';
 import { buildAvailablePeriodOptions, formatDashboardPeriodLabel, getDashboardPeriodKey, parseDashboardPeriodValue } from '../../utils/dashboardPeriod';
+
+function UpdatedNowIndicator() {
+  return (
+    <div className="flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-500">
+      <CircleDot className="h-3 w-3 text-emerald-500" aria-hidden="true" />
+      <span>Atualizado agora</span>
+    </div>
+  );
+}
 
 function DashboardPeriodHeader({ period, loading, availablePeriods, onPrevious, onNext, onToday, onSelectPeriod }) {
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -15,21 +24,29 @@ function DashboardPeriodHeader({ period, loading, availablePeriods, onPrevious, 
   const periodLabel = formatDashboardPeriodLabel(period.month, period.year);
 
   return (
-    <Card className="rounded-[28px] !border-slate-200/80 !bg-white/90 p-6 shadow-soft backdrop-blur transition-colors dark:!border-slate-700/80 dark:!bg-slate-800/90">
+    <Card className="rounded-[28px] !border-slate-200/80 !bg-gradient-to-br !from-white !to-slate-50/80 p-6 shadow-soft backdrop-blur transition-colors dark:!border-slate-700/80 dark:!from-slate-800 dark:!to-slate-800/95 sm:p-8">
       <div className="lg:hidden">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
-            Dashboard Financeiro
-          </h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Resumo do período
-          </p>
+        <div className="flex items-start gap-3">
+          <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400">
+            <LayoutDashboard className="h-5 w-5" aria-hidden="true" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+              Dashboard Financeiro
+            </h1>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              Resumo completo da sua situação financeira para o período selecionado.
+            </p>
+          </div>
         </div>
 
         <div className={`mt-5 flex flex-col items-center gap-2 ${loading ? 'pointer-events-none opacity-75' : ''}`}>
-          <span className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-600 dark:text-emerald-400">
-            Período
-          </span>
+          <div className="flex items-center gap-1.5">
+            <CalendarDays className="h-3.5 w-3.5 text-emerald-500" aria-hidden="true" />
+            <span className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-600 dark:text-emerald-400">
+              Período
+            </span>
+          </div>
 
           <div className="flex items-center gap-3">
             <button
@@ -72,6 +89,8 @@ function DashboardPeriodHeader({ period, loading, availablePeriods, onPrevious, 
           >
             Hoje
           </button>
+
+          <UpdatedNowIndicator />
         </div>
       </div>
 
@@ -80,13 +99,17 @@ function DashboardPeriodHeader({ period, loading, availablePeriods, onPrevious, 
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-600 dark:text-emerald-400">
             Finance AI
           </p>
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">
-              Dashboard Financeiro
-            </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400 sm:text-base">
-              Resumo do período selecionado.
-            </p>
+          <div className="flex items-start gap-3">
+            <div className="mt-1 h-8 w-1 rounded-full bg-emerald-500" aria-hidden="true" />
+            <div>
+              <h1 className="flex items-center gap-3 text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">
+                <LayoutDashboard className="h-7 w-7 text-emerald-500 sm:h-8 sm:w-8" aria-hidden="true" />
+                Dashboard Financeiro
+              </h1>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400 sm:text-base">
+                Resumo completo da sua situação financeira para o período selecionado.
+              </p>
+            </div>
           </div>
         </div>
 
@@ -130,7 +153,7 @@ function DashboardPeriodHeader({ period, loading, availablePeriods, onPrevious, 
             </Button>
           </div>
 
-          <div className="flex justify-center lg:justify-end">
+          <div className="flex items-center justify-between">
             <Button
               disabled={loading || isToday}
               onClick={onToday}
@@ -139,6 +162,7 @@ function DashboardPeriodHeader({ period, loading, availablePeriods, onPrevious, 
             >
               Hoje
             </Button>
+            <UpdatedNowIndicator />
           </div>
         </div>
       </div>
