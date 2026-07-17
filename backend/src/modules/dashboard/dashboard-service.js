@@ -39,66 +39,24 @@ function buildComparison(current, previous) {
   };
 }
 
-async function computeTotalBalance(tenantId, endDate) {
+async function computeTotalBalance(tenantId) {
   const accounts = await prisma.account.findMany({
     where: {
       tenant_id: tenantId,
       is_active: true,
       deleted_at: null,
-      consider_in_available_balance: true,
-      ...(endDate ? { created_at: { lte: endDate } } : {})
+      consider_in_available_balance: true
     },
     select: {
-      id: true,
-      initial_balance: true
+      current_balance: true
     }
   });
 
-  const accountIds = accounts.map((a) => a.id);
-
-  if (accountIds.length === 0) {
+  if (accounts.length === 0) {
     return 0;
   }
 
-  const transactionTotals = await prisma.transaction.groupBy({
-    by: ['account_id', 'type'],
-    where: {
-      tenant_id: tenantId,
-      deleted_at: null,
-      status: 'CONFIRMED',
-      account_id: {
-        in: accountIds
-      },
-      ...(endDate ? { transaction_date: { lte: endDate } } : {})
-    },
-    _sum: {
-      amount: true
-    }
-  });
-
-  const accountTransactionTotals = {};
-
-  for (const aggregate of transactionTotals) {
-    if (!accountTransactionTotals[aggregate.account_id]) {
-      accountTransactionTotals[aggregate.account_id] = { INCOME: 0, EXPENSE: 0 };
-    }
-
-    const amount = toNumber(aggregate._sum.amount);
-
-    if (aggregate.type === 'INCOME') {
-      accountTransactionTotals[aggregate.account_id].INCOME += amount;
-      continue;
-    }
-
-    accountTransactionTotals[aggregate.account_id].EXPENSE += amount;
-  }
-
-  let total = 0;
-
-  for (const account of accounts) {
-    const tx = accountTransactionTotals[account.id] || { INCOME: 0, EXPENSE: 0 };
-    total += toNumber(account.initial_balance) + tx.INCOME - tx.EXPENSE;
-  }
+  const total = accounts.reduce((sum, account) => sum + toNumber(account.current_balance), 0);
 
   return Number(total.toFixed(2));
 }
@@ -150,10 +108,10 @@ async function getSummary(tenantId, periodInput = {}) {
   const period = resolveDashboardPeriod(periodInput.month, periodInput.year);
 
   const [totalBalance, transactionTotals, previousSummary, previousTotalBalance] = await Promise.all([
-    computeTotalBalance(tenantId, period.range.end),
+    computeTotalBalance(tenantId),
     getPeriodSummaryMetrics(tenantId, period.range),
     getPeriodSummaryMetrics(tenantId, period.previous.range),
-    computeTotalBalance(tenantId, period.previous.range.end)
+    computeTotalBalance(tenantId)
   ]);
 
   return {
@@ -802,7 +760,7 @@ async function getAlerts(tenantId, periodInput = {}) {
     });
   });
 
-  const totalBalance = await computeTotalBalance(tenantId, range.end);
+  const totalBalance = await computeTotalBalance(tenantId);
 
   if (totalBalance < 100) {
     alerts.push({
@@ -947,6 +905,7 @@ async function getGoalsProgress(tenantId, periodInput = {}) {
 }
 
 module.exports = {
+  computeTotalBalance,
   getExpensesByCategory,
   getMonthlyFlow,
   getRecentTransactions,
