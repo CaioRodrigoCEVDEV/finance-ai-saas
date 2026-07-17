@@ -7,6 +7,7 @@ import TransactionForm from '../components/transactions/TransactionForm';
 import TransactionMobileCard from '../components/transactions/TransactionMobileCard';
 import TransactionSummaryCards from '../components/transactions/TransactionSummaryCards';
 import TransactionTable from '../components/transactions/TransactionTable';
+import TransferForm from '../components/transfers/TransferForm';
 import AppLayout from '../layouts/AppLayout';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
@@ -29,6 +30,12 @@ import {
   getTransactions,
   updateTransaction
 } from '../services/transactionService';
+import {
+  getTransfer,
+  createTransfer,
+  updateTransfer,
+  deleteTransfer
+} from '../services/transferService';
 
 function getFirstDayOfMonth() {
   const now = new Date();
@@ -109,6 +116,8 @@ function Transactions() {
   const [pendingNewTransaction, setPendingNewTransaction] = useState(false);
   const [confirmTarget, setConfirmTarget] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [selectedTransfer, setSelectedTransfer] = useState(null);
+  const [transferFormVisible, setTransferFormVisible] = useState(false);
 
   async function loadReferences() {
     const [accountData, categoryData, creditCardData] = await Promise.all([
@@ -247,12 +256,21 @@ function Transactions() {
     try {
       setSaving(true);
       setError('');
-      const data = await getTransaction(transaction.id);
-      setSelectedTransaction(data);
-      setFormVisible(true);
-      setFormError('');
+
+      if (transaction.type === 'TRANSFER' && transaction.amount < 0) {
+        const transferId = transaction.transferId || transaction.id;
+        const data = await getTransfer(transferId);
+        setSelectedTransfer(data);
+        setTransferFormVisible(true);
+        setFormError('');
+      } else {
+        const data = await getTransaction(transaction.id);
+        setSelectedTransaction(data);
+        setFormVisible(true);
+        setFormError('');
+      }
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Não foi possível carregar a transação para edição.');
+      setError(requestError.response?.data?.message || 'Nao foi possivel carregar para edicao.');
     } finally {
       setSaving(false);
     }
@@ -304,10 +322,41 @@ function Transactions() {
         loadSummary()
       ]);
     } catch (requestError) {
-      setFormError(requestError.response?.data?.message || 'Não foi possível salvar a transação.');
+      setFormError(requestError.response?.data?.message || 'Nao foi possivel salvar a transacao.');
     } finally {
       setSaving(false);
     }
+  }
+
+  async function handleTransferSubmit(payload) {
+    try {
+      setSaving(true);
+      setFormError('');
+
+      if (selectedTransfer) {
+        await updateTransfer(selectedTransfer.transferId, payload);
+      } else {
+        await createTransfer(payload);
+      }
+
+      setTransferFormVisible(false);
+      setSelectedTransfer(null);
+      setFormError('');
+      await Promise.all([
+        loadTransactionsData(filters, page),
+        loadSummary()
+      ]);
+    } catch (requestError) {
+      setFormError(requestError.response?.data?.message || 'Nao foi possivel salvar a transferencia.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function handleCancelTransferForm() {
+    setTransferFormVisible(false);
+    setSelectedTransfer(null);
+    setFormError('');
   }
 
   function handleDeleteClick(transaction) {
@@ -322,15 +371,26 @@ function Transactions() {
     try {
       setSaving(true);
       setError('');
-      await deleteTransaction(deleteTarget.id);
+
+      if (deleteTarget.type === 'TRANSFER') {
+        const transferId = deleteTarget.transferId || deleteTarget.id;
+        await deleteTransfer(transferId);
+      } else {
+        await deleteTransaction(deleteTarget.id);
+      }
 
       if (selectedTransaction?.id === deleteTarget.id) {
         setSelectedTransaction(null);
         setFormVisible(false);
       }
 
+      if (selectedTransfer?.transferId === (deleteTarget.transferId || deleteTarget.id)) {
+        setSelectedTransfer(null);
+        setTransferFormVisible(false);
+      }
+
       setDeleteTarget(null);
-      toast.success('Transação excluída com sucesso.');
+      toast.success('Transacao excluida com sucesso.');
       await Promise.all([
         loadTransactionsData(filters, page),
         loadSummary()
@@ -624,6 +684,28 @@ function Transactions() {
             creditCards={creditCards}
             serverError={formError}
             onSubmit={handleSubmit}
+          />
+        </FormModal>
+
+        <FormModal
+          isOpen={transferFormVisible}
+          title={selectedTransfer ? 'Editar transferencia' : 'Nova transferencia'}
+          onClose={handleCancelTransferForm}
+          maxWidth="max-w-2xl"
+          footer={(
+            <>
+              <Button type="button" variant="secondary" onClick={handleCancelTransferForm}>Cancelar</Button>
+              <Button type="submit" form="transfer-form" disabled={saving}>
+                {saving ? 'Salvando...' : selectedTransfer ? 'Salvar alteracoes' : 'Transferir'}
+              </Button>
+            </>
+          )}
+        >
+          <TransferForm
+            transfer={selectedTransfer}
+            accounts={accounts}
+            serverError={formError}
+            onSubmit={handleTransferSubmit}
           />
         </FormModal>
       </div>

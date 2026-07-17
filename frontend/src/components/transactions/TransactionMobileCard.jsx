@@ -42,9 +42,11 @@ function getStatusVariant(status) {
 function TransactionMobileCard({ transaction, loading, onEdit, onDelete, onConfirm }) {
   const { formatCurrencyPrivacy } = usePrivacy();
   const holderName = transaction.creditCard?.name || transaction.account?.name || 'Sem vinculacao';
-  const isNegativeValue = ['EXPENSE', 'INVESTMENT'].includes(transaction.type);
-  const amountColor = isNegativeValue ? 'text-rose-600' : transaction.type === 'TRANSFER' ? 'text-slate-700' : 'text-emerald-600';
-  const amountPrefix = transaction.type === 'TRANSFER' ? '' : isNegativeValue ? '-' : '+';
+  const isTransferOut = transaction.type === 'TRANSFER' && transaction.amount < 0;
+  const isTransferIn = transaction.type === 'TRANSFER' && transaction.amount > 0;
+  const isNegativeValue = ['EXPENSE', 'INVESTMENT'].includes(transaction.type) || isTransferOut;
+  const amountColor = isTransferIn ? 'text-emerald-600' : isNegativeValue ? 'text-rose-600' : 'text-emerald-600';
+  const amountPrefix = isTransferIn ? '+' : isNegativeValue ? '-' : '+';
 
   return (
     <Card className="rounded-[28px] p-5 lg:hidden">

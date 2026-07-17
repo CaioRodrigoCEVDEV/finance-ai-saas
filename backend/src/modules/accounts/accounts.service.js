@@ -64,6 +64,12 @@ async function computeAccountBalances(tenantId, accountIds) {
 
     if (agg.type === 'INCOME') {
       map[agg.account_id].INCOME += amount;
+    } else if (agg.type === 'TRANSFER') {
+      if (amount < 0) {
+        map[agg.account_id].EXPENSE += Math.abs(amount);
+      } else {
+        map[agg.account_id].INCOME += amount;
+      }
     } else {
       map[agg.account_id].EXPENSE += amount;
     }

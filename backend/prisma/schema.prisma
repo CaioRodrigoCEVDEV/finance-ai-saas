@@ -418,6 +418,7 @@ model Transaction {
   installment_total  Int?
   recurrence_id      String?            @db.Uuid
   recurrence_occurrence_date DateTime?  @map("recurrence_occurrence_date")
+  transfer_id        String?            @db.Uuid
   created_at         DateTime           @default(now())
   updated_at         DateTime           @updatedAt
   deleted_at         DateTime?
@@ -440,6 +441,7 @@ model Transaction {
   @@index([user_id])
   @@index([external_id])
   @@index([recurrence_id])
+  @@index([transfer_id])
   @@map("transactions")
 }
 

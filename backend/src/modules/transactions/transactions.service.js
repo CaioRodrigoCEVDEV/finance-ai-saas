@@ -61,6 +61,7 @@ function getTransactionInclude() {
 function toTransactionResponse(transaction) {
   return {
     id: transaction.id,
+    transferId: transaction.transfer_id || null,
     description: transaction.description,
     amount: toNumber(transaction.amount),
     type: transaction.type,

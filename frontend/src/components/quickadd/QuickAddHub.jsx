@@ -6,6 +6,7 @@ import useMediaQuery from '../../utils/useMediaQuery';
 import QuickAddFAB from './QuickAddFAB';
 import QuickAddMenu from './QuickAddMenu';
 import QuickTransactionFlow from './flows/QuickTransactionFlow';
+import QuickTransferFlow from './flows/QuickTransferFlow';
 import QuickGoalFlow from './flows/QuickGoalFlow';
 import QuickRecurrenceFlow from './flows/QuickRecurrenceFlow';
 
@@ -39,10 +40,16 @@ function QuickAddHub({ open, onOpenChange }) {
       case 'INCOME':
       case 'EXPENSE':
       case 'CREDIT_CARD':
-      case 'TRANSFER':
         return (
           <QuickTransactionFlow
             flowId={activeFlow}
+            onBack={handleBack}
+            onClose={handleClose}
+          />
+        );
+      case 'TRANSFER':
+        return (
+          <QuickTransferFlow
             onBack={handleBack}
             onClose={handleClose}
           />

@@ -26,6 +26,7 @@ const paymentSettingsRoutes = require('../modules/admin/paymentSettings.routes')
 const billingRoutes = require('../modules/billing/billing.routes');
 const financialTaskRoutes = require('../modules/financial-tasks/financial-task-routes');
 const pushRoutes = require('../modules/push-subscriptions/push-subscription-routes');
+const transfersRoutes = require('../modules/transfers/transfers.routes');
 
 const router = Router();
 
@@ -55,5 +56,6 @@ router.use(paymentSettingsRoutes);
 router.use(billingRoutes);
 router.use(financialTaskRoutes);
 router.use(pushRoutes);
+router.use(transfersRoutes);
 
 module.exports = router;

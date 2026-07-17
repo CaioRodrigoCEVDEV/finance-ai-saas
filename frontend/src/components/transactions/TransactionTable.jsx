@@ -61,10 +61,12 @@ function TransactionTable({ transactions, pagination, loading, onEdit, onDelete,
 
           <tbody className="divide-y divide-slate-100 bg-white dark:divide-slate-700 dark:bg-slate-800">
             {transactions.map((transaction) => {
-              const holderName = transaction.creditCard?.name || transaction.account?.name || 'Sem vínculo';
-              const isNegativeValue = ['EXPENSE', 'INVESTMENT'].includes(transaction.type);
-              const amountColor = isNegativeValue ? 'text-rose-600' : transaction.type === 'TRANSFER' ? 'text-slate-700 dark:text-slate-300' : 'text-emerald-600';
-              const amountPrefix = transaction.type === 'TRANSFER' ? '' : isNegativeValue ? '-' : '+';
+              const holderName = transaction.creditCard?.name || transaction.account?.name || 'Sem vinculo';
+              const isTransferOut = transaction.type === 'TRANSFER' && transaction.amount < 0;
+              const isTransferIn = transaction.type === 'TRANSFER' && transaction.amount > 0;
+              const isNegativeValue = ['EXPENSE', 'INVESTMENT'].includes(transaction.type) || isTransferOut;
+              const amountColor = isTransferIn ? 'text-emerald-600' : isNegativeValue ? 'text-rose-600' : 'text-emerald-600';
+              const amountPrefix = isTransferIn ? '+' : isNegativeValue ? '-' : '+';
 
               return (
                 <tr key={transaction.id} className="align-top text-sm text-slate-600 dark:text-slate-400">
