@@ -2,7 +2,9 @@ import {
   AlertTriangle,
   Bell,
   Check,
+  Clock,
   CreditCard,
+  DollarSign,
   Tag,
   Target,
   TrendingDown,
@@ -28,7 +30,7 @@ import { cn } from '../utils/cn';
 const typeConfig = {
   BUDGET_WARNING: {
     icon: TrendingDown,
-    label: 'Orçamento',
+    label: 'Orcamento',
     color: 'text-amber-600 dark:text-amber-400',
     bg: 'bg-amber-50 dark:bg-amber-900/30',
     badge: 'warning'
@@ -42,24 +44,52 @@ const typeConfig = {
   },
   UNCATEGORIZED_TRANSACTIONS: {
     icon: Tag,
-    label: 'Categorização',
+    label: 'Categorizacao',
     color: 'text-sky-600 dark:text-sky-400',
     bg: 'bg-sky-50 dark:bg-sky-900/30',
     badge: 'info'
   },
   GOAL_COMPLETED: {
     icon: Target,
-    label: 'Meta',
+    label: 'Meta concluida',
     color: 'text-emerald-600 dark:text-emerald-400',
     bg: 'bg-emerald-50 dark:bg-emerald-900/30',
     badge: 'success'
   },
+  GOAL_OVERDUE: {
+    icon: Target,
+    label: 'Meta vencida',
+    color: 'text-orange-600 dark:text-orange-400',
+    bg: 'bg-orange-50 dark:bg-orange-900/30',
+    badge: 'warning'
+  },
   CREDIT_CARD_LIMIT: {
     icon: CreditCard,
-    label: 'Cartão',
+    label: 'Cartao',
     color: 'text-violet-600 dark:text-violet-400',
     bg: 'bg-violet-50 dark:bg-violet-900/30',
     badge: 'neutral'
+  },
+  TASK_REMINDER: {
+    icon: Clock,
+    label: 'Lembrete',
+    color: 'text-blue-600 dark:text-blue-400',
+    bg: 'bg-blue-50 dark:bg-blue-900/30',
+    badge: 'info'
+  },
+  LOW_BALANCE: {
+    icon: DollarSign,
+    label: 'Saldo baixo',
+    color: 'text-amber-600 dark:text-amber-400',
+    bg: 'bg-amber-50 dark:bg-amber-900/30',
+    badge: 'warning'
+  },
+  EXPENSE_GREATER_THAN_INCOME: {
+    icon: TrendingDown,
+    label: 'Despesas altas',
+    color: 'text-rose-600 dark:text-rose-400',
+    bg: 'bg-rose-50 dark:bg-rose-900/30',
+    badge: 'danger'
   }
 };
 
@@ -138,13 +168,17 @@ function NotificationCard({ notification, onRead, onDelete }) {
 
 const FILTER_OPTIONS = [
   { value: '', label: 'Todas' },
-   { value: 'false', label: 'Não lidas' },
+  { value: 'false', label: 'Nao lidas' },
   { value: 'true', label: 'Lidas' },
-   { value: 'BUDGET_WARNING', label: 'Orçamento' },
+  { value: 'BUDGET_WARNING', label: 'Orcamento' },
   { value: 'BUDGET_EXCEEDED', label: 'Excedido' },
   { value: 'UNCATEGORIZED_TRANSACTIONS', label: 'Sem categoria' },
   { value: 'GOAL_COMPLETED', label: 'Metas' },
-  { value: 'CREDIT_CARD_LIMIT', label: 'Cartões' }
+  { value: 'GOAL_OVERDUE', label: 'Meta vencida' },
+  { value: 'CREDIT_CARD_LIMIT', label: 'Cartoes' },
+  { value: 'TASK_REMINDER', label: 'Lembretes' },
+  { value: 'LOW_BALANCE', label: 'Saldo baixo' },
+  { value: 'EXPENSE_GREATER_THAN_INCOME', label: 'Despesas altas' }
 ];
 
 function Notifications() {

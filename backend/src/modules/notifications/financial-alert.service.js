@@ -214,21 +214,156 @@ async function generateCreditCardLimitAlerts(tenantId) {
   return created;
 }
 
-async function generateFinancialAlerts(tenantId) {
-  const results = {
-    budgetWarning: 0,
-    budgetExceeded: 0,
-    uncategorizedTransactions: 0,
-    goalCompleted: 0,
-    creditCardLimit: 0
-  };
+async function generateGoalOverdueAlerts(tenantId) {
+  let created = 0;
 
+  const overdueGoals = await prisma.goal.findMany({
+    where: {
+      tenant_id: tenantId,
+      deleted_at: null,
+      status: 'ACTIVE',
+      deadline: { lt: new Date() }
+    },
+    select: { id: true, name: true, deadline: true }
+  });
+
+  for (const goal of overdueGoals) {
+    const result = await notificationsService.createNotificationIfNotExists(
+      {
+        title: 'Meta vencida',
+        message: `A meta "${goal.name}" venceu em ${goal.deadline.toLocaleDateString('pt-BR')} e ainda nao foi concluida.`,
+        type: 'GOAL_OVERDUE',
+        referenceId: goal.id,
+        referenceType: 'goal',
+        metadata: { deadline: goal.deadline.toISOString() }
+      },
+      tenantId
+    );
+    if (result) created++;
+  }
+
+  return created;
+}
+
+async function generateLowBalanceAlerts(tenantId) {
+  const accounts = await prisma.account.findMany({
+    where: {
+      tenant_id: tenantId,
+      is_active: true,
+      deleted_at: null,
+      consider_in_available_balance: true
+    },
+    select: { id: true, initial_balance: true }
+  });
+
+  if (accounts.length === 0) return 0;
+
+  const accountIds = accounts.map((a) => a.id);
+
+  const transactionTotals = await prisma.transaction.groupBy({
+    by: ['account_id', 'type'],
+    where: {
+      tenant_id: tenantId,
+      deleted_at: null,
+      status: 'CONFIRMED',
+      account_id: { in: accountIds }
+    },
+    _sum: { amount: true }
+  });
+
+  const accountTxMap = {};
+  for (const agg of transactionTotals) {
+    if (!accountTxMap[agg.account_id]) {
+      accountTxMap[agg.account_id] = { INCOME: 0, EXPENSE: 0 };
+    }
+    const amount = toNumber(agg._sum.amount);
+    if (agg.type === 'INCOME') {
+      accountTxMap[agg.account_id].INCOME += amount;
+    } else if (agg.type === 'EXPENSE') {
+      accountTxMap[agg.account_id].EXPENSE += amount;
+    }
+  }
+
+  let totalBalance = 0;
+  for (const account of accounts) {
+    const tx = accountTxMap[account.id] || { INCOME: 0, EXPENSE: 0 };
+    totalBalance += toNumber(account.initial_balance) + tx.INCOME - tx.EXPENSE;
+  }
+
+  if (totalBalance >= 100) return 0;
+
+  const result = await notificationsService.createNotificationIfNotExists(
+    {
+      title: 'Saldo total baixo',
+      message: `Seu saldo total consolidado e de ${formatCurrency(totalBalance)}. Considere revisar suas financas.`,
+      type: 'LOW_BALANCE',
+      referenceId: null,
+      referenceType: 'summary',
+      metadata: { totalBalance }
+    },
+    tenantId
+  );
+
+  return result ? 1 : 0;
+}
+
+async function generateExpenseGreaterThanIncomeAlerts(tenantId) {
+  const { month, year } = getCurrentMonthYear();
+  const range = getMonthRange(month, year);
+
+  const incomeAgg = await prisma.transaction.aggregate({
+    where: {
+      tenant_id: tenantId,
+      deleted_at: null,
+      status: 'CONFIRMED',
+      transaction_date: { gte: range.start, lte: range.end },
+      type: 'INCOME'
+    },
+    _sum: { amount: true }
+  });
+
+  const expenseAgg = await prisma.transaction.aggregate({
+    where: {
+      tenant_id: tenantId,
+      deleted_at: null,
+      status: 'CONFIRMED',
+      transaction_date: { gte: range.start, lte: range.end },
+      type: 'EXPENSE',
+      payment_method: { not: 'CREDIT_CARD' }
+    },
+    _sum: { amount: true }
+  });
+
+  const monthlyIncome = toNumber(incomeAgg._sum.amount);
+  const monthlyExpense = toNumber(expenseAgg._sum.amount);
+
+  if (monthlyExpense <= monthlyIncome) return 0;
+
+  const result = await notificationsService.createNotificationIfNotExists(
+    {
+      title: 'Despesas superam receitas',
+      message: `Suas despesas pagas (${formatCurrency(monthlyExpense)}) sao maiores que suas receitas (${formatCurrency(monthlyIncome)}) no mes atual.`,
+      type: 'EXPENSE_GREATER_THAN_INCOME',
+      referenceId: null,
+      referenceType: 'summary',
+      metadata: { month, year, income: monthlyIncome, expense: monthlyExpense }
+    },
+    tenantId
+  );
+
+  return result ? 1 : 0;
+}
+
+async function generateFinancialAlerts(tenantId) {
   const budgetCreated = await generateBudgetAlerts(tenantId);
   const uncategorizedCreated = await generateUncategorizedTransactionAlerts(tenantId);
   const goalsCreated = await generateGoalCompletedAlerts(tenantId);
   const creditCardCreated = await generateCreditCardLimitAlerts(tenantId);
+  const goalOverdueCreated = await generateGoalOverdueAlerts(tenantId);
+  const lowBalanceCreated = await generateLowBalanceAlerts(tenantId);
+  const expenseGreaterThanIncomeCreated = await generateExpenseGreaterThanIncomeAlerts(tenantId);
 
-  const totalCreated = budgetCreated + uncategorizedCreated + goalsCreated + creditCardCreated;
+  const totalCreated = budgetCreated + uncategorizedCreated + goalsCreated + creditCardCreated + goalOverdueCreated + lowBalanceCreated + expenseGreaterThanIncomeCreated;
 
   return {
     message: totalCreated > 0
@@ -236,10 +371,13 @@ async function generateFinancialAlerts(tenantId) {
       : 'Nenhum alerta novo para gerar',
     totalCreated,
     details: {
+      budgetAlerts: budgetCreated,
       uncategorizedTransactions: uncategorizedCreated,
       goalCompleted: goalsCreated,
       creditCardLimit: creditCardCreated,
-      budgetAlerts: budgetCreated
+      goalOverdue: goalOverdueCreated,
+      lowBalance: lowBalanceCreated,
+      expenseGreaterThanIncome: expenseGreaterThanIncomeCreated
     }
   };
 }

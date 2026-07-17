@@ -1,4 +1,4 @@
-import { Bell, CheckCheck, TrendingDown, Target, CreditCard, Tag, AlertTriangle, Loader2 } from 'lucide-react';
+import { Bell, CheckCheck, TrendingDown, Target, CreditCard, Tag, AlertTriangle, Clock, DollarSign, Loader2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -43,10 +43,30 @@ const typeConfig = {
     color: 'text-emerald-600 dark:text-emerald-400',
     bg: 'bg-emerald-50 dark:bg-emerald-900/30'
   },
+  GOAL_OVERDUE: {
+    icon: Target,
+    color: 'text-orange-600 dark:text-orange-400',
+    bg: 'bg-orange-50 dark:bg-orange-900/30'
+  },
   CREDIT_CARD_LIMIT: {
     icon: CreditCard,
     color: 'text-violet-600 dark:text-violet-400',
     bg: 'bg-violet-50 dark:bg-violet-900/30'
+  },
+  TASK_REMINDER: {
+    icon: Clock,
+    color: 'text-blue-600 dark:text-blue-400',
+    bg: 'bg-blue-50 dark:bg-blue-900/30'
+  },
+  LOW_BALANCE: {
+    icon: DollarSign,
+    color: 'text-amber-600 dark:text-amber-400',
+    bg: 'bg-amber-50 dark:bg-amber-900/30'
+  },
+  EXPENSE_GREATER_THAN_INCOME: {
+    icon: TrendingDown,
+    color: 'text-rose-600 dark:text-rose-400',
+    bg: 'bg-rose-50 dark:bg-rose-900/30'
   }
 };
 

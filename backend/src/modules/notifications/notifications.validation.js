@@ -7,7 +7,11 @@ const notificationTypeEnum = z.enum([
   'BUDGET_EXCEEDED',
   'UNCATEGORIZED_TRANSACTIONS',
   'GOAL_COMPLETED',
-  'CREDIT_CARD_LIMIT'
+  'GOAL_OVERDUE',
+  'CREDIT_CARD_LIMIT',
+  'TASK_REMINDER',
+  'LOW_BALANCE',
+  'EXPENSE_GREATER_THAN_INCOME'
 ], {
   message: 'Tipo de notificacao invalido'
 });

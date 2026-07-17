@@ -39,11 +39,6 @@ export async function getDashboardOverview(period) {
   return data;
 }
 
-export async function getDashboardAlerts(period) {
-  const { data } = await api.get('/dashboard/alerts', buildPeriodParams(period));
-  return data;
-}
-
 export async function getTopExpenses(period) {
   const { data } = await api.get('/dashboard/top-expenses', buildPeriodParams(period));
   return data;

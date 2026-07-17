@@ -6,7 +6,6 @@ import LoadingSkeleton from '../components/ui/LoadingSkeleton';
 import Button from '../components/ui/Button';
 import { useAuth } from '../contexts/AuthContext';
 import DashboardOverviewCards from '../components/dashboard/DashboardOverviewCards';
-import DashboardAlerts from '../components/dashboard/DashboardAlerts';
 import CreditCardWidget from '../components/dashboard/CreditCardWidget';
 import BudgetStatusWidget from '../components/dashboard/BudgetStatusWidget';
 import GoalsProgressWidget from '../components/dashboard/GoalsProgressWidget';
@@ -28,7 +27,6 @@ import {
 
 import {
   getDashboardOverview,
-  getDashboardAlerts,
   getExpensesByCategory,
   getTopExpenses,
   getBudgetStatus,
@@ -42,7 +40,6 @@ import { getFinancialTaskDashboard } from '../services/financialTaskService';
 
 const initialState = {
   overview: null,
-  alerts: [],
   expensesByCategory: [],
   topExpenses: [],
   budgetStatus: [],
@@ -109,7 +106,6 @@ function Dashboard() {
 
         const endpoints = [
           { name: 'overview', fn: () => getDashboardOverview(period) },
-          { name: 'alerts', fn: () => getDashboardAlerts(period) },
           { name: 'expensesByCategory', fn: () => getExpensesByCategory(period) },
           { name: 'topExpenses', fn: () => getTopExpenses(period) },
           { name: 'budgetStatus', fn: () => getBudgetStatus(period) },
@@ -142,7 +138,6 @@ function Dashboard() {
 
         const [
           overviewRes,
-          alertsRes,
           expensesRes,
           topExpensesRes,
           budgetStatusRes,
@@ -154,7 +149,6 @@ function Dashboard() {
 
         setData({
           overview: overviewRes,
-          alerts: alertsRes,
           expensesByCategory: expensesRes,
           topExpenses: topExpensesRes,
           budgetStatus: budgetStatusRes,
@@ -257,8 +251,6 @@ function Dashboard() {
               <GoalsProgressWidget data={data.overview?.goals} />
               <FinancialTasksWidget data={data.financialTasks} />
             </section>
-
-            <DashboardAlerts alerts={data.alerts} />
 
             <section className="grid gap-5 xl:grid-cols-2">
               <ExpensesByCategory items={data.expensesByCategory} periodLabel={selectedPeriodLabel} />
