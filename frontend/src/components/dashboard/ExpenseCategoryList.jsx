@@ -20,35 +20,71 @@ function ExpenseCategoryList({ items }) {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2.5">
       {items.map((item) => {
         const trend = item.trend || (item.deltaPercentage > 0 ? 'up' : item.deltaPercentage < 0 ? 'down' : 'flat');
         const hasPrevious = Number(item.previousAmount || 0) > 0;
-        const comparisonTone = hasPrevious
-          ? (trend === 'up'
-            ? 'text-rose-600 dark:text-rose-400'
-            : trend === 'down'
-              ? 'text-emerald-600 dark:text-emerald-400'
-              : 'text-slate-500 dark:text-slate-400')
-          : 'text-slate-500 dark:text-slate-400';
-        const comparisonLabel = hasPrevious
-          ? `${trend === 'up' ? '↑' : trend === 'down' ? '↓' : '→'} ${item.deltaPercentage > 0 ? '+' : item.deltaPercentage < 0 ? '-' : ''}${formatPercentage(Math.abs(item.deltaPercentage))} vs mês anterior`
-          : 'Novo no período';
+
+        const trendConfig = {
+          up: {
+            arrow: '↑',
+            color: 'text-rose-600 dark:text-rose-400',
+            bg: 'bg-rose-50 dark:bg-rose-900/20',
+            barColor: 'rose',
+            label: 'Aumento'
+          },
+          down: {
+            arrow: '↓',
+            color: 'text-emerald-600 dark:text-emerald-400',
+            bg: 'bg-emerald-50 dark:bg-emerald-900/20',
+            barColor: 'emerald',
+            label: 'Redução'
+          },
+          flat: {
+            arrow: '→',
+            color: 'text-slate-500 dark:text-slate-400',
+            bg: 'bg-slate-100 dark:bg-slate-700/30',
+            barColor: 'sky',
+            label: 'Estável'
+          }
+        };
+
+        const current = trendConfig[trend] || trendConfig.flat;
+        const absDelta = Math.abs(item.deltaPercentage || 0);
 
         return (
-          <article key={`${item.categoryId || 'uncategorized'}-${item.categoryName}`} className="rounded-2xl border border-slate-100 bg-slate-50/50 p-4 transition-colors hover:bg-slate-50 dark:border-slate-700/50 dark:bg-slate-800/30 dark:hover:bg-slate-800/50">
-            <div className="flex items-start justify-between gap-4">
+          <article
+            key={`${item.categoryId || 'uncategorized'}-${item.categoryName}`}
+            className="group rounded-2xl border border-slate-100 bg-slate-50/50 p-4 transition-all duration-200 hover:border-slate-200 hover:bg-slate-100/50 dark:border-slate-700/50 dark:bg-slate-800/30 dark:hover:border-slate-600/50 dark:hover:bg-slate-800/50"
+          >
+            <div className="flex items-center justify-between gap-3">
               <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-sm font-medium text-slate-900 dark:text-slate-100">{item.categoryName}</h3>
-                  <Badge variant="info">{formatPercentage(item.percentage)}</Badge>
+                <div className="flex items-center gap-2.5">
+                  <h3 className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">{item.categoryName}</h3>
+                  <Badge variant="info" className="shrink-0">{formatPercentage(item.percentage)}</Badge>
                 </div>
-                <p className={`mt-1 text-xs font-medium ${comparisonTone}`}>{comparisonLabel}</p>
+                <div className="mt-1.5 flex items-center gap-2">
+                  {hasPrevious ? (
+                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${current.bg} ${current.color}`}>
+                      <span aria-hidden="true">{current.arrow}</span>
+                      {absDelta > 0 ? `${absDelta.toFixed(1)}%` : ''}
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-500 dark:bg-slate-700/30 dark:text-slate-400">
+                      Novo
+                    </span>
+                  )}
+                  {hasPrevious && (
+                    <span className="text-[11px] text-slate-400 dark:text-slate-500">vs mês anterior</span>
+                  )}
+                </div>
               </div>
-              <p className="text-sm font-semibold text-rose-600 dark:text-rose-400">{formatCurrencyPrivacy(item.amount)}</p>
+              <p className="shrink-0 text-sm font-semibold tabular-nums text-rose-600 dark:text-rose-400">
+                {formatCurrencyPrivacy(item.amount)}
+              </p>
             </div>
             <div className="mt-3">
-              <ProgressBar value={Number(item.percentage || 0)} color="emerald" height="h-1.5" />
+              <ProgressBar value={Number(item.percentage || 0)} color={current.barColor} height="h-1.5" />
             </div>
           </article>
         );
