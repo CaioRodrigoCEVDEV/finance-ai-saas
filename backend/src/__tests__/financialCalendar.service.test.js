@@ -14,7 +14,7 @@ jest.mock('../utils/date-utils', () => ({
 }));
 
 const prismaMock = require('../config/prisma');
-const { buildFinancialCalendar } = require('../modules/financial-calendar/financialCalendar.service');
+const { buildFinancialCalendar, normalizeCalendarEvent, buildEventFromTransaction, toNumber } = require('../modules/financial-calendar/financialCalendar.service');
 
 const TENANT_ID = 'tenant-001';
 const YEAR = 2026;
@@ -232,5 +232,261 @@ describe('buildFinancialCalendar', () => {
       '[Calendar Debug]',
       expect.any(String)
     );
+  });
+
+  it('transferencia enviada aparece negativa e como Transferencia', async () => {
+    const transfer = makeTransaction({
+      id: 'tx-transfer-out',
+      description: 'Transferência para "cofre"',
+      type: 'TRANSFER',
+      amount: -150,
+      account: { id: 'acc-1', name: 'Itaú' },
+      transaction_date: new Date(Date.UTC(YEAR, MONTH - 1, 17))
+    });
+
+    prismaMock.transaction.findMany.mockResolvedValueOnce([transfer]);
+
+    const result = await buildFinancialCalendar({ tenantId: TENANT_ID, year: YEAR, month: MONTH });
+
+    const allEvents = result.days.flatMap(d => d.events);
+    expect(allEvents).toHaveLength(1);
+    expect(allEvents[0].displayType).toBe('TRANSFER');
+    expect(allEvents[0].displayLabel).toBe('Transferência');
+    expect(allEvents[0].badgeVariant).toBe('info');
+    expect(allEvents[0].transferDirection).toBe('OUTGOING');
+    expect(allEvents[0].signedAmountForTotal).toBe(0);
+    expect(allEvents[0].absAmount).toBe(150);
+  });
+
+  it('transferencia recebida aparece positiva e como Transferencia', async () => {
+    const transfer = makeTransaction({
+      id: 'tx-transfer-in',
+      description: 'Transferência recebida de "Itaú"',
+      type: 'TRANSFER',
+      amount: 150,
+      account: { id: 'acc-2', name: 'Cofre' },
+      transaction_date: new Date(Date.UTC(YEAR, MONTH - 1, 17))
+    });
+
+    prismaMock.transaction.findMany.mockResolvedValueOnce([transfer]);
+
+    const result = await buildFinancialCalendar({ tenantId: TENANT_ID, year: YEAR, month: MONTH });
+
+    const allEvents = result.days.flatMap(d => d.events);
+    expect(allEvents).toHaveLength(1);
+    expect(allEvents[0].displayType).toBe('TRANSFER');
+    expect(allEvents[0].displayLabel).toBe('Transferência');
+    expect(allEvents[0].badgeVariant).toBe('info');
+    expect(allEvents[0].transferDirection).toBe('INCOMING');
+    expect(allEvents[0].signedAmountForTotal).toBe(0);
+    expect(allEvents[0].absAmount).toBe(150);
+  });
+
+  it('transferencia em visao global tem impacto liquido zero no total do dia', async () => {
+    const transferOut = makeTransaction({
+      id: 'tx-transfer-out',
+      description: 'Transferência para "cofre"',
+      type: 'TRANSFER',
+      amount: -500,
+      account: { id: 'acc-1', name: 'Itaú' },
+      transaction_date: new Date(Date.UTC(YEAR, MONTH - 1, 17))
+    });
+    const transferIn = makeTransaction({
+      id: 'tx-transfer-in',
+      description: 'Transferência recebida de "Itaú"',
+      type: 'TRANSFER',
+      amount: 500,
+      account: { id: 'acc-2', name: 'Cofre' },
+      transaction_date: new Date(Date.UTC(YEAR, MONTH - 1, 17))
+    });
+
+    prismaMock.transaction.findMany.mockResolvedValueOnce([transferOut, transferIn]);
+
+    const result = await buildFinancialCalendar({ tenantId: TENANT_ID, year: YEAR, month: MONTH });
+
+    const day17 = result.days.find(d => d.date === `${YEAR}-07-17`);
+    expect(day17).toBeDefined();
+    expect(day17.income).toBe(0);
+    expect(day17.expense).toBe(0);
+    expect(day17.balance).toBe(0);
+    expect(day17.events).toHaveLength(2);
+  });
+
+  it('perna recebida de transferencia nunca recebe badge Despesa nem valor negativo', async () => {
+    const transfer = makeTransaction({
+      id: 'tx-transfer-in',
+      description: 'Transferência recebida de "Itaú"',
+      type: 'TRANSFER',
+      amount: 150,
+      account: { id: 'acc-2', name: 'Cofre' },
+      transaction_date: new Date(Date.UTC(YEAR, MONTH - 1, 17))
+    });
+
+    prismaMock.transaction.findMany.mockResolvedValueOnce([transfer]);
+
+    const result = await buildFinancialCalendar({ tenantId: TENANT_ID, year: YEAR, month: MONTH });
+
+    const allEvents = result.days.flatMap(d => d.events);
+    expect(allEvents[0].displayLabel).not.toBe('Despesa');
+    expect(allEvents[0].absAmount).toBe(150);
+    expect(allEvents[0].transferDirection).toBe('INCOMING');
+  });
+
+  it('transferencia nao contabiliza nos totais scheduledIncome/scheduledExpense', async () => {
+    const transfer = makeTransaction({
+      id: 'tx-transfer',
+      type: 'TRANSFER',
+      amount: -200,
+      transaction_date: new Date(Date.UTC(YEAR, MONTH - 1, 10))
+    });
+
+    prismaMock.transaction.findMany.mockResolvedValueOnce([transfer]);
+
+    const result = await buildFinancialCalendar({ tenantId: TENANT_ID, year: YEAR, month: MONTH });
+
+    expect(result.summary.scheduledIncome).toBe(0);
+    expect(result.summary.scheduledExpense).toBe(0);
+    expect(result.summary.totalIncome).toBe(0);
+    expect(result.summary.totalExpense).toBe(0);
+  });
+});
+
+describe('normalizeCalendarEvent', () => {
+  it('despesa comum aparece negativa e como Despesa', () => {
+    const event = {
+      id: 'tx-1',
+      type: 'EXPENSE',
+      amount: 100,
+      status: 'PAID',
+      title: 'Aluguel'
+    };
+
+    const result = normalizeCalendarEvent(event);
+
+    expect(result.displayType).toBe('EXPENSE');
+    expect(result.displayLabel).toBe('Despesa');
+    expect(result.badgeVariant).toBe('danger');
+    expect(result.signedAmountForTotal).toBe(-100);
+    expect(result.absAmount).toBe(100);
+    expect(result.transferDirection).toBeNull();
+  });
+
+  it('receita comum aparece positiva e como Receita', () => {
+    const event = {
+      id: 'tx-2',
+      type: 'INCOME',
+      amount: 5000,
+      status: 'PAID',
+      title: 'Salário'
+    };
+
+    const result = normalizeCalendarEvent(event);
+
+    expect(result.displayType).toBe('INCOME');
+    expect(result.displayLabel).toBe('Receita');
+    expect(result.badgeVariant).toBe('success');
+    expect(result.signedAmountForTotal).toBe(5000);
+    expect(result.absAmount).toBe(5000);
+    expect(result.transferDirection).toBeNull();
+  });
+
+  it('transferencia enviada aparece negativa e como Transferencia', () => {
+    const event = {
+      id: 'tx-3',
+      type: 'TRANSFER',
+      amount: -150,
+      status: 'CONFIRMED',
+      title: 'Transferência para "cofre"'
+    };
+
+    const result = normalizeCalendarEvent(event);
+
+    expect(result.displayType).toBe('TRANSFER');
+    expect(result.displayLabel).toBe('Transferência');
+    expect(result.badgeVariant).toBe('info');
+    expect(result.signedAmountForTotal).toBe(0);
+    expect(result.absAmount).toBe(150);
+    expect(result.transferDirection).toBe('OUTGOING');
+  });
+
+  it('transferencia recebida aparece positiva e como Transferencia', () => {
+    const event = {
+      id: 'tx-4',
+      type: 'TRANSFER',
+      amount: 150,
+      status: 'CONFIRMED',
+      title: 'Transferência recebida de "Itaú"'
+    };
+
+    const result = normalizeCalendarEvent(event);
+
+    expect(result.displayType).toBe('TRANSFER');
+    expect(result.displayLabel).toBe('Transferência');
+    expect(result.badgeVariant).toBe('info');
+    expect(result.signedAmountForTotal).toBe(0);
+    expect(result.absAmount).toBe(150);
+    expect(result.transferDirection).toBe('INCOMING');
+  });
+
+  it('transferencia em visao global nao entra como despesa e tem impacto liquido zero', () => {
+    const outgoing = normalizeCalendarEvent({
+      id: 'tx-5',
+      type: 'TRANSFER',
+      amount: -300,
+      status: 'CONFIRMED',
+      title: 'Transferência enviada'
+    });
+
+    const incoming = normalizeCalendarEvent({
+      id: 'tx-6',
+      type: 'TRANSFER',
+      amount: 300,
+      status: 'CONFIRMED',
+      title: 'Transferência recebida'
+    });
+
+    expect(outgoing.signedAmountForTotal + incoming.signedAmountForTotal).toBe(0);
+    expect(outgoing.displayType).toBe('TRANSFER');
+    expect(incoming.displayType).toBe('TRANSFER');
+  });
+});
+
+describe('buildEventFromTransaction', () => {
+  it('inclui transferId quando transaction tem transfer_id', () => {
+    const transaction = {
+      id: 'tx-1',
+      description: 'Teste',
+      amount: 100,
+      type: 'TRANSFER',
+      status: 'CONFIRMED',
+      transaction_date: new Date(Date.UTC(2026, 6, 17)),
+      transfer_id: 'transfer-uuid-123',
+      category: null,
+      account: { id: 'acc-1', name: 'Conta' },
+      credit_card: null
+    };
+
+    const event = buildEventFromTransaction(transaction);
+
+    expect(event.transferId).toBe('transfer-uuid-123');
+  });
+
+  it('transferId é null quando nao tem transfer_id', () => {
+    const transaction = {
+      id: 'tx-2',
+      description: 'Teste',
+      amount: 100,
+      type: 'EXPENSE',
+      status: 'CONFIRMED',
+      transaction_date: new Date(Date.UTC(2026, 6, 17)),
+      transfer_id: null,
+      category: null,
+      account: null,
+      credit_card: null
+    };
+
+    const event = buildEventFromTransaction(transaction);
+
+    expect(event.transferId).toBeNull();
   });
 });

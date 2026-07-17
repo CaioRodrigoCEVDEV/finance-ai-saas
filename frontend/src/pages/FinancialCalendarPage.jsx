@@ -28,6 +28,7 @@ const FILTER_OPTIONS = [
   { value: 'all', label: 'Todos' },
   { value: 'INCOME', label: 'Receitas' },
   { value: 'EXPENSE', label: 'Despesas' },
+  { value: 'TRANSFER', label: 'Transferências' },
   { value: 'PENDING', label: 'Pendentes' }
 ];
 
@@ -126,8 +127,9 @@ export default function FinancialCalendarPage() {
   function getFilteredEvents(events) {
     if (!events) return [];
     if (filter === 'all') return events;
-    if (filter === 'INCOME') return events.filter((e) => e.type === 'INCOME');
-    if (filter === 'EXPENSE') return events.filter((e) => e.type === 'EXPENSE');
+    if (filter === 'INCOME') return events.filter((e) => e.displayType === 'INCOME');
+    if (filter === 'EXPENSE') return events.filter((e) => e.displayType === 'EXPENSE');
+    if (filter === 'TRANSFER') return events.filter((e) => e.displayType === 'TRANSFER');
     if (filter === 'PENDING') return events.filter((e) => e.status === 'PENDING');
     return events;
   }
@@ -141,11 +143,11 @@ export default function FinancialCalendarPage() {
       if (filteredEvents.length === 0) return null;
 
       const filteredIncome = filteredEvents
-        .filter((e) => e.type === 'INCOME')
-        .reduce((sum, e) => sum + e.amount, 0);
+        .filter((e) => e.displayType === 'INCOME')
+        .reduce((sum, e) => sum + e.absAmount, 0);
       const filteredExpense = filteredEvents
-        .filter((e) => e.type === 'EXPENSE')
-        .reduce((sum, e) => sum + e.amount, 0);
+        .filter((e) => e.displayType === 'EXPENSE')
+        .reduce((sum, e) => sum + e.absAmount, 0);
 
       return {
         ...day,
@@ -351,11 +353,11 @@ export default function FinancialCalendarPage() {
                   const moreCount = filteredEvents.length - 3;
 
                   const incomeTotal = filteredEvents
-                    .filter((e) => e.type === 'INCOME')
-                    .reduce((s, e) => s + e.amount, 0);
+                    .filter((e) => e.displayType === 'INCOME')
+                    .reduce((s, e) => s + e.absAmount, 0);
                   const expenseTotal = filteredEvents
-                    .filter((e) => e.type === 'EXPENSE')
-                    .reduce((s, e) => s + e.amount, 0);
+                    .filter((e) => e.displayType === 'EXPENSE')
+                    .reduce((s, e) => s + e.absAmount, 0);
 
                   return (
                     <button
@@ -399,10 +401,16 @@ export default function FinancialCalendarPage() {
                                 key={event.id}
                                 className="flex items-center gap-1 truncate rounded px-1 py-0.5 text-[11px] leading-tight"
                                 style={{
-                                  backgroundColor: event.type === 'INCOME'
+                                  backgroundColor: event.displayType === 'INCOME'
                                     ? 'rgba(16,185,129,0.1)'
-                                    : 'rgba(244,63,94,0.1)',
-                                  color: event.type === 'INCOME' ? '#059669' : '#e11d48'
+                                    : event.displayType === 'TRANSFER'
+                                      ? 'rgba(59,130,246,0.1)'
+                                      : 'rgba(244,63,94,0.1)',
+                                  color: event.displayType === 'INCOME'
+                                    ? '#059669'
+                                    : event.displayType === 'TRANSFER'
+                                      ? '#2563eb'
+                                      : '#e11d48'
                                 }}
                               >
                                 <span className="truncate">{event.title}</span>
@@ -433,8 +441,8 @@ export default function FinancialCalendarPage() {
                 mobileDays.map((day) => {
                   const dayEvents = getFilteredEvents(day.events);
                   const dayDate = new Date(day.date + 'T12:00:00');
-                  const dayIncome = dayEvents.filter((e) => e.type === 'INCOME').reduce((s, e) => s + e.amount, 0);
-                  const dayExpense = dayEvents.filter((e) => e.type === 'EXPENSE').reduce((s, e) => s + e.amount, 0);
+                  const dayIncome = dayEvents.filter((e) => e.displayType === 'INCOME').reduce((s, e) => s + e.absAmount, 0);
+                  const dayExpense = dayEvents.filter((e) => e.displayType === 'EXPENSE').reduce((s, e) => s + e.absAmount, 0);
 
                   return (
                     <Card key={day.date} className="rounded-[28px] p-5">
@@ -473,8 +481,12 @@ export default function FinancialCalendarPage() {
                                 {getStatusLabel(event.status)}
                               </Badge>
                               <span className="truncate text-slate-700 dark:text-slate-300">{event.title}</span>
-                              <span className={`ml-auto shrink-0 font-medium ${event.type === 'INCOME' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
-                                {event.type === 'INCOME' ? '+' : '-'}{formatCurrencyPrivacy(event.amount)}
+                              <span className={`ml-auto shrink-0 font-medium ${
+                                event.displayType === 'INCOME' ? 'text-emerald-600 dark:text-emerald-400'
+                                : event.displayType === 'TRANSFER' ? 'text-blue-600 dark:text-blue-400'
+                                : 'text-rose-600 dark:text-rose-400'
+                              }`}>
+                                {event.displayType === 'INCOME' ? '+' : event.displayType === 'TRANSFER' && event.signedAmountForTotal >= 0 ? '+' : '-'}{formatCurrencyPrivacy(event.absAmount)}
                               </span>
                             </div>
                           ))}
@@ -535,16 +547,20 @@ export default function FinancialCalendarPage() {
                       <div className="min-w-0">
                         <p className="font-semibold text-slate-900 dark:text-slate-100">{event.title}</p>
                         <div className="mt-1 flex flex-wrap items-center gap-2">
-                          <Badge variant={event.type === 'INCOME' ? 'success' : 'danger'}>
-                            {event.type === 'INCOME' ? 'Receita' : 'Despesa'}
+                          <Badge variant={event.badgeVariant}>
+                            {event.displayLabel}
                           </Badge>
                           <Badge variant={getStatusVariant(event.status)}>
                             {getStatusLabel(event.status)}
                           </Badge>
                         </div>
                       </div>
-                      <span className={`shrink-0 text-lg font-semibold ${event.type === 'INCOME' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
-                        {event.type === 'INCOME' ? '+' : '-'}{formatCurrencyPrivacy(event.amount)}
+                      <span className={`shrink-0 text-lg font-semibold ${
+                        event.displayType === 'INCOME' ? 'text-emerald-600 dark:text-emerald-400'
+                        : event.displayType === 'TRANSFER' ? 'text-blue-600 dark:text-blue-400'
+                        : 'text-rose-600 dark:text-rose-400'
+                      }`}>
+                        {event.displayType === 'INCOME' ? '+' : event.displayType === 'TRANSFER' && event.signedAmountForTotal >= 0 ? '+' : '-'}{formatCurrencyPrivacy(event.absAmount)}
                       </span>
                     </div>
 

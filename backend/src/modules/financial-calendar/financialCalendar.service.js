@@ -25,6 +25,37 @@ function getTransactionInclude() {
   };
 }
 
+function normalizeCalendarEvent(event) {
+  const isTransfer = event.type === 'TRANSFER';
+  const amount = toNumber(event.amount);
+
+  if (isTransfer) {
+    const transferDirection = amount < 0 ? 'OUTGOING' : 'INCOMING';
+    return {
+      ...event,
+      displayType: 'TRANSFER',
+      displayLabel: 'Transferência',
+      displayAmount: amount,
+      absAmount: Math.abs(amount),
+      signedAmountForTotal: 0,
+      badgeVariant: 'info',
+      transferDirection
+    };
+  }
+
+  const isIncome = event.type === 'INCOME';
+  return {
+    ...event,
+    displayType: isIncome ? 'INCOME' : 'EXPENSE',
+    displayLabel: isIncome ? 'Receita' : 'Despesa',
+    displayAmount: amount,
+    absAmount: Math.abs(amount),
+    signedAmountForTotal: isIncome ? amount : -amount,
+    badgeVariant: isIncome ? 'success' : 'danger',
+    transferDirection: null
+  };
+}
+
 function buildEventFromTransaction(transaction) {
   return {
     id: transaction.id,
@@ -35,6 +66,7 @@ function buildEventFromTransaction(transaction) {
     status: transaction.status === 'CONFIRMED' ? 'PAID' : (transaction.status === 'PENDING' ? 'PENDING' : 'SCHEDULED'),
     amount: toNumber(transaction.amount),
     date: formatDateOnly(transaction.transaction_date),
+    transferId: transaction.transfer_id || null,
     category: transaction.category ? {
       id: transaction.category.id,
       name: transaction.category.name,
@@ -73,6 +105,7 @@ async function buildFinancialCalendar({ tenantId, year, month }) {
   for (const tx of transactions) {
     const dayKey = tx.transaction_date.toISOString().split('T')[0];
     const event = buildEventFromTransaction(tx);
+    const normalizedEvent = normalizeCalendarEvent(event);
 
     if (!eventsByDay.has(dayKey)) {
       eventsByDay.set(dayKey, { income: 0, expense: 0, events: [] });
@@ -81,10 +114,10 @@ async function buildFinancialCalendar({ tenantId, year, month }) {
     const dayData = eventsByDay.get(dayKey);
     if (tx.type === 'INCOME') {
       dayData.income += toNumber(tx.amount);
-    } else {
+    } else if (tx.type === 'EXPENSE') {
       dayData.expense += toNumber(tx.amount);
     }
-    dayData.events.push(event);
+    dayData.events.push(normalizedEvent);
   }
 
   const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
@@ -121,14 +154,14 @@ async function buildFinancialCalendar({ tenantId, year, month }) {
     eventCount += day.events.length;
 
     for (const event of day.events) {
-      if (event.type === 'INCOME') {
-        scheduledIncome += event.amount;
-        if (event.status === 'PAID') paidIncome += event.amount;
-        if (event.status === 'PENDING') pendingIncome += event.amount;
-      } else {
-        scheduledExpense += event.amount;
-        if (event.status === 'PAID') paidExpense += event.amount;
-        if (event.status === 'PENDING') pendingExpense += event.amount;
+      if (event.displayType === 'INCOME') {
+        scheduledIncome += event.absAmount;
+        if (event.status === 'PAID') paidIncome += event.absAmount;
+        if (event.status === 'PENDING') pendingIncome += event.absAmount;
+      } else if (event.displayType === 'EXPENSE') {
+        scheduledExpense += event.absAmount;
+        if (event.status === 'PAID') paidExpense += event.absAmount;
+        if (event.status === 'PENDING') pendingExpense += event.absAmount;
       }
     }
   }
@@ -167,5 +200,8 @@ async function buildFinancialCalendar({ tenantId, year, month }) {
 }
 
 module.exports = {
-  buildFinancialCalendar
+  buildFinancialCalendar,
+  normalizeCalendarEvent,
+  buildEventFromTransaction,
+  toNumber
 };
