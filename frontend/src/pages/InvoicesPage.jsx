@@ -144,7 +144,6 @@ function PaymentModal({ isOpen, invoice, onClose, onPaid }) {
   const [form, setForm] = useState({
     accountId: '',
     paymentDate: new Date().toISOString().split('T')[0],
-    amount: '',
     notes: ''
   });
 
@@ -154,7 +153,6 @@ function PaymentModal({ isOpen, invoice, onClose, onPaid }) {
     setForm({
       accountId: '',
       paymentDate: new Date().toISOString().split('T')[0],
-      amount: invoice?.totalAmount?.toString() || '',
       notes: ''
     });
     setLoading(true);
@@ -184,8 +182,7 @@ function PaymentModal({ isOpen, invoice, onClose, onPaid }) {
     try {
       await invoiceService.payInvoice(invoice.id, {
         accountId: form.accountId,
-        paymentDate: form.paymentDate,
-        amount: invoice?.totalAmount
+        paymentDate: form.paymentDate
       });
       onPaid();
       onClose();

@@ -65,10 +65,6 @@ const paramsSchema = z.object({
 const paySchema = z.object({
   accountId: z.preprocess(normalizeOptionalUuid, z.string().uuid('ID da conta inválido')),
   paymentDate: z.preprocess(normalizeOptionalDate, z.date({ message: 'Data de pagamento obrigatória' })),
-  amount: z.preprocess(
-    normalizeOptionalNumber,
-    z.number().positive('Valor deve ser maior que zero').optional()
-  ),
   notes: z.string().optional().nullable()
 });
 

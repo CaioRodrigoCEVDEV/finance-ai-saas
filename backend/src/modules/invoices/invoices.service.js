@@ -273,7 +273,7 @@ async function recalculateInvoice(tenantId, invoiceId) {
   return { ...toInvoiceResponse(updated), transactionCount };
 }
 
-async function payInvoice(tenantId, invoiceId, userId, { accountId, paymentDate, amount, notes }) {
+async function payInvoice(tenantId, invoiceId, userId, { accountId, paymentDate, notes }) {
   const invoice = await findInvoiceByTenant(tenantId, invoiceId);
 
   if (invoice.status === 'PAID') {
@@ -282,13 +282,9 @@ async function payInvoice(tenantId, invoiceId, userId, { accountId, paymentDate,
 
   await findAccountByTenant(tenantId, accountId);
 
-  const paymentAmount = amount || Number(invoice.totalAmount);
+  const paymentAmount = Number(invoice.totalAmount);
   if (paymentAmount <= 0) {
     throw new AppError('Valor do pagamento deve ser maior que zero', 400);
-  }
-
-  if (amount && amount !== Number(invoice.totalAmount)) {
-    throw new AppError('Nesta versão o pagamento deve ser do valor total da fatura', 400);
   }
 
   const creditCardName = invoice.creditCard?.name || 'Cartão';
