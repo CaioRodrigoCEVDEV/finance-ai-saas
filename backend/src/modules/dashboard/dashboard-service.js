@@ -45,6 +45,7 @@ async function computeTotalBalance(tenantId, endDate) {
       tenant_id: tenantId,
       is_active: true,
       deleted_at: null,
+      consider_in_available_balance: true,
       ...(endDate ? { created_at: { lte: endDate } } : {})
     },
     select: {

@@ -45,7 +45,8 @@ const accountBodyBaseSchema = z.object({
   currency: z.preprocess(normalizeCurrency, z.string().length(3, 'Moeda deve ter 3 caracteres').optional()),
   color: z.preprocess(normalizeOptionalText, z.string().max(30).nullable().optional()),
   icon: z.preprocess(normalizeOptionalText, z.string().max(50).nullable().optional()),
-  isActive: z.boolean().optional()
+  isActive: z.boolean().optional(),
+  considerInAvailableBalance: z.boolean().optional()
 });
 
 const createAccountSchema = accountBodyBaseSchema;

@@ -287,6 +287,7 @@ model Account {
   color           String?
   icon            String?
   is_active       Boolean     @default(true)
+  consider_in_available_balance Boolean @default(true)
   created_at      DateTime    @default(now())
   updated_at      DateTime    @updatedAt
   deleted_at      DateTime?

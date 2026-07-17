@@ -22,6 +22,7 @@ function toAccountResponse(account, computedBalance) {
     color: account.color,
     icon: account.icon,
     isActive: account.is_active,
+    considerInAvailableBalance: account.consider_in_available_balance,
     createdAt: account.created_at.toISOString(),
     updatedAt: account.updated_at.toISOString()
   };
@@ -135,7 +136,8 @@ async function createAccount(data, tenantId, userId) {
       currency: data.currency || 'BRL',
       color: data.color ?? null,
       icon: data.icon ?? null,
-      is_active: data.isActive ?? true
+      is_active: data.isActive ?? true,
+      consider_in_available_balance: data.considerInAvailableBalance ?? true
     }
   });
 
@@ -188,6 +190,10 @@ async function updateAccount(accountId, tenantId, data) {
 
   if (data.isActive !== undefined) {
     updateData.is_active = data.isActive;
+  }
+
+  if (data.considerInAvailableBalance !== undefined) {
+    updateData.consider_in_available_balance = data.considerInAvailableBalance;
   }
 
   const account = await prisma.account.update({

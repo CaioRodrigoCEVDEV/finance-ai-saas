@@ -86,7 +86,8 @@ const initialFormValues = {
   currency: 'BRL',
   color: '#10b981',
   icon: 'bank',
-  isActive: true
+  isActive: true,
+  considerInAvailableBalance: true
 };
 
 function resolveBank(account) {
@@ -119,7 +120,8 @@ function buildFormValues(account) {
     currency: account.currency || 'BRL',
     color: account.color || '#10b981',
     icon: account.icon || 'bank',
-    isActive: account.isActive ?? true
+    isActive: account.isActive ?? true,
+    considerInAvailableBalance: account.considerInAvailableBalance ?? true
   };
 }
 
@@ -188,7 +190,8 @@ function AccountForm({ account, onSubmit, formId = 'account-form' }) {
       currency: formValues.currency.trim().toUpperCase() || 'BRL',
       color: formValues.color.trim() || null,
       icon: formValues.icon.trim() || null,
-      isActive: formValues.isActive
+      isActive: formValues.isActive,
+      considerInAvailableBalance: formValues.considerInAvailableBalance
     };
 
     if (
@@ -309,6 +312,16 @@ function AccountForm({ account, onSubmit, formId = 'account-form' }) {
           <input name="isActive" type="checkbox" checked={formValues.isActive} onChange={handleChange} className="h-4 w-4 rounded border-slate-300 text-emerald-600 dark:border-slate-500 dark:bg-slate-700" />
           Conta ativa
         </label>
+
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 dark:border-slate-600/70 dark:bg-slate-700/30">
+          <label className="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300">
+            <input name="considerInAvailableBalance" type="checkbox" checked={formValues.considerInAvailableBalance} onChange={handleChange} className="h-4 w-4 rounded border-slate-300 text-emerald-600 dark:border-slate-500 dark:bg-slate-700" />
+            Considerar no saldo disponivel
+          </label>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            Quando desmarcado, esta conta continuara funcionando normalmente, porem seu saldo nao sera considerado nos recursos disponiveis exibidos no dashboard.
+          </p>
+        </div>
       </form>
     </section>
   );
