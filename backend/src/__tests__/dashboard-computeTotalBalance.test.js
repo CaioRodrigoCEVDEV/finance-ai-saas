@@ -1,6 +1,9 @@
 jest.mock('../config/prisma', () => ({
   account: {
     findMany: jest.fn()
+  },
+  transaction: {
+    groupBy: jest.fn()
   }
 }));
 
@@ -32,36 +35,50 @@ beforeEach(() => {
   jest.clearAllMocks();
 });
 
+function mockAccountsAndTransactions(accounts, transactions = []) {
+  prismaMock.account.findMany.mockResolvedValue(accounts);
+  prismaMock.transaction.groupBy.mockResolvedValue(transactions);
+}
+
 describe('computeTotalBalance', () => {
   it('deve retornar 0 quando nao ha contas', async () => {
-    prismaMock.account.findMany.mockResolvedValue([]);
+    mockAccountsAndTransactions([]);
 
     const result = await computeTotalBalance(TENANT_ID);
 
     expect(result).toBe(0);
+    expect(prismaMock.transaction.groupBy).not.toHaveBeenCalled();
   });
 
-  it('deve somar o current_balance de todas as contas retornadas', async () => {
-    prismaMock.account.findMany.mockResolvedValue([
-      { current_balance: 500 },
-      { current_balance: 200 },
-      { current_balance: 150 }
-    ]);
+  it('deve calcular saldo = initial_balance + INCOME - EXPENSE', async () => {
+    mockAccountsAndTransactions(
+      [
+        { id: 'acc-1', initial_balance: 1000 },
+        { id: 'acc-2', initial_balance: 500 }
+      ],
+      [
+        { account_id: 'acc-1', type: 'INCOME', _sum: { amount: 300 } },
+        { account_id: 'acc-1', type: 'EXPENSE', _sum: { amount: 200 } },
+        { account_id: 'acc-2', type: 'INCOME', _sum: { amount: 100 } }
+      ]
+    );
 
     const result = await computeTotalBalance(TENANT_ID);
 
-    expect(result).toBe(850);
+    expect(result).toBe(1700);
   });
 
   it('deve filtrar apenas contas com consider_in_available_balance=true', async () => {
-    prismaMock.account.findMany.mockResolvedValue([
-      { current_balance: 500 },
-      { current_balance: 200 }
-    ]);
+    mockAccountsAndTransactions(
+      [
+        { id: 'acc-1', initial_balance: 500 }
+      ],
+      []
+    );
 
     const result = await computeTotalBalance(TENANT_ID);
 
-    expect(result).toBe(700);
+    expect(result).toBe(500);
     expect(prismaMock.account.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
@@ -72,14 +89,15 @@ describe('computeTotalBalance', () => {
   });
 
   it('deve filtrar apenas contas ativas', async () => {
-    prismaMock.account.findMany.mockResolvedValue([
-      { current_balance: 500 },
-      { current_balance: 200 }
-    ]);
+    mockAccountsAndTransactions(
+      [
+        { id: 'acc-1', initial_balance: 500 }
+      ],
+      []
+    );
 
-    const result = await computeTotalBalance(TENANT_ID);
+    await computeTotalBalance(TENANT_ID);
 
-    expect(result).toBe(700);
     expect(prismaMock.account.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
@@ -90,13 +108,15 @@ describe('computeTotalBalance', () => {
   });
 
   it('deve filtrar contas com deleted_at=null', async () => {
-    prismaMock.account.findMany.mockResolvedValue([
-      { current_balance: 500 }
-    ]);
+    mockAccountsAndTransactions(
+      [
+        { id: 'acc-1', initial_balance: 500 }
+      ],
+      []
+    );
 
-    const result = await computeTotalBalance(TENANT_ID);
+    await computeTotalBalance(TENANT_ID);
 
-    expect(result).toBe(500);
     expect(prismaMock.account.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
@@ -106,43 +126,90 @@ describe('computeTotalBalance', () => {
     );
   });
 
-  it('deve lidar com saldos negativos', async () => {
-    prismaMock.account.findMany.mockResolvedValue([
-      { current_balance: 500 },
-      { current_balance: -200 }
-    ]);
+  it('deve buscar transacoes confirmadas sem filtro de data', async () => {
+    mockAccountsAndTransactions(
+      [
+        { id: 'acc-1', initial_balance: 500 }
+      ],
+      []
+    );
 
-    const result = await computeTotalBalance(TENANT_ID);
+    await computeTotalBalance(TENANT_ID);
 
-    expect(result).toBe(300);
+    expect(prismaMock.transaction.groupBy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          status: 'CONFIRMED'
+        })
+      })
+    );
   });
 
-  it('deve tratar current_balance nulo como 0', async () => {
-    prismaMock.account.findMany.mockResolvedValue([
-      { current_balance: 500 },
-      { current_balance: null },
-      { current_balance: undefined }
-    ]);
+  it('deve tratar TRANSFER negativa como despesa e positiva como receita', async () => {
+    mockAccountsAndTransactions(
+      [
+        { id: 'acc-1', initial_balance: 1000 }
+      ],
+      [
+        { account_id: 'acc-1', type: 'TRANSFER', _sum: { amount: -200 } },
+        { account_id: 'acc-1', type: 'TRANSFER', _sum: { amount: 300 } }
+      ]
+    );
 
     const result = await computeTotalBalance(TENANT_ID);
 
-    expect(result).toBe(500);
+    expect(result).toBe(1100);
+  });
+
+  it('deve lidar com contas sem transacoes', async () => {
+    mockAccountsAndTransactions(
+      [
+        { id: 'acc-1', initial_balance: 500 },
+        { id: 'acc-2', initial_balance: 300 }
+      ],
+      []
+    );
+
+    const result = await computeTotalBalance(TENANT_ID);
+
+    expect(result).toBe(800);
+  });
+
+  it('deve lidar com saldos negativos', async () => {
+    mockAccountsAndTransactions(
+      [
+        { id: 'acc-1', initial_balance: 100 }
+      ],
+      [
+        { account_id: 'acc-1', type: 'EXPENSE', _sum: { amount: 500 } }
+      ]
+    );
+
+    const result = await computeTotalBalance(TENANT_ID);
+
+    expect(result).toBe(-400);
   });
 
   it('desmarcar conta deve diminuir o saldo total, nunca aumentar', async () => {
-    prismaMock.account.findMany.mockResolvedValue([
-      { current_balance: 3000 },
-      { current_balance: 200 },
-      { current_balance: 1500 }
-    ]);
+    mockAccountsAndTransactions(
+      [
+        { id: 'acc-1', initial_balance: 3000 },
+        { id: 'acc-2', initial_balance: 200 },
+        { id: 'acc-3', initial_balance: 1500 }
+      ],
+      []
+    );
 
     const resultBefore = await computeTotalBalance(TENANT_ID);
     expect(resultBefore).toBe(4700);
 
-    prismaMock.account.findMany.mockResolvedValue([
-      { current_balance: 3000 },
-      { current_balance: 200 }
-    ]);
+    mockAccountsAndTransactions(
+      [
+        { id: 'acc-1', initial_balance: 3000 },
+        { id: 'acc-2', initial_balance: 200 }
+      ],
+      []
+    );
 
     const resultAfter = await computeTotalBalance(TENANT_ID);
     expect(resultAfter).toBe(3200);
@@ -150,29 +217,15 @@ describe('computeTotalBalance', () => {
     expect(resultAfter).toBeLessThan(resultBefore);
   });
 
-  it('nunca deve somar valor maior ao remover conta do filtro', async () => {
-    prismaMock.account.findMany.mockResolvedValue([
-      { current_balance: 660.51 }
-    ]);
-
-    const resultCompleto = await computeTotalBalance(TENANT_ID);
-    expect(resultCompleto).toBe(660.51);
-
-    prismaMock.account.findMany.mockResolvedValue([
-      { current_balance: 510.51 }
-    ]);
-
-    const resultFiltrado = await computeTotalBalance(TENANT_ID);
-    expect(resultFiltrado).toBe(510.51);
-
-    expect(resultFiltrado).toBeLessThan(resultCompleto);
-  });
-
-  it('deve retornar valor com precisao de 2 casas decimais', async () => {
-    prismaMock.account.findMany.mockResolvedValue([
-      { current_balance: 100.1 },
-      { current_balance: 200.2 }
-    ]);
+  it('deve retornar o valor com precisao de 2 casas decimais', async () => {
+    mockAccountsAndTransactions(
+      [
+        { id: 'acc-1', initial_balance: 100.1 }
+      ],
+      [
+        { account_id: 'acc-1', type: 'INCOME', _sum: { amount: 200.2 } }
+      ]
+    );
 
     const result = await computeTotalBalance(TENANT_ID);
 

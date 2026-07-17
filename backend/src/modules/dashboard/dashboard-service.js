@@ -48,7 +48,8 @@ async function computeTotalBalance(tenantId) {
       consider_in_available_balance: true
     },
     select: {
-      current_balance: true
+      id: true,
+      initial_balance: true
     }
   });
 
@@ -56,7 +57,47 @@ async function computeTotalBalance(tenantId) {
     return 0;
   }
 
-  const total = accounts.reduce((sum, account) => sum + toNumber(account.current_balance), 0);
+  const accountIds = accounts.map((a) => a.id);
+
+  const transactionTotals = await prisma.transaction.groupBy({
+    by: ['account_id', 'type'],
+    where: {
+      tenant_id: tenantId,
+      deleted_at: null,
+      status: 'CONFIRMED',
+      account_id: { in: accountIds }
+    },
+    _sum: { amount: true }
+  });
+
+  const accountTxMap = {};
+
+  for (const agg of transactionTotals) {
+    if (!accountTxMap[agg.account_id]) {
+      accountTxMap[agg.account_id] = { INCOME: 0, EXPENSE: 0 };
+    }
+
+    const amount = toNumber(agg._sum.amount);
+
+    if (agg.type === 'INCOME') {
+      accountTxMap[agg.account_id].INCOME += amount;
+    } else if (agg.type === 'TRANSFER') {
+      if (amount < 0) {
+        accountTxMap[agg.account_id].EXPENSE += Math.abs(amount);
+      } else {
+        accountTxMap[agg.account_id].INCOME += amount;
+      }
+    } else {
+      accountTxMap[agg.account_id].EXPENSE += amount;
+    }
+  }
+
+  let total = 0;
+
+  for (const account of accounts) {
+    const tx = accountTxMap[account.id] || { INCOME: 0, EXPENSE: 0 };
+    total += toNumber(account.initial_balance) + tx.INCOME - tx.EXPENSE;
+  }
 
   return Number(total.toFixed(2));
 }
