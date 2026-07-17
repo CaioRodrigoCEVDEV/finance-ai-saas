@@ -1,5 +1,4 @@
 import SummaryCard from './SummaryCard';
-import { usePrivacy } from '../../contexts/PrivacyContext';
 import { formatPercentage } from '../../utils/formatters';
 
 function formatComparison(comparison) {
@@ -17,14 +16,12 @@ function formatComparison(comparison) {
 }
 
 function DashboardOverviewCards({ data, tenantName, periodLabel, comparison }) {
-  const { formatCurrencyPrivacy } = usePrivacy();
-
   if (!data) return null;
 
   const cards = [
     {
       title: 'Saldo total',
-      value: formatCurrencyPrivacy(data.totalBalance),
+      value: Number(data.totalBalance) || 0,
       description: `Posição consolidada das contas de ${tenantName || 'Finance AI'} até ${periodLabel || 'o período selecionado'}.`,
       variant: 'highlight',
       cardType: 'balance',
@@ -32,7 +29,7 @@ function DashboardOverviewCards({ data, tenantName, periodLabel, comparison }) {
     },
     {
       title: 'Receitas do período',
-      value: formatCurrencyPrivacy(data.monthlyIncome),
+      value: Number(data.monthlyIncome) || 0,
       description: `Entradas confirmadas em ${periodLabel || 'o período selecionado'}.`,
       variant: 'positive',
       cardType: 'income',
@@ -40,7 +37,7 @@ function DashboardOverviewCards({ data, tenantName, periodLabel, comparison }) {
     },
     {
       title: 'Despesas do período',
-      value: formatCurrencyPrivacy(data.monthlyExpensePaid),
+      value: Number(data.monthlyExpensePaid) || 0,
       description: `Saídas efetivamente pagas em ${periodLabel || 'o período selecionado'}.`,
       variant: 'negative',
       cardType: 'expense',
@@ -48,9 +45,9 @@ function DashboardOverviewCards({ data, tenantName, periodLabel, comparison }) {
     },
     {
       title: 'Economia do período',
-      value: formatCurrencyPrivacy(data.monthlyEconomy),
+      value: Number(data.monthlyEconomy) || 0,
       description: `Receitas menos despesas pagas em ${periodLabel || 'o período selecionado'}.`,
-      variant: data.monthlyEconomy >= 0 ? 'positive' : 'negative',
+      variant: (Number(data.monthlyEconomy) || 0) >= 0 ? 'positive' : 'negative',
       cardType: 'savings',
       comparison: formatComparison(comparison?.monthlyEconomy)
     }

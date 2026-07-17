@@ -43,7 +43,7 @@ function useCountUp(end, duration = 1200) {
 
 function AnimatedNumber({ value, formatFn, className = '' }) {
   const { formatCurrencyPrivacy, hideValues } = usePrivacy();
-  const numericValue = Number(String(value).replace(/[^0-9.,-]/g, '').replace(',', '.')) || 0;
+  const numericValue = typeof value === 'number' ? value : 0;
   const animatedValue = useCountUp(Math.abs(numericValue));
 
   if (hideValues) {
