@@ -1,6 +1,6 @@
 import FinancialTaskCard from './FinancialTaskCard';
 
-function FinancialTaskList({ tasks, onComplete, onEdit, onDelete, onGenerateTransaction, loading }) {
+function FinancialTaskList({ tasks, onToggleStatus, onEdit, onDelete, loading }) {
   return (
     <div className="grid gap-6 xl:grid-cols-2">
       {tasks.map((task) => (
@@ -8,10 +8,9 @@ function FinancialTaskList({ tasks, onComplete, onEdit, onDelete, onGenerateTran
           key={task.id}
           task={task}
           loading={loading}
-          onComplete={onComplete}
+          onToggleStatus={onToggleStatus}
           onEdit={onEdit}
           onDelete={onDelete}
-          onGenerateTransaction={onGenerateTransaction}
         />
       ))}
     </div>

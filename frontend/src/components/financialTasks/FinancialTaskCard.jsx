@@ -1,9 +1,8 @@
-import { Check, Pencil, Trash2, AlertCircle, DollarSign, Bell } from 'lucide-react';
+import { Check, RotateCcw, Pencil, Trash2, AlertCircle } from 'lucide-react';
 
 import Badge from '../ui/Badge';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
-import { usePrivacy } from '../../contexts/PrivacyContext';
 import { formatDateBR } from '../../utils/formatters';
 
 const priorityConfig = {
@@ -15,9 +14,7 @@ const priorityConfig = {
 
 const statusConfig = {
   PENDING: { label: 'Pendente', variant: 'warning' },
-  IN_PROGRESS: { label: 'Em andamento', variant: 'info' },
-  COMPLETED: { label: 'Concluida', variant: 'success' },
-  CANCELLED: { label: 'Cancelada', variant: 'neutral' }
+  COMPLETED: { label: 'Concluida', variant: 'success' }
 };
 
 function getDaysUntilDue(dueDate) {
@@ -33,13 +30,12 @@ function getDaysUntilDue(dueDate) {
   return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 }
 
-function FinancialTaskCard({ task, onComplete, onEdit, onDelete, onGenerateTransaction, loading }) {
-  const { formatCurrencyPrivacy } = usePrivacy();
+function FinancialTaskCard({ task, onToggleStatus, onEdit, onDelete, loading }) {
   const priority = priorityConfig[task.priority] || priorityConfig.MEDIUM;
   const status = statusConfig[task.status] || statusConfig.PENDING;
   const daysUntilDue = getDaysUntilDue(task.dueDate);
   const isOverdue = daysUntilDue !== null && daysUntilDue < 0 && task.status !== 'COMPLETED';
-  const hasReminder = task.reminderAt && !task.notificationSent;
+  const isCompleted = task.status === 'COMPLETED';
 
   return (
     <Card className="rounded-[30px] border-slate-200/80 bg-white/95 p-6 w-full max-w-full min-w-0 overflow-hidden dark:border-slate-700 dark:bg-slate-800">
@@ -50,20 +46,11 @@ function FinancialTaskCard({ task, onComplete, onEdit, onDelete, onGenerateTrans
               {status.label}
             </p>
             <Badge variant={priority.variant}>{priority.label}</Badge>
-            {hasReminder ? (
-              <Badge variant="info">
-                <Bell className="mr-1 h-3 w-3 inline" />
-                Lembrete
-              </Badge>
-            ) : null}
             {isOverdue ? (
               <Badge variant="danger">
                 <AlertCircle className="mr-1 h-3 w-3 inline" />
                 Atrasada
               </Badge>
-            ) : null}
-            {task.generatedTransactionId ? (
-              <Badge variant="success">Transacao gerada</Badge>
             ) : null}
           </div>
 
@@ -81,19 +68,18 @@ function FinancialTaskCard({ task, onComplete, onEdit, onDelete, onGenerateTrans
         </div>
 
         <div className="flex flex-wrap items-center gap-2 shrink-0">
-          {task.status !== 'COMPLETED' && task.status !== 'CANCELLED' ? (
-            <Button variant="ghost" size="sm" onClick={() => onComplete(task)} disabled={loading} title="Concluir">
-              <Check className="h-4 w-4" />
-            </Button>
-          ) : null}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onToggleStatus(task)}
+            disabled={loading}
+            title={isCompleted ? 'Marcar como pendente' : 'Concluir tarefa'}
+          >
+            {isCompleted ? <RotateCcw className="h-4 w-4" /> : <Check className="h-4 w-4" />}
+          </Button>
           <Button variant="ghost" size="sm" onClick={() => onEdit(task)} disabled={loading} title="Editar">
             <Pencil className="h-4 w-4" />
           </Button>
-          {task.status === 'COMPLETED' && !task.generatedTransactionId ? (
-            <Button variant="ghost" size="sm" onClick={() => onGenerateTransaction(task)} disabled={loading} title="Gerar transacao">
-              <DollarSign className="h-4 w-4" />
-            </Button>
-          ) : null}
           <Button variant="ghost" size="sm" onClick={() => onDelete(task)} disabled={loading} title="Excluir">
             <Trash2 className="h-4 w-4" />
           </Button>
@@ -101,22 +87,6 @@ function FinancialTaskCard({ task, onComplete, onEdit, onDelete, onGenerateTrans
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2">
-        {task.estimatedAmount ? (
-          <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Valor previsto</p>
-            <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
-              {formatCurrencyPrivacy(task.estimatedAmount)}
-            </p>
-          </div>
-        ) : null}
-
-        {task.accountName ? (
-          <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Conta</p>
-            <p className="mt-1 text-sm font-medium text-slate-900 dark:text-slate-100">{task.accountName}</p>
-          </div>
-        ) : null}
-
         {task.dueDate ? (
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Vencimento</p>
@@ -131,30 +101,6 @@ function FinancialTaskCard({ task, onComplete, onEdit, onDelete, onGenerateTrans
           </div>
         ) : null}
 
-        {task.totalItems > 0 ? (
-          <div className="w-full border-t border-slate-100 pt-3 dark:border-slate-700/50">
-            <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-              <span>{task.completedItems}/{task.totalItems} itens</span>
-              <span>{task.progress}%</span>
-            </div>
-            <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
-              <div
-                className="h-full rounded-full bg-emerald-500 transition-all duration-300"
-                style={{ width: `${task.progress || 0}%` }}
-              />
-            </div>
-          </div>
-        ) : null}
-
-        {task.reminderAt ? (
-          <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Lembrete</p>
-            <p className="mt-1 text-sm font-medium text-slate-900 dark:text-slate-100">
-              {formatDateBR(task.reminderAt)}
-            </p>
-          </div>
-        ) : null}
-
         {task.completedAt ? (
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Concluida em</p>
@@ -163,6 +109,13 @@ function FinancialTaskCard({ task, onComplete, onEdit, onDelete, onGenerateTrans
             </p>
           </div>
         ) : null}
+
+        <div>
+          <p className="text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Atualizada em</p>
+          <p className="mt-1 text-sm font-medium text-slate-900 dark:text-slate-100">
+            {formatDateBR(task.updatedAt)}
+          </p>
+        </div>
       </div>
     </Card>
   );

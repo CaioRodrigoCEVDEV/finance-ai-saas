@@ -34,28 +34,3 @@ export async function getFinancialTaskDashboard() {
   const { data } = await api.get('/financial-tasks/dashboard');
   return data;
 }
-
-export async function generateTransaction(id, payload) {
-  const { data } = await api.post(`/financial-tasks/${id}/generate-transaction`, payload);
-  return data;
-}
-
-export async function createTaskItem(taskId, payload) {
-  const { data } = await api.post(`/financial-tasks/${taskId}/items`, payload);
-  return data;
-}
-
-export async function updateTaskItem(taskId, itemId, payload) {
-  const { data } = await api.put(`/financial-tasks/${taskId}/items/${itemId}`, payload);
-  return data;
-}
-
-export async function deleteTaskItem(taskId, itemId) {
-  const { data } = await api.delete(`/financial-tasks/${taskId}/items/${itemId}`);
-  return data;
-}
-
-export async function reorderTaskItems(taskId, items) {
-  const { data } = await api.put(`/financial-tasks/${taskId}/items/reorder`, { items });
-  return data;
-}

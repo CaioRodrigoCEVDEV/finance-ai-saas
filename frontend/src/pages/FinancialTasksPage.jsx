@@ -5,7 +5,6 @@ import FinancialTaskFilters from '../components/financialTasks/FinancialTaskFilt
 import FinancialTaskList from '../components/financialTasks/FinancialTaskList';
 import FinancialTaskModal from '../components/financialTasks/FinancialTaskModal';
 import FinancialTaskSummary from '../components/financialTasks/FinancialTaskSummary';
-import GenerateTransactionModal from '../components/financialTasks/GenerateTransactionModal';
 import AppLayout from '../layouts/AppLayout';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
@@ -22,15 +21,8 @@ import {
   getFinancialTaskDashboard,
   getFinancialTasks,
   updateFinancialTask,
-  completeFinancialTask,
-  generateTransaction,
-  createTaskItem,
-  updateTaskItem,
-  deleteTaskItem,
-  reorderTaskItems
+  completeFinancialTask
 } from '../services/financialTaskService';
-import { getAccounts } from '../services/accountService';
-import { getCategories } from '../services/categoryService';
 
 const initialFilters = {
   status: '',
@@ -38,24 +30,6 @@ const initialFilters = {
   search: '',
   preset: ''
 };
-
-function buildDateRange(preset) {
-  const now = new Date();
-  now.setHours(0, 0, 0, 0);
-
-  if (preset === 'today') {
-    return { dueDateLte: now.toISOString(), dueDateGte: now.toISOString() };
-  }
-
-  if (preset === 'week') {
-    const endOfWeek = new Date(now);
-    endOfWeek.setDate(endOfWeek.getDate() + (7 - endOfWeek.getDay()));
-    endOfWeek.setHours(23, 59, 59, 999);
-    return { dueDateGte: now.toISOString(), dueDateLte: endOfWeek.toISOString() };
-  }
-
-  return {};
-}
 
 function buildListParams(filters) {
   const params = {};
@@ -72,18 +46,10 @@ function buildListParams(filters) {
     params.search = filters.search;
   }
 
-  if (filters.preset === 'overdue') {
-    params.overdue = 'true';
-  } else if (filters.preset === 'pending') {
+  if (filters.preset === 'pending') {
     params.status = 'PENDING';
   } else if (filters.preset === 'completed') {
     params.status = 'COMPLETED';
-  } else if (filters.preset === 'urgent') {
-    params.priority = 'URGENT';
-  } else if (filters.preset === 'today' || filters.preset === 'week') {
-    const dateRange = buildDateRange(filters.preset);
-    if (dateRange.dueDateGte) params.dueDateGte = dateRange.dueDateGte;
-    if (dateRange.dueDateLte) params.dueDateLte = dateRange.dueDateLte;
   }
 
   return params;
@@ -94,7 +60,6 @@ function FinancialTasksPage() {
   const searchTimeout = useRef(null);
   const isMounted = useRef(false);
   const [tasks, setTasks] = useState([]);
-  const [pagination, setPagination] = useState({ page: 1, total: 0, totalPages: 0 });
   const [filters, setFilters] = useState(initialFilters);
   const [summary, setSummary] = useState({ pending: 0, overdue: 0, today: 0, completed: 0, nextTasks: [] });
   const [loading, setLoading] = useState(true);
@@ -103,10 +68,7 @@ function FinancialTasksPage() {
   const [error, setError] = useState('');
   const [formVisible, setFormVisible] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
-  const [accounts, setAccounts] = useState([]);
-  const [categories, setCategories] = useState([]);
   const [confirmDelete, setConfirmDelete] = useState(null);
-  const [generateTxTask, setGenerateTxTask] = useState(null);
 
   async function loadTasksData(nextFilters = filters) {
     try {
@@ -114,7 +76,6 @@ function FinancialTasksPage() {
       setError('');
       const response = await getFinancialTasks(buildListParams(nextFilters));
       setTasks(response.data);
-      setPagination(response.pagination);
     } catch (requestError) {
       setError(
         requestError.response?.status === 401
@@ -169,19 +130,6 @@ function FinancialTasksPage() {
       }
     };
   }, [filters]);
-
-  useEffect(() => {
-    async function loadAccounts() {
-      try {
-        const data = await getAccounts();
-        setAccounts(data);
-      } catch (_error) {
-        /* silent */
-      }
-    }
-
-    loadAccounts();
-  }, []);
 
   function handleCreateClick() {
     setSelectedTask(null);
@@ -245,18 +193,25 @@ function FinancialTasksPage() {
     }
   }
 
-  async function handleComplete(task) {
+  async function handleToggleStatus(task) {
     try {
       setSaving(true);
       setError('');
-      await completeFinancialTask(task.id);
-      toast.success('Tarefa concluida com sucesso.');
+
+      if (task.status === 'COMPLETED') {
+        await updateFinancialTask(task.id, { status: 'PENDING' });
+        toast.success('Tarefa marcada como pendente.');
+      } else {
+        await completeFinancialTask(task.id);
+        toast.success('Tarefa concluida com sucesso.');
+      }
+
       await Promise.all([
         loadTasksData(filters),
         loadSummary()
       ]);
     } catch (requestError) {
-      toast.error(requestError.response?.data?.message || 'Nao foi possivel concluir a tarefa.');
+      toast.error(requestError.response?.data?.message || 'Nao foi possivel atualizar o status da tarefa.');
     } finally {
       setSaving(false);
     }
@@ -307,100 +262,12 @@ function FinancialTasksPage() {
     setSelectedTask(null);
   }
 
-  function handleGenerateTransactionClick(task) {
-    setGenerateTxTask(task);
-    if (categories.length === 0) {
-      getCategories().then((result) => setCategories(result.data || [])).catch(() => {});
-    }
-  }
-
-  async function handleGenerateTransaction(data) {
-    if (!generateTxTask) return;
-
-    try {
-      setSaving(true);
-      await generateTransaction(generateTxTask.id, data);
-      toast.success('Transacao gerada com sucesso.');
-      setGenerateTxTask(null);
-      await Promise.all([
-        loadTasksData(filters),
-        loadSummary()
-      ]);
-    } catch (requestError) {
-      toast.error(requestError.response?.data?.message || 'Nao foi possivel gerar a transacao.');
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function handleItemAdd(taskId, payload) {
-    try {
-      const item = await createTaskItem(taskId, payload);
-      setTasks((prev) =>
-        prev.map((t) =>
-          t.id === taskId
-            ? {
-                ...t,
-                items: [...(t.items || []), item],
-                totalItems: (t.totalItems || 0) + 1,
-                progress: t.totalItems > 0
-                  ? Math.round(((t.completedItems || 0) / ((t.totalItems || 0) + 1)) * 100)
-                  : 0
-              }
-            : t
-        )
-      );
-      await loadSummary();
-      return item;
-    } catch (error) {
-      toast.error('Nao foi possivel adicionar o item.');
-      throw error;
-    }
-  }
-
-  async function handleItemUpdate(taskId, itemId, payload) {
-    try {
-      await updateTaskItem(taskId, itemId, payload);
-      const updatedTask = await getFinancialTask(taskId);
-      setTasks((prev) =>
-        prev.map((t) => (t.id === taskId ? { ...t, ...updatedTask } : t))
-      );
-
-      if (updatedTask.status === 'COMPLETED' && formVisible && selectedTask?.id === taskId) {
-        setFormVisible(false);
-        setSelectedTask(null);
-      }
-
-      await loadSummary();
-    } catch (error) {
-      toast.error('Nao foi possivel atualizar o item.');
-    }
-  }
-
-  async function handleItemDelete(taskId, itemId, rollback) {
-    try {
-      await deleteTaskItem(taskId, itemId);
-      await loadSummary();
-    } catch (error) {
-      if (rollback) rollback();
-      toast.error('Nao foi possivel excluir o item.');
-    }
-  }
-
-  async function handleItemReorder(taskId, items) {
-    try {
-      await reorderTaskItems(taskId, items);
-    } catch (error) {
-      toast.error('Nao foi possivel reordenar os itens.');
-    }
-  }
-
   return (
     <AppLayout>
       <div className="space-y-8 pb-8 w-full max-w-full">
         <PageHeader
-          title="Tarefas Financeiras"
-          description="Organize pagamentos, revisoes e compromissos financeiros."
+          title="Tarefas"
+          description="Organize suas tarefas em uma lista simples para acompanhar o que esta pendente e o que ja foi concluido."
           action={(
             <Button onClick={handleCreateClick}>
               <Plus className="h-4 w-4" />
@@ -453,7 +320,7 @@ function FinancialTasksPage() {
             <EmptyState
               icon={CheckSquare}
               title="Nenhuma tarefa encontrada"
-              description="Crie sua primeira tarefa financeira para organizar pagamentos, revisoes e compromissos."
+              description="Crie sua primeira tarefa para organizar atividades, prazos e acompanhamentos do dia a dia."
               action={<Button onClick={handleCreateClick}>Criar tarefa</Button>}
             />
           ) : null}
@@ -462,10 +329,9 @@ function FinancialTasksPage() {
             <FinancialTaskList
               tasks={tasks}
               loading={saving}
-              onComplete={handleComplete}
+              onToggleStatus={handleToggleStatus}
               onEdit={handleEdit}
               onDelete={handleDelete}
-              onGenerateTransaction={handleGenerateTransactionClick}
             />
           ) : null}
         </div>
@@ -473,7 +339,7 @@ function FinancialTasksPage() {
         <FormModal
           isOpen={formVisible}
           eyebrow={selectedTask ? 'EDITAR TAREFA' : 'NOVA TAREFA'}
-          title={selectedTask ? 'Atualize os dados da tarefa financeira' : 'Cadastre uma nova tarefa financeira'}
+          title={selectedTask ? 'Editar tarefa' : 'Nova tarefa'}
           onClose={handleCancelForm}
           footer={(
             <>
@@ -486,24 +352,9 @@ function FinancialTasksPage() {
         >
           <FinancialTaskModal
             task={selectedTask}
-            accounts={accounts}
             onSubmit={handleSubmit}
-            onItemAdd={(payload) => selectedTask && handleItemAdd(selectedTask.id, payload)}
-            onItemUpdate={(itemId, payload) => selectedTask && handleItemUpdate(selectedTask.id, itemId, payload)}
-            onItemDelete={(itemId, rollback) => selectedTask && handleItemDelete(selectedTask.id, itemId, rollback)}
-            onItemReorder={(items) => selectedTask && handleItemReorder(selectedTask.id, items)}
           />
         </FormModal>
-
-        <GenerateTransactionModal
-          isOpen={!!generateTxTask}
-          task={generateTxTask}
-          accounts={accounts}
-          categories={categories}
-          onConfirm={handleGenerateTransaction}
-          onClose={() => setGenerateTxTask(null)}
-          saving={saving}
-        />
 
         <ConfirmDialog
           open={!!confirmDelete}

@@ -7,12 +7,7 @@ const {
   validateCreateTask,
   validateUpdateTask,
   validateTaskParams,
-  validateTaskItemParams,
-  validateListTasksQuery,
-  validateGenerateTransaction,
-  validateCreateItem,
-  validateUpdateItem,
-  validateReorderItems
+  validateListTasksQuery
 } = require('./financial-task-schema');
 
 const financialTaskRoutes = Router();
@@ -26,11 +21,5 @@ financialTaskRoutes.post('/financial-tasks', requireWrite, validateCreateTask, f
 financialTaskRoutes.put('/financial-tasks/:id', requireWrite, validateTaskParams, validateUpdateTask, financialTaskController.updateTask);
 financialTaskRoutes.patch('/financial-tasks/:id/complete', requireWrite, validateTaskParams, financialTaskController.completeTask);
 financialTaskRoutes.delete('/financial-tasks/:id', requireWrite, validateTaskParams, financialTaskController.deleteTask);
-financialTaskRoutes.post('/financial-tasks/:id/generate-transaction', requireWrite, validateTaskParams, validateGenerateTransaction, financialTaskController.generateTransaction);
-
-financialTaskRoutes.post('/financial-tasks/:id/items', requireWrite, validateTaskParams, validateCreateItem, financialTaskController.createItem);
-financialTaskRoutes.put('/financial-tasks/:id/items/:itemId', requireWrite, validateTaskItemParams, validateUpdateItem, financialTaskController.updateItem);
-financialTaskRoutes.delete('/financial-tasks/:id/items/:itemId', requireWrite, validateTaskItemParams, financialTaskController.deleteItem);
-financialTaskRoutes.put('/financial-tasks/:id/items/reorder', requireWrite, validateTaskParams, validateReorderItems, financialTaskController.reorderItems);
 
 module.exports = financialTaskRoutes;

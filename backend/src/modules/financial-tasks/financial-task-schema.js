@@ -41,20 +41,12 @@ function normalizeOptionalDate(value) {
   return date;
 }
 
-function normalizeOptionalUuid(value) {
-  if (value === undefined || value === null || String(value).trim() === '') {
-    return undefined;
-  }
-
-  return String(value).trim();
-}
-
 const taskPriorityEnum = z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT'], {
   message: 'Prioridade deve ser LOW, MEDIUM, HIGH ou URGENT'
 });
 
-const taskStatusEnum = z.enum(['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'], {
-  message: 'Status deve ser PENDING, IN_PROGRESS, COMPLETED ou CANCELLED'
+const taskStatusEnum = z.enum(['PENDING', 'COMPLETED'], {
+  message: 'Status deve ser PENDING ou COMPLETED'
 });
 
 const createTaskSchema = z.object({
@@ -62,16 +54,7 @@ const createTaskSchema = z.object({
   description: z.preprocess(normalizeOptionalText, z.string().trim().optional()),
   priority: taskPriorityEnum.optional(),
   status: taskStatusEnum.optional(),
-  dueDate: z.preprocess(normalizeOptionalDate, z.date().optional()),
-  estimatedAmount: z.preprocess(normalizeOptionalNumber, z.number().positive('Valor previsto deve ser maior que zero').optional()),
-  accountId: z.preprocess(normalizeOptionalUuid, z.string().uuid('Conta invalida').optional()),
-  reminderAt: z.preprocess(normalizeOptionalDate, z.date().optional()),
-  autoComplete: z.boolean().optional(),
-  items: z.array(z.object({
-    description: z.string().trim().min(1, 'Descricao do item obrigatoria'),
-    completed: z.boolean().optional(),
-    order: z.number().int().min(0).optional()
-  })).optional()
+  dueDate: z.preprocess(normalizeOptionalDate, z.date().optional())
 });
 
 const updateTaskSchema = z.object({
@@ -79,32 +62,14 @@ const updateTaskSchema = z.object({
   description: z.preprocess(normalizeOptionalText, z.string().trim().optional()),
   priority: taskPriorityEnum.optional(),
   status: taskStatusEnum.optional(),
-  dueDate: z.preprocess(normalizeOptionalDate, z.date().optional()),
-  estimatedAmount: z.preprocess(normalizeOptionalNumber, z.number().positive('Valor previsto deve ser maior que zero').optional()),
-  accountId: z.preprocess(normalizeOptionalUuid, z.string().uuid('Conta invalida').optional()),
-  reminderAt: z.preprocess(normalizeOptionalDate, z.date().optional()),
-  autoComplete: z.boolean().optional()
+  dueDate: z.preprocess(normalizeOptionalDate, z.date().optional())
 }).refine(
   (data) => Object.keys(data).length > 0,
   'Informe ao menos um campo para atualizacao'
 );
 
-const generateTransactionSchema = z.object({
-  type: z.enum(['INCOME', 'EXPENSE'], { message: 'Tipo deve ser INCOME ou EXPENSE' }),
-  amount: z.preprocess(normalizeOptionalNumber, z.number().positive('Valor deve ser maior que zero')),
-  accountId: z.string().uuid('Conta invalida'),
-  categoryId: z.preprocess(normalizeOptionalUuid, z.string().uuid('Categoria invalida').optional()),
-  description: z.preprocess(normalizeOptionalText, z.string().trim().optional()),
-  transactionDate: z.preprocess(normalizeOptionalDate, z.date().optional())
-});
-
 const taskParamsSchema = z.object({
   id: z.string().uuid('Identificador de tarefa invalido')
-});
-
-const taskItemParamsSchema = z.object({
-  id: z.string().uuid('Identificador de tarefa invalido'),
-  itemId: z.string().uuid('Identificador de item invalido')
 });
 
 const listTasksQuerySchema = z.object({
@@ -135,33 +100,9 @@ function buildValidator(schema, target) {
   };
 }
 
-const createItemSchema = z.object({
-  description: z.string().trim().min(1, 'Descricao do item obrigatoria')
-});
-
-const updateItemSchema = z.object({
-  description: z.preprocess(normalizeOptionalText, z.string().trim().optional()),
-  completed: z.boolean().optional(),
-  order: z.number().int().min(0).optional()
-});
-
-const reorderItemsSchema = z.object({
-  items: z.array(
-    z.object({
-      id: z.string().uuid('Item invalido'),
-      order: z.number().int().min(0)
-    })
-  )
-});
-
 module.exports = {
   validateCreateTask: buildValidator(createTaskSchema, 'body'),
   validateUpdateTask: buildValidator(updateTaskSchema, 'body'),
   validateTaskParams: buildValidator(taskParamsSchema, 'params'),
-  validateTaskItemParams: buildValidator(taskItemParamsSchema, 'params'),
-  validateListTasksQuery: buildValidator(listTasksQuerySchema, 'query'),
-  validateGenerateTransaction: buildValidator(generateTransactionSchema, 'body'),
-  validateCreateItem: buildValidator(createItemSchema, 'body'),
-  validateUpdateItem: buildValidator(updateItemSchema, 'body'),
-  validateReorderItems: buildValidator(reorderItemsSchema, 'body')
+  validateListTasksQuery: buildValidator(listTasksQuerySchema, 'query')
 };

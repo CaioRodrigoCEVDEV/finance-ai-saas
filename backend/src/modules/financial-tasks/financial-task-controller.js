@@ -63,55 +63,6 @@ async function getDashboardSummary(request, response, next) {
   }
 }
 
-async function generateTransaction(request, response, next) {
-  try {
-    const data = await financialTaskService.generateTransaction(
-      request.params.id,
-      request.tenant.id,
-      request.body
-    );
-    return response.status(201).json(data);
-  } catch (error) {
-    return next(error);
-  }
-}
-
-async function createItem(request, response, next) {
-  try {
-    const data = await financialTaskService.createItem(request.params.id, request.tenant.id, request.body);
-    return response.status(201).json(data);
-  } catch (error) {
-    return next(error);
-  }
-}
-
-async function updateItem(request, response, next) {
-  try {
-    const data = await financialTaskService.updateItem(request.params.id, request.tenant.id, request.params.itemId, request.body);
-    return response.json(data);
-  } catch (error) {
-    return next(error);
-  }
-}
-
-async function deleteItem(request, response, next) {
-  try {
-    const data = await financialTaskService.deleteItem(request.params.id, request.tenant.id, request.params.itemId);
-    return response.json(data);
-  } catch (error) {
-    return next(error);
-  }
-}
-
-async function reorderItems(request, response, next) {
-  try {
-    const data = await financialTaskService.reorderItems(request.params.id, request.tenant.id, request.body);
-    return response.json(data);
-  } catch (error) {
-    return next(error);
-  }
-}
-
 module.exports = {
   listTasks,
   getTask,
@@ -119,10 +70,5 @@ module.exports = {
   updateTask,
   completeTask,
   deleteTask,
-  getDashboardSummary,
-  generateTransaction,
-  createItem,
-  updateItem,
-  deleteItem,
-  reorderItems
+  getDashboardSummary
 };

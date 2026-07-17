@@ -1,18 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import Input from '../ui/Input';
 import Select from '../ui/Select';
-import TaskChecklist from './TaskChecklist';
 
 const initialFormValues = {
   title: '',
   description: '',
   priority: 'MEDIUM',
-  dueDate: '',
-  estimatedAmount: '',
-  accountId: '',
-  reminderAt: '',
-  autoComplete: false
+  dueDate: ''
 };
 
 const priorityOptions = [
@@ -20,13 +15,6 @@ const priorityOptions = [
   { value: 'MEDIUM', label: 'Media' },
   { value: 'HIGH', label: 'Alta' },
   { value: 'URGENT', label: 'Urgente' }
-];
-
-const statusOptions = [
-  { value: 'PENDING', label: 'Pendente' },
-  { value: 'IN_PROGRESS', label: 'Em andamento' },
-  { value: 'COMPLETED', label: 'Concluida' },
-  { value: 'CANCELLED', label: 'Cancelada' }
 ];
 
 function buildFormValues(task) {
@@ -38,27 +26,19 @@ function buildFormValues(task) {
     title: task.title || '',
     description: task.description || '',
     priority: task.priority || 'MEDIUM',
-    dueDate: task.dueDate ? task.dueDate.split('T')[0] : '',
-    estimatedAmount: task.estimatedAmount ? String(task.estimatedAmount) : '',
-    accountId: task.accountId || '',
-    reminderAt: task.reminderAt ? task.reminderAt.split('T')[0] : '',
-    autoComplete: task.autoComplete || false
+    dueDate: task.dueDate ? task.dueDate.split('T')[0] : ''
   };
 }
 
-function FinancialTaskModal({ task, accounts, onSubmit, formId = 'financial-task-form', onItemAdd, onItemUpdate, onItemDelete, onItemReorder }) {
+function FinancialTaskModal({ task, onSubmit, formId = 'financial-task-form' }) {
   const formRef = useRef(null);
   const [formValues, setFormValues] = useState(initialFormValues);
   const [errors, setErrors] = useState({});
-  const [checklistItems, setChecklistItems] = useState([]);
-  const checklistRef = useRef(checklistItems);
-  checklistRef.current = checklistItems;
   const fieldClassName = 'h-11 py-0 text-sm';
 
   useEffect(() => {
     setFormValues(buildFormValues(task));
     setErrors({});
-    setChecklistItems(task?.items || []);
   }, [task]);
 
   function handleChange(event) {
@@ -100,14 +80,6 @@ function FinancialTaskModal({ task, accounts, onSubmit, formId = 'financial-task
       nextErrors.title = 'Informe um titulo com pelo menos 2 caracteres.';
     }
 
-    const estimatedAmount = formValues.estimatedAmount
-      ? Number(formValues.estimatedAmount)
-      : null;
-
-    if (estimatedAmount !== null && (!Number.isFinite(estimatedAmount) || estimatedAmount <= 0)) {
-      nextErrors.estimatedAmount = 'Valor previsto deve ser maior que zero.';
-    }
-
     setErrors(nextErrors);
 
     if (Object.keys(nextErrors).length > 0) {
@@ -118,89 +90,15 @@ function FinancialTaskModal({ task, accounts, onSubmit, formId = 'financial-task
     const payload = {
       title: formValues.title.trim(),
       description: formValues.description.trim() || undefined,
-      priority: formValues.priority || 'MEDIUM',
-      accountId: formValues.accountId || undefined
+      priority: formValues.priority || 'MEDIUM'
     };
 
     if (formValues.dueDate) {
       payload.dueDate = formValues.dueDate;
     }
 
-    if (estimatedAmount !== null) {
-      payload.estimatedAmount = estimatedAmount;
-    }
-
-    if (formValues.reminderAt) {
-      payload.reminderAt = formValues.reminderAt;
-    } else {
-      payload.reminderAt = null;
-    }
-
-    payload.autoComplete = formValues.autoComplete;
-
-    if (!task?.id && checklistItems.length > 0) {
-      payload.items = checklistItems.map((item) => ({
-        description: item.description,
-        completed: item.completed,
-        order: item.order
-      }));
-    }
-
     await onSubmit(payload);
   }
-
-  const handleLocalItemAdd = useCallback(async (payload) => {
-    if (task?.id && onItemAdd) {
-      const createdItem = await onItemAdd(payload);
-      if (createdItem) {
-        setChecklistItems((prev) => [...prev, createdItem]);
-      }
-    } else {
-      setChecklistItems((prev) => [
-        ...prev,
-        { id: crypto.randomUUID(), description: payload.description, completed: false, order: prev.length }
-      ]);
-    }
-  }, [onItemAdd, task?.id]);
-
-  const handleLocalItemUpdate = useCallback((itemId, payload) => {
-    setChecklistItems((prev) =>
-      prev.map((item) =>
-        item.id === itemId ? { ...item, ...payload } : item
-      )
-    );
-
-    if (onItemUpdate && task?.id) {
-      onItemUpdate(itemId, payload);
-    }
-  }, [onItemUpdate, task?.id]);
-
-  const handleLocalItemDelete = useCallback((itemId) => {
-    const prev = checklistRef.current;
-    setChecklistItems((prev) => prev.filter((i) => i.id !== itemId));
-
-    if (onItemDelete && task?.id) {
-      onItemDelete(itemId, () => {
-        setChecklistItems(prev);
-      });
-    }
-  }, [onItemDelete, task?.id]);
-
-  const handleLocalItemReorder = useCallback((items) => {
-    setChecklistItems((prev) => {
-      const next = [...prev];
-      const orderMap = {};
-      items.forEach((item) => { orderMap[item.id] = item.order; });
-      next.sort((a, b) => (orderMap[a.id] || 0) - (orderMap[b.id] || 0));
-      return next;
-    });
-
-    if (onItemReorder && task?.id) {
-      onItemReorder(items);
-    }
-  }, [onItemReorder, task?.id]);
-
-  const isSaving = false;
 
   return (
     <section>
@@ -208,17 +106,6 @@ function FinancialTaskModal({ task, accounts, onSubmit, formId = 'financial-task
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
           <div className="md:col-span-2">
             <Input label="Titulo" name="title" error={errors.title} value={formValues.title} onChange={handleChange} className={fieldClassName} />
-          </div>
-
-          <div className="border-t border-slate-200 pt-4 md:col-span-2 dark:border-slate-700">
-            <TaskChecklist
-              items={checklistItems}
-              onAdd={handleLocalItemAdd}
-              onUpdate={handleLocalItemUpdate}
-              onDelete={handleLocalItemDelete}
-              onReorder={handleLocalItemReorder}
-              saving={isSaving}
-            />
           </div>
 
           <div className="md:col-span-2">
@@ -243,33 +130,7 @@ function FinancialTaskModal({ task, accounts, onSubmit, formId = 'financial-task
           </Select>
 
           <Input label="Data limite" name="dueDate" type="date" value={formValues.dueDate} onChange={handleChange} className={fieldClassName} />
-
-          <Input label="Valor previsto" name="estimatedAmount" type="number" step="0.01" min="0" error={errors.estimatedAmount} value={formValues.estimatedAmount} onChange={handleChange} className={fieldClassName} />
-
-          <Select label="Conta vinculada" name="accountId" value={formValues.accountId} onChange={handleChange} className={fieldClassName}>
-            <option value="">Nenhuma</option>
-            {accounts.map((account) => (
-              <option key={account.id} value={account.id}>{account.name}</option>
-            ))}
-          </Select>
-
-          <Input label="Lembrete" name="reminderAt" type="date" value={formValues.reminderAt} onChange={handleChange} className={fieldClassName} />
         </div>
-
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="autoComplete"
-            name="autoComplete"
-            checked={formValues.autoComplete}
-            onChange={(e) => setFormValues((prev) => ({ ...prev, autoComplete: e.target.checked }))}
-            className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 dark:border-slate-600 dark:bg-slate-700"
-          />
-          <label htmlFor="autoComplete" className="text-sm text-slate-600 dark:text-slate-400">
-            Concluir automaticamente quando todos os itens forem concluidos
-          </label>
-        </div>
-
       </form>
     </section>
   );

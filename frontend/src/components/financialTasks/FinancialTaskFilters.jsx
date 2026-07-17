@@ -1,4 +1,4 @@
-import { Search, X, Clock, AlertCircle, Calendar, CalendarDays } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 
 import Button from '../ui/Button';
 import Input from '../ui/Input';
@@ -7,9 +7,7 @@ import Select from '../ui/Select';
 const statusOptions = [
   { value: '', label: 'Todas' },
   { value: 'PENDING', label: 'Pendentes' },
-  { value: 'IN_PROGRESS', label: 'Em andamento' },
-  { value: 'COMPLETED', label: 'Concluidas' },
-  { value: 'CANCELLED', label: 'Canceladas' }
+  { value: 'COMPLETED', label: 'Concluidas' }
 ];
 
 const priorityOptions = [
@@ -22,12 +20,8 @@ const priorityOptions = [
 
 const presetOptions = [
   { value: '', label: 'Todas', icon: null },
-  { value: 'pending', label: 'Pendentes', icon: Clock },
-  { value: 'completed', label: 'Concluidas', icon: null },
-  { value: 'overdue', label: 'Atrasadas', icon: AlertCircle },
-  { value: 'urgent', label: 'Urgente', icon: null },
-  { value: 'today', label: 'Hoje', icon: Calendar },
-  { value: 'week', label: 'Esta semana', icon: CalendarDays }
+  { value: 'pending', label: 'Pendentes', icon: null },
+  { value: 'completed', label: 'Concluidas', icon: null }
 ];
 
 function FinancialTaskFilters({ filters, onChange, onClear, onPreset, loading }) {
@@ -38,7 +32,7 @@ function FinancialTaskFilters({ filters, onChange, onClear, onPreset, loading })
           <Input
             label="Buscar"
             name="search"
-            placeholder="mercado, iptu, nubank..."
+            placeholder="Ex.: revisar contrato, pagar aluguel..."
             value={filters.search}
             onChange={onChange}
             icon={Search}
