@@ -1,6 +1,18 @@
 const prisma = require('../../config/prisma');
 const AppError = require('../../utils/app-error');
 
+const taskChecklistInclude = {
+  items: {
+    where: {
+      deletedAt: null
+    },
+    orderBy: [
+      { order: 'asc' },
+      { createdAt: 'asc' }
+    ]
+  }
+};
+
 function normalizeTaskStatus(status) {
   return status === 'COMPLETED' ? 'COMPLETED' : 'PENDING';
 }
@@ -70,11 +82,127 @@ async function findTaskByTenant(taskId, tenantId) {
       id: taskId,
       tenantId,
       deletedAt: null
-    }
+    },
+    include: taskChecklistInclude
   });
 }
 
+function normalizeChecklistPayload(checklist = []) {
+  return checklist
+    .map((item, index) => ({
+      id: item.id ?? null,
+      title: item.title.trim(),
+      completed: item.completed ?? false,
+      order: Number.isInteger(item.order) ? item.order : index
+    }))
+    .sort((left, right) => left.order - right.order)
+    .map((item, index) => ({
+      ...item,
+      order: index
+    }));
+}
+
+function buildChecklistMetrics(items = []) {
+  const totalChecklistItems = items.length;
+  const completedChecklistItems = items.filter((item) => item.completed).length;
+  const progress = totalChecklistItems > 0
+    ? Number(((completedChecklistItems / totalChecklistItems) * 100).toFixed(2))
+    : 0;
+
+  return {
+    totalChecklistItems,
+    completedChecklistItems,
+    progress
+  };
+}
+
+function serializeChecklistItem(item) {
+  return {
+    id: item.id,
+    title: item.title,
+    completed: item.completed,
+    order: item.order,
+    createdAt: item.createdAt.toISOString(),
+    updatedAt: item.updatedAt.toISOString()
+  };
+}
+
+async function syncTaskChecklist(transactionClient, taskId, existingItems, checklist) {
+  const normalizedChecklist = normalizeChecklistPayload(checklist);
+  const existingItemsById = new Map(existingItems.map((item) => [item.id, item]));
+  const keptItemIds = new Set();
+  const operations = [];
+
+  normalizedChecklist.forEach((item) => {
+    if (item.id) {
+      if (!existingItemsById.has(item.id)) {
+        throw new AppError('Item de checklist invalido', 400);
+      }
+
+      if (keptItemIds.has(item.id)) {
+        throw new AppError('Checklist contem itens duplicados', 400);
+      }
+
+      keptItemIds.add(item.id);
+      operations.push(
+        transactionClient.financialTaskItem.update({
+          where: {
+            id: item.id
+          },
+          data: {
+            title: item.title,
+            completed: item.completed,
+            order: item.order,
+            deletedAt: null
+          }
+        })
+      );
+
+      return;
+    }
+
+    operations.push(
+      transactionClient.financialTaskItem.create({
+        data: {
+          taskId,
+          title: item.title,
+          completed: item.completed,
+          order: item.order
+        }
+      })
+    );
+  });
+
+  const removedItemIds = existingItems
+    .filter((item) => !keptItemIds.has(item.id))
+    .map((item) => item.id);
+
+  if (removedItemIds.length > 0) {
+    operations.push(
+      transactionClient.financialTaskItem.updateMany({
+        where: {
+          taskId,
+          id: {
+            in: removedItemIds
+          },
+          deletedAt: null
+        },
+        data: {
+          deletedAt: new Date()
+        }
+      })
+    );
+  }
+
+  if (operations.length > 0) {
+    await Promise.all(operations);
+  }
+}
+
 function enrichTaskResponse(task) {
+  const checklist = (task.items || []).map(serializeChecklistItem);
+  const checklistMetrics = buildChecklistMetrics(checklist);
+
   return {
     id: task.id,
     title: task.title,
@@ -83,6 +211,10 @@ function enrichTaskResponse(task) {
     status: normalizeTaskStatus(task.status),
     dueDate: task.dueDate ? task.dueDate.toISOString() : null,
     completedAt: task.completedAt ? task.completedAt.toISOString() : null,
+    checklist,
+    totalChecklistItems: checklistMetrics.totalChecklistItems,
+    completedChecklistItems: checklistMetrics.completedChecklistItems,
+    progress: checklistMetrics.progress,
     createdAt: task.createdAt.toISOString(),
     updatedAt: task.updatedAt.toISOString()
   };
@@ -98,6 +230,7 @@ async function listTasks(tenantId, filters = {}) {
   const [tasks, total] = await Promise.all([
     prisma.financialTask.findMany({
       where,
+      include: taskChecklistInclude,
       orderBy: [
         { status: 'asc' },
         { dueDate: { sort: 'asc', nulls: 'last' } }
@@ -130,6 +263,8 @@ async function getTaskById(taskId, tenantId) {
 }
 
 async function createTask(data, tenantId) {
+  const checklist = data.checklist ? normalizeChecklistPayload(data.checklist) : [];
+
   const task = await prisma.financialTask.create({
     data: {
       tenantId,
@@ -138,8 +273,18 @@ async function createTask(data, tenantId) {
       priority: data.priority ?? 'MEDIUM',
       status: data.status ?? 'PENDING',
       dueDate: data.dueDate ?? null,
-      completedAt: data.status === 'COMPLETED' ? new Date() : null
-    }
+      completedAt: data.status === 'COMPLETED' ? new Date() : null,
+      items: checklist.length > 0
+        ? {
+            create: checklist.map((item) => ({
+              title: item.title,
+              completed: item.completed,
+              order: item.order
+            }))
+          }
+        : undefined
+    },
+    include: taskChecklistInclude
   });
 
   return enrichTaskResponse(task);
@@ -180,11 +325,24 @@ async function updateTask(taskId, tenantId, data) {
     updateData.dueDate = data.dueDate ?? null;
   }
 
-  const task = await prisma.financialTask.update({
-    where: {
-      id: existingTask.id
-    },
-    data: updateData
+  const task = await prisma.$transaction(async (transactionClient) => {
+    await transactionClient.financialTask.update({
+      where: {
+        id: existingTask.id
+      },
+      data: updateData
+    });
+
+    if (data.checklist !== undefined) {
+      await syncTaskChecklist(transactionClient, existingTask.id, existingTask.items || [], data.checklist);
+    }
+
+    return transactionClient.financialTask.findUnique({
+      where: {
+        id: existingTask.id
+      },
+      include: taskChecklistInclude
+    });
   });
 
   return enrichTaskResponse(task);
@@ -204,7 +362,8 @@ async function completeTask(taskId, tenantId) {
     data: {
       status: 'COMPLETED',
       completedAt: new Date()
-    }
+    },
+    include: taskChecklistInclude
   });
 
   return enrichTaskResponse(task);
@@ -217,14 +376,27 @@ async function deleteTask(taskId, tenantId) {
     throw new AppError('Tarefa nao encontrada', 404);
   }
 
-  await prisma.financialTask.update({
-    where: {
-      id: existingTask.id
-    },
-    data: {
-      deletedAt: new Date()
-    }
-  });
+  const deletedAt = new Date();
+
+  await prisma.$transaction([
+    prisma.financialTask.update({
+      where: {
+        id: existingTask.id
+      },
+      data: {
+        deletedAt
+      }
+    }),
+    prisma.financialTaskItem.updateMany({
+      where: {
+        taskId: existingTask.id,
+        deletedAt: null
+      },
+      data: {
+        deletedAt
+      }
+    })
+  ]);
 
   return { message: 'Tarefa excluida com sucesso' };
 }
@@ -237,6 +409,7 @@ async function getDashboardSummary(tenantId) {
       tenantId,
       deletedAt: null
     },
+    include: taskChecklistInclude,
     orderBy: [
       { status: 'asc' },
       { priority: 'desc' },

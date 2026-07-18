@@ -353,6 +353,7 @@ function FinancialTasksPage() {
           <FinancialTaskModal
             task={selectedTask}
             onSubmit={handleSubmit}
+            saving={saving}
           />
         </FormModal>
 

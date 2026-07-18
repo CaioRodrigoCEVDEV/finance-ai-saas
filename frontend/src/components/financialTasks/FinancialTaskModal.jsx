@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import Input from '../ui/Input';
 import Select from '../ui/Select';
+import TaskChecklist from './TaskChecklist';
 
 const initialFormValues = {
   title: '',
@@ -30,14 +31,24 @@ function buildFormValues(task) {
   };
 }
 
-function FinancialTaskModal({ task, onSubmit, formId = 'financial-task-form' }) {
+function buildChecklistItems(task) {
+  return (task?.checklist || []).map((item, index) => ({
+    ...item,
+    clientId: item.id || crypto.randomUUID(),
+    order: item.order ?? index
+  }));
+}
+
+function FinancialTaskModal({ task, onSubmit, saving = false, formId = 'financial-task-form' }) {
   const formRef = useRef(null);
   const [formValues, setFormValues] = useState(initialFormValues);
+  const [checklistItems, setChecklistItems] = useState([]);
   const [errors, setErrors] = useState({});
   const fieldClassName = 'h-11 py-0 text-sm';
 
   useEffect(() => {
     setFormValues(buildFormValues(task));
+    setChecklistItems(buildChecklistItems(task));
     setErrors({});
   }, [task]);
 
@@ -89,13 +100,18 @@ function FinancialTaskModal({ task, onSubmit, formId = 'financial-task-form' }) 
 
     const payload = {
       title: formValues.title.trim(),
-      description: formValues.description.trim() || undefined,
-      priority: formValues.priority || 'MEDIUM'
+      description: formValues.description.trim() || null,
+      priority: formValues.priority || 'MEDIUM',
+      dueDate: formValues.dueDate || null,
+      checklist: checklistItems
+        .filter((item) => item.title.trim().length > 0)
+        .map((item, index) => ({
+          ...(item.id ? { id: item.id } : {}),
+          title: item.title.trim(),
+          completed: item.completed,
+          order: index
+        }))
     };
-
-    if (formValues.dueDate) {
-      payload.dueDate = formValues.dueDate;
-    }
 
     await onSubmit(payload);
   }
@@ -105,7 +121,11 @@ function FinancialTaskModal({ task, onSubmit, formId = 'financial-task-form' }) 
       <form ref={formRef} id={formId} className="space-y-4" onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
           <div className="md:col-span-2">
-            <Input label="Titulo" name="title" error={errors.title} value={formValues.title} onChange={handleChange} className={fieldClassName} />
+            <Input label="Titulo" name="title" error={errors.title} value={formValues.title} onChange={handleChange} className={fieldClassName} disabled={saving} />
+          </div>
+
+          <div className="md:col-span-2">
+            <TaskChecklist items={checklistItems} onChange={setChecklistItems} disabled={saving} />
           </div>
 
           <div className="md:col-span-2">
@@ -117,19 +137,20 @@ function FinancialTaskModal({ task, onSubmit, formId = 'financial-task-form' }) 
                 onChange={handleChange}
                 onKeyDown={handleDescriptionKeyDown}
                 placeholder="Adicione observacoes complementares (opcional)..."
-                className="w-full resize-y rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-slate-600 dark:bg-slate-700/40 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30"
+                className="w-full resize-y rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-slate-600 dark:bg-slate-700/40 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30"
                 style={{ minHeight: '100px', maxHeight: '250px' }}
+                disabled={saving}
               />
             </label>
           </div>
 
-          <Select label="Prioridade" name="priority" value={formValues.priority} onChange={handleChange} className={fieldClassName}>
+          <Select label="Prioridade" name="priority" value={formValues.priority} onChange={handleChange} className={fieldClassName} disabled={saving}>
             {priorityOptions.map((option) => (
               <option key={option.value} value={option.value}>{option.label}</option>
             ))}
           </Select>
 
-          <Input label="Data limite" name="dueDate" type="date" value={formValues.dueDate} onChange={handleChange} className={fieldClassName} />
+          <Input label="Data limite" name="dueDate" type="date" value={formValues.dueDate} onChange={handleChange} className={fieldClassName} disabled={saving} />
         </div>
       </form>
     </section>

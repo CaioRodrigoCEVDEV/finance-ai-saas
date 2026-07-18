@@ -36,6 +36,7 @@ function FinancialTaskCard({ task, onToggleStatus, onEdit, onDelete, loading }) 
   const daysUntilDue = getDaysUntilDue(task.dueDate);
   const isOverdue = daysUntilDue !== null && daysUntilDue < 0 && task.status !== 'COMPLETED';
   const isCompleted = task.status === 'COMPLETED';
+  const hasChecklist = (task.totalChecklistItems || 0) > 0;
 
   return (
     <Card className="rounded-[30px] border-slate-200/80 bg-white/95 p-6 w-full max-w-full min-w-0 overflow-hidden dark:border-slate-700 dark:bg-slate-800">
@@ -85,6 +86,22 @@ function FinancialTaskCard({ task, onToggleStatus, onEdit, onDelete, loading }) 
           </Button>
         </div>
       </div>
+
+      {hasChecklist ? (
+        <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-700/70 dark:bg-slate-800/40">
+          <div className="flex items-center justify-between gap-3 text-sm">
+            <p className="font-medium text-slate-700 dark:text-slate-200">
+              {task.completedChecklistItems} de {task.totalChecklistItems} itens
+            </p>
+            <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+              {Math.round(task.progress || 0)}%
+            </span>
+          </div>
+          <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+            <div className="h-full rounded-full bg-emerald-500 transition-all duration-300" style={{ width: `${task.progress || 0}%` }} />
+          </div>
+        </div>
+      ) : null}
 
       <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2">
         {task.dueDate ? (
