@@ -1,5 +1,26 @@
+import { useState, useCallback } from 'react';
+import { ChevronDown } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import Card from './Card';
+
+const STORAGE_PREFIX = 'dashboard-card-state_';
+
+function readCollapseState(key) {
+  try {
+    const raw = localStorage.getItem(STORAGE_PREFIX + key);
+    return raw === 'true';
+  } catch {
+    return false;
+  }
+}
+
+function writeCollapseState(key, collapsed) {
+  try {
+    localStorage.setItem(STORAGE_PREFIX + key, String(collapsed));
+  } catch {
+    // ignore
+  }
+}
 
 const colorConfig = {
   emerald: {
@@ -54,9 +75,24 @@ function DashboardCard({
   children,
   className = '',
   headerRight,
+  collapseKey,
+  defaultCollapsed = false,
   ...props
 }) {
   const config = colorConfig[color] || colorConfig.slate;
+
+  const [collapsed, setCollapsed] = useState(() => {
+    if (!collapseKey) return defaultCollapsed;
+    return readCollapseState(collapseKey);
+  });
+
+  const toggle = useCallback(() => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      if (collapseKey) writeCollapseState(collapseKey, next);
+      return next;
+    });
+  }, [collapseKey]);
 
   return (
     <Card
@@ -94,9 +130,43 @@ function DashboardCard({
             )}
           </div>
         </div>
-        {headerRight && <div>{headerRight}</div>}
+        <div className="flex items-center gap-2">
+          {headerRight && <div>{headerRight}</div>}
+          {collapseKey && (
+            <button
+              type="button"
+              onClick={toggle}
+              className={cn(
+                'flex h-9 w-9 items-center justify-center rounded-xl border',
+                'border-slate-200 bg-white/80 text-slate-500',
+                'hover:border-slate-300 hover:bg-white hover:text-slate-700',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-1',
+                'dark:border-slate-600 dark:bg-slate-800/80 dark:text-slate-400',
+                'dark:hover:border-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-200',
+                'transition-all duration-200'
+              )}
+              aria-label={collapsed ? 'Expandir' : 'Recolher'}
+            >
+              <ChevronDown
+                className={cn(
+                  'h-4 w-4 transition-transform duration-200',
+                  collapsed && '-rotate-90'
+                )}
+                aria-hidden="true"
+              />
+            </button>
+          )}
+        </div>
       </div>
-      <div className="mt-5">{children}</div>
+
+      <div
+        className="grid transition-[grid-template-rows] duration-250 ease-in-out"
+        style={{ gridTemplateRows: collapsed ? '0fr' : '1fr' }}
+      >
+        <div className="overflow-hidden">
+          <div className="mt-5">{children}</div>
+        </div>
+      </div>
     </Card>
   );
 }

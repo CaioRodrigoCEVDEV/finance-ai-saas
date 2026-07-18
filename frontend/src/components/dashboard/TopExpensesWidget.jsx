@@ -57,7 +57,7 @@ function ExpenseItem({ item, index }) {
   );
 }
 
-function TopExpensesWidget({ expenses }) {
+function TopExpensesWidget({ expenses, collapseKey }) {
   const isEmpty = !expenses || expenses.length === 0;
 
   return (
@@ -66,6 +66,7 @@ function TopExpensesWidget({ expenses }) {
       title="Top 5 despesas"
       description="Maiores gastos do período"
       color="rose"
+      collapseKey={collapseKey}
     >
       {isEmpty ? (
         <div className="flex flex-col items-center py-8 text-center">

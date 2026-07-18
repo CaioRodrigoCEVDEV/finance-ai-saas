@@ -264,49 +264,70 @@ function Dashboard() {
               <FinancialTasksWidget data={data.financialTasks} />
             </section>
 
-            <section className="grid gap-5 xl:grid-cols-2">
-              <ExpensesByCategory items={data.expensesByCategory} periodLabel={selectedPeriodLabel} />
-              <TopExpensesWidget expenses={data.topExpenses} />
+            <section className="flex flex-col gap-5 xl:flex-row">
+              <div className="flex flex-col gap-5 xl:w-1/2">
+                <ExpensesByCategory
+                  items={data.expensesByCategory}
+                  periodLabel={selectedPeriodLabel}
+                  collapseKey="expenses-by-category"
+                />
+              </div>
+              <div className="flex flex-col gap-5 xl:w-1/2">
+                <TopExpensesWidget
+                  expenses={data.topExpenses}
+                  collapseKey="top-expenses"
+                />
+              </div>
             </section>
 
-            <section className="grid gap-5 xl:grid-cols-2">
-              <DashboardCard
-                icon={BarChart3}
-                title="Orçamentos do período"
-                description="Acompanhamento dos orçamentos"
-                color="sky"
-              >
-                <BudgetList items={data.budgetStatus} />
-              </DashboardCard>
-
-              <DashboardCard
-                icon={TrendingUp}
-                title="Metas do período"
-                description="Progresso das metas ativas"
-                color="emerald"
-              >
-                <GoalList items={data.goalsProgress} />
-              </DashboardCard>
+            <section className="flex flex-col gap-5 xl:flex-row">
+              <div className="flex flex-col gap-5 xl:w-1/2">
+                <DashboardCard
+                  icon={BarChart3}
+                  title="Orçamentos do período"
+                  description="Acompanhamento dos orçamentos"
+                  color="sky"
+                  collapseKey="budget-status"
+                >
+                  <BudgetList items={data.budgetStatus} />
+                </DashboardCard>
+              </div>
+              <div className="flex flex-col gap-5 xl:w-1/2">
+                <DashboardCard
+                  icon={TrendingUp}
+                  title="Metas do período"
+                  description="Progresso das metas ativas"
+                  color="emerald"
+                  collapseKey="goals-progress"
+                >
+                  <GoalList items={data.goalsProgress} />
+                </DashboardCard>
+              </div>
             </section>
 
-            <section className="grid gap-5 xl:grid-cols-2">
-              <DashboardCard
-                icon={Clock}
-                title="Transações do período"
-                description="Últimas movimentações"
-                color="amber"
-              >
-                <RecentTransactions transactions={data.recentTransactions} />
-              </DashboardCard>
-
-              <DashboardCard
-                icon={Activity}
-                title="Fluxo mensal selecionado"
-                description="Receitas, despesas e saldo"
-                color="sky"
-              >
-                <MonthlyFlow items={data.monthlyFlow} />
-              </DashboardCard>
+            <section className="flex flex-col gap-5 xl:flex-row">
+              <div className="flex flex-col gap-5 xl:w-1/2">
+                <DashboardCard
+                  icon={Clock}
+                  title="Transações do período"
+                  description="Últimas movimentações"
+                  color="amber"
+                  collapseKey="recent-transactions"
+                >
+                  <RecentTransactions transactions={data.recentTransactions} />
+                </DashboardCard>
+              </div>
+              <div className="flex flex-col gap-5 xl:w-1/2">
+                <DashboardCard
+                  icon={Activity}
+                  title="Fluxo mensal selecionado"
+                  description="Receitas, despesas e saldo"
+                  color="sky"
+                  collapseKey="monthly-flow"
+                >
+                  <MonthlyFlow items={data.monthlyFlow} />
+                </DashboardCard>
+              </div>
             </section>
           </div>
         ) : null}
