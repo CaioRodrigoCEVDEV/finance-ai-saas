@@ -4,8 +4,11 @@ import FormModal from '../../ui/FormModal';
 import Button from '../../ui/Button';
 import GoalForm from '../../goals/GoalForm';
 import { createGoal } from '../../../services/goalService';
+import { useToast } from '../../../contexts/ToastContext';
+import { DATA_MUTATIONS, publishDataMutation } from '../../../utils/dataInvalidation';
 
 function QuickGoalFlow({ onBack, onClose }) {
+  const toast = useToast();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -14,6 +17,8 @@ function QuickGoalFlow({ onBack, onClose }) {
       setSaving(true);
       setError('');
       await createGoal(payload);
+      publishDataMutation(DATA_MUTATIONS.GOAL_CREATED);
+      toast.success('Meta criada com sucesso.');
       onClose();
     } catch (requestError) {
       setError(requestError.response?.data?.error || requestError.message || 'Erro ao criar meta.');

@@ -242,6 +242,12 @@ Toda página implementa 3 estados visuais:
 - `services/api.js` — singleton Axios com `withCredentials: true`, `VITE_API_URL` do env, interceptador 401
 - Um service por domínio (ex: `transactionService.js` exporta `getTransactions`, `createTransaction`, etc.)
 
+### Invalidação de dados após mutações globais
+- `utils/dataInvalidation.js` mantém um único barramento `EventTarget` em memória, sem cache ou dependências externas.
+- Fluxos globais publicam uma mutação somente após a confirmação da API.
+- O mapa central de mutação para domínios afetados notifica apenas a página atualmente montada.
+- `useDataInvalidation()` reutiliza o loader local da página com filtros, paginação e período atuais; não remonta a rota nem recarrega a aplicação.
+
 ---
 
 ## Principais Entidades do Sistema

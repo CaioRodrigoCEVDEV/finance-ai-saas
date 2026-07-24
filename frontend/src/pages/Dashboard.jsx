@@ -39,6 +39,7 @@ import {
   getAvailablePeriods
 } from '../services/dashboardService';
 import { getFinancialTaskDashboard } from '../services/financialTaskService';
+import { useDataInvalidation } from '../utils/dataInvalidation';
 
 const initialState = {
   overview: null,
@@ -58,7 +59,12 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [availablePeriods, setAvailablePeriods] = useState(null);
+  const [refreshVersion, setRefreshVersion] = useState(0);
   const selectedPeriodLabel = useMemo(() => formatDashboardPeriodLabel(period.month, period.year), [period.month, period.year]);
+
+  useDataInvalidation(['dashboard'], () => {
+    setRefreshVersion((current) => current + 1);
+  });
 
   useEffect(() => {
     writeStoredDashboardPeriod(period);
@@ -188,7 +194,7 @@ function Dashboard() {
     return () => {
       isMounted = false;
     };
-  }, [period]);
+  }, [period, refreshVersion]);
 
   return (
     <AppLayout>

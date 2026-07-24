@@ -19,6 +19,7 @@ import {
   getAccounts,
   updateAccount
 } from '../services/accountService';
+import { useDataInvalidation } from '../utils/dataInvalidation';
 
 function Accounts() {
   const toast = useToast();
@@ -46,6 +47,8 @@ function Accounts() {
       setLoading(false);
     }
   }
+
+  useDataInvalidation(['accounts'], loadAccounts);
 
   useEffect(() => {
     loadAccounts();

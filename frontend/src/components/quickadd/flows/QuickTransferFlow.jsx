@@ -6,8 +6,11 @@ import LoadingSkeleton from '../../ui/LoadingSkeleton';
 import TransferForm from '../../transfers/TransferForm';
 import { getAccounts } from '../../../services/accountService';
 import { createTransfer } from '../../../services/transferService';
+import { useToast } from '../../../contexts/ToastContext';
+import { DATA_MUTATIONS, publishDataMutation } from '../../../utils/dataInvalidation';
 
 function QuickTransferFlow({ onBack, onClose }) {
+  const toast = useToast();
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -38,6 +41,8 @@ function QuickTransferFlow({ onBack, onClose }) {
       setSaving(true);
       setError('');
       await createTransfer(payload);
+      publishDataMutation(DATA_MUTATIONS.TRANSFER_CREATED);
+      toast.success('Transferência criada com sucesso.');
       onClose();
     } catch (requestError) {
       setError(requestError.response?.data?.error || requestError.message || 'Erro ao criar transferencia.');

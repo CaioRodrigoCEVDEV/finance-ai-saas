@@ -12,8 +12,11 @@ import { getAccounts } from '../services/accountService';
 import { getCategories } from '../services/categoryService';
 import { getCreditCards } from '../services/creditCardService';
 import { confirmImport, previewImport } from '../services/importService';
+import { useToast } from '../contexts/ToastContext';
+import { DATA_MUTATIONS, publishDataMutation } from '../utils/dataInvalidation';
 
 function Imports() {
+  const toast = useToast();
   const [accounts, setAccounts] = useState([]);
   const [creditCards, setCreditCards] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -96,6 +99,10 @@ function Imports() {
 
       const data = await confirmImport(payload);
       setResult(data);
+      if (data.created > 0) {
+        publishDataMutation(DATA_MUTATIONS.IMPORT_CONFIRMED, { importedCount: data.created });
+      }
+      toast.success(data.message || 'Importação concluída com sucesso.');
     } catch (requestError) {
       setError(requestError.response?.data?.message || 'Não foi possível confirmar a importação.');
     } finally {

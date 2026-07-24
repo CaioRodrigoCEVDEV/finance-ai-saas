@@ -22,6 +22,7 @@ import {
   getBudgets,
   updateBudget
 } from '../services/budgetService';
+import { useDataInvalidation } from '../utils/dataInvalidation';
 
 const now = new Date();
 
@@ -122,6 +123,11 @@ function Budgets() {
       setError(requestError.response?.data?.message || 'Não foi possível carregar os dados da tela de orçamentos.');
     }
   }
+
+  useDataInvalidation(['budgets'], () => Promise.all([
+    loadBudgetsData(filters),
+    loadSummary(filters)
+  ]));
 
   useEffect(() => {
     loadPageData(initialFilters);

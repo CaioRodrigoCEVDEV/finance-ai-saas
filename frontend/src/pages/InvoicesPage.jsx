@@ -25,6 +25,7 @@ import * as invoiceService from '../services/invoiceService';
 import { getCreditCards } from '../services/creditCardService';
 import { getAccounts } from '../services/accountService';
 import { formatDateBR } from '../utils/formatters';
+import { useDataInvalidation } from '../utils/dataInvalidation';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
@@ -603,6 +604,14 @@ function InvoicesPage() {
       setLoading(false);
     }
   }, [creditCardId, month, year]);
+
+  useDataInvalidation(['invoices'], async () => {
+    setLoading(true);
+    await Promise.all([
+      isCurrentView ? loadCurrentInvoices() : loadInvoices(),
+      loadSummary()
+    ]);
+  });
 
   useEffect(() => {
     loadSummary();

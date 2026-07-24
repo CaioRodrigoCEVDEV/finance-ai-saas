@@ -21,6 +21,7 @@ import {
   getCreditCards,
   updateCreditCard
 } from '../services/creditCardService';
+import { useDataInvalidation } from '../utils/dataInvalidation';
 
 function CreditCards() {
   const toast = useToast();
@@ -50,6 +51,8 @@ function CreditCards() {
       setLoading(false);
     }
   }
+
+  useDataInvalidation(['creditCards'], loadCreditCards);
 
   async function loadAccounts() {
     try {

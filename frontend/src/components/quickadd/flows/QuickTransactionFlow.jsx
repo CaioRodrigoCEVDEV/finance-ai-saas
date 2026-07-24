@@ -8,6 +8,8 @@ import { getAccounts } from '../../../services/accountService';
 import { getCategories } from '../../../services/categoryService';
 import { getCreditCards } from '../../../services/creditCardService';
 import { createTransaction } from '../../../services/transactionService';
+import { useToast } from '../../../contexts/ToastContext';
+import { DATA_MUTATIONS, publishDataMutation } from '../../../utils/dataInvalidation';
 
 const FLOW_CONFIG = {
   INCOME: { eyebrow: 'NOVA RECEITA', title: 'Cadastre uma nova receita', defaults: { type: 'INCOME', status: 'CONFIRMED' } },
@@ -17,6 +19,7 @@ const FLOW_CONFIG = {
 };
 
 function QuickTransactionFlow({ flowId, onBack, onClose }) {
+  const toast = useToast();
   const config = FLOW_CONFIG[flowId] || FLOW_CONFIG.EXPENSE;
   const [accounts, setAccounts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -56,6 +59,8 @@ function QuickTransactionFlow({ flowId, onBack, onClose }) {
       setSaving(true);
       setError('');
       await createTransaction(payload);
+      publishDataMutation(DATA_MUTATIONS.TRANSACTION_CREATED, { transactionType: payload.type });
+      toast.success('Lançamento criado com sucesso.');
       onClose();
     } catch (requestError) {
       setError(requestError.response?.data?.error || requestError.message || 'Erro ao criar transação.');

@@ -8,8 +8,11 @@ import { getAccounts } from '../../../services/accountService';
 import { getCategories } from '../../../services/categoryService';
 import { getCreditCards } from '../../../services/creditCardService';
 import { createRecurrence } from '../../../services/recurrenceService';
+import { useToast } from '../../../contexts/ToastContext';
+import { DATA_MUTATIONS, publishDataMutation } from '../../../utils/dataInvalidation';
 
 function QuickRecurrenceFlow({ onBack, onClose }) {
+  const toast = useToast();
   const [accounts, setAccounts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [creditCards, setCreditCards] = useState([]);
@@ -48,6 +51,8 @@ function QuickRecurrenceFlow({ onBack, onClose }) {
       setSaving(true);
       setError('');
       await createRecurrence(payload);
+      publishDataMutation(DATA_MUTATIONS.RECURRENCE_CREATED);
+      toast.success('Recorrência criada com sucesso.');
       onClose();
     } catch (requestError) {
       setError(requestError.response?.data?.error || requestError.message || 'Erro ao criar recorrência.');

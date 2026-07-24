@@ -30,6 +30,7 @@ import {
   getTransactions,
   updateTransaction
 } from '../services/transactionService';
+import { useDataInvalidation } from '../utils/dataInvalidation';
 import {
   getTransfer,
   createTransfer,
@@ -96,6 +97,7 @@ function buildListParams(filters, page) {
 
 function Transactions() {
   const hasInitializedFilters = useRef(false);
+  const transactionsRequestId = useRef(0);
   const location = useLocation();
   const toast = useToast();
   const [transactions, setTransactions] = useState([]);
@@ -132,23 +134,36 @@ function Transactions() {
   }
 
   async function loadTransactionsData(nextFilters = filters, nextPage = page) {
+    const requestId = transactionsRequestId.current + 1;
+    transactionsRequestId.current = requestId;
+
     try {
       setLoading(true);
       setError('');
 
       const data = await getTransactions(buildListParams(nextFilters, nextPage));
 
+      if (requestId !== transactionsRequestId.current) {
+        return;
+      }
+
       setTransactions(data.data);
       setPagination(data.pagination);
       setPage(data.pagination.page);
     } catch (requestError) {
+      if (requestId !== transactionsRequestId.current) {
+        return;
+      }
+
       setError(
         requestError.response?.status === 401
           ? 'Sua sessão expirou. Entre novamente para continuar.'
           : 'Não foi possível carregar as transações agora. Tente novamente em instantes.'
       );
     } finally {
-      setLoading(false);
+      if (requestId === transactionsRequestId.current) {
+        setLoading(false);
+      }
     }
   }
 
@@ -175,6 +190,13 @@ function Transactions() {
       setError(requestError.response?.data?.message || 'Não foi possível carregar os dados da tela de transações.');
     }
   }
+
+  useDataInvalidation(['transactions'], async () => {
+    await Promise.all([
+      loadTransactionsData(filters, page),
+      loadSummary()
+    ]);
+  });
 
   useEffect(() => {
     loadPageData(initialFilters, 1);

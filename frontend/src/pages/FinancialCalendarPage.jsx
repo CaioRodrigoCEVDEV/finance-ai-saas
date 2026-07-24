@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   CalendarDays,
   ChevronLeft,
@@ -21,6 +21,7 @@ import Select from '../components/ui/Select';
 import { usePrivacy } from '../contexts/PrivacyContext';
 import { formatDateBR } from '../utils/formatters';
 import { getFinancialCalendarMonth } from '../services/financialCalendarService';
+import { useDataInvalidation } from '../utils/dataInvalidation';
 
 const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
 
@@ -63,6 +64,7 @@ function getKindLabel(kind) {
 }
 
 export default function FinancialCalendarPage() {
+  const calendarRequestId = useRef(0);
   const navigate = useNavigate();
   const { formatCurrencyPrivacy } = usePrivacy();
   const now = new Date();
@@ -76,21 +78,37 @@ export default function FinancialCalendarPage() {
   const [filter, setFilter] = useState('all');
 
   const loadCalendar = useCallback(async (year, month) => {
+    const requestId = calendarRequestId.current + 1;
+    calendarRequestId.current = requestId;
+
     try {
       setLoading(true);
       setError('');
       const data = await getFinancialCalendarMonth({ year, month });
+
+      if (requestId !== calendarRequestId.current) {
+        return;
+      }
+
       setCalendarData(data);
     } catch (requestError) {
+      if (requestId !== calendarRequestId.current) {
+        return;
+      }
+
       setError(
         requestError.response?.status === 401
           ? 'Sua sessão expirou. Entre novamente para continuar.'
           : 'Não foi possível carregar o calendário financeiro. Tente novamente em instantes.'
       );
     } finally {
-      setLoading(false);
+      if (requestId === calendarRequestId.current) {
+        setLoading(false);
+      }
     }
   }, []);
+
+  useDataInvalidation(['calendar'], () => loadCalendar(currentYear, currentMonth));
 
   useEffect(() => {
     loadCalendar(currentYear, currentMonth);

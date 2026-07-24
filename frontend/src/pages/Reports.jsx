@@ -24,6 +24,7 @@ import {
   getReportByCreditCard,
   getTopExpenses
 } from '../services/reportService';
+import { useDataInvalidation } from '../utils/dataInvalidation';
 
 const initialFilters = {
   startDate: '',
@@ -46,6 +47,7 @@ function buildParams(filters) {
 
 function Reports() {
   const hasInitialized = useRef(false);
+  const reportsRequestId = useRef(0);
   const [filters, setFilters] = useState(initialFilters);
   const [accounts, setAccounts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -72,6 +74,9 @@ function Reports() {
   }
 
   async function loadReports(nextFilters = filters) {
+    const requestId = reportsRequestId.current + 1;
+    reportsRequestId.current = requestId;
+
     try {
       setLoading(true);
       setError('');
@@ -86,6 +91,10 @@ function Reports() {
         getTopExpenses(params)
       ]);
 
+      if (requestId !== reportsRequestId.current) {
+        return;
+      }
+
       setSummary(summaryData);
       setCategoryReport(categoryData);
       setAccountReport(accountData);
@@ -93,15 +102,23 @@ function Reports() {
       setMonthlyEvolution(evolutionData);
       setTopExpenses(expensesData);
     } catch (requestError) {
+      if (requestId !== reportsRequestId.current) {
+        return;
+      }
+
       setError(
         requestError.response?.status === 401
           ? 'Sua sessão expirou. Entre novamente para continuar.'
           : 'Não foi possível carregar os relatórios agora. Tente novamente em instantes.'
       );
     } finally {
-      setLoading(false);
+      if (requestId === reportsRequestId.current) {
+        setLoading(false);
+      }
     }
   }
+
+  useDataInvalidation(['reports'], () => loadReports(filters));
 
   async function loadPageData() {
     try {

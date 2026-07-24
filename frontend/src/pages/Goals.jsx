@@ -23,6 +23,7 @@ import {
   updateGoal,
   updateGoalProgress
 } from '../services/goalService';
+import { useDataInvalidation } from '../utils/dataInvalidation';
 
 const initialFilters = {
   status: '',
@@ -114,6 +115,8 @@ function Goals() {
       setError(requestError.response?.data?.message || 'Não foi possível carregar os dados da tela de metas.');
     }
   }
+
+  useDataInvalidation(['goals'], () => loadPageData(filters));
 
   useEffect(() => {
     loadPageData(initialFilters);

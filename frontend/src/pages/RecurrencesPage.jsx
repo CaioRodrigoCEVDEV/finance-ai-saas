@@ -17,6 +17,7 @@ import Select from '../components/ui/Select';
 import { useAuth } from '../contexts/AuthContext';
 import { usePrivacy } from '../contexts/PrivacyContext';
 import { formatDateBR } from '../utils/formatters';
+import { useDataInvalidation } from '../utils/dataInvalidation';
 import { getAccounts } from '../services/accountService';
 import { getCategories } from '../services/categoryService';
 import { getCreditCards } from '../services/creditCardService';
@@ -166,6 +167,8 @@ function RecurrencesPage() {
       setLoading(false);
     }
   }
+
+  useDataInvalidation(['recurrences'], () => loadRecurrences(filters));
 
   useEffect(() => {
     Promise.all([
