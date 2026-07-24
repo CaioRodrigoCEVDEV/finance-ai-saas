@@ -179,8 +179,8 @@ function CreditCards() {
         <div className="space-y-6">
           {loading ? (
             <>
-              <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-                {[1, 2, 3, 4].map((item) => <LoadingSkeleton key={item} className="h-36 rounded-[28px]" />)}
+              <div className="grid gap-5 md:grid-cols-3">
+                {[1, 2, 3].map((item) => <LoadingSkeleton key={item} className="h-36 rounded-[28px]" />)}
               </div>
               <div className="grid gap-6 xl:grid-cols-2">
                 {[1, 2, 3, 4].map((item) => <LoadingSkeleton key={item} className="h-80 rounded-[32px]" />)}
@@ -209,7 +209,7 @@ function CreditCards() {
             <EmptyState
               icon={CreditCardIcon}
               title="Nenhum cartão cadastrado"
-              description="Crie o primeiro cartão do workspace atual para acompanhar limite, fechamento e consumo mensal em um painel premium."
+              description="Crie o primeiro cartão do workspace atual para acompanhar limite disponível, fechamento e vencimento."
               action={<Button onClick={handleCreateClick}>Criar primeiro cartão</Button>}
             />
           ) : null}

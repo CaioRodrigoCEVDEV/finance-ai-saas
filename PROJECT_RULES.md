@@ -90,8 +90,8 @@ Este documento define regras obrigatórias para qualquer IA ou desenvolvedor que
 - **Deleção:** soft delete + `is_active: false`. Verificar saldo zero antes de permitir exclusão? Não obrigatório, mas avisar ao usuário.
 
 ### Cartões de Crédito
-- **Limite disponível:** `max(limitAmount - usedAmount, 0)`.
-- **`usedAmount`:** soma de despesas menos estornos/reembolsos PENDING + CONFIRMED (excluindo períodos de fatura já pagos).
+- **Limite disponível:** `clamp(limitAmount - usedAmount, 0, limitAmount)`.
+- **`usedAmount`:** soma de todas as despesas menos estornos/reembolsos PENDING + CONFIRMED, sem faixa de data e incluindo parcelas futuras já lançadas, excluindo períodos de fatura já pagos. O valor comprometido mínimo é zero.
 - **Não pode deletar cartão com transações vinculadas.** Verificar `count > 0` e bloquear.
 - **Cartão tem `account_id` opcional** (conta para pagamento da fatura).
 - **`closing_day` e `due_day`** controlam o ciclo da fatura.

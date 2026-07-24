@@ -5,6 +5,7 @@ import Button from '../ui/Button';
 import Card from '../ui/Card';
 import { usePrivacy } from '../../contexts/PrivacyContext';
 import { formatDateBR, formatPercentage } from '../../utils/formatters';
+import { getCreditCardUsagePercentage } from '../../utils/creditCardMetrics';
 
 function getBrandLabel(brand) {
   const labels = {
@@ -21,12 +22,7 @@ function getBrandLabel(brand) {
 
 function CreditCardCard({ creditCard, onEdit, onDelete, loading }) {
   const { formatCurrencyPrivacy } = usePrivacy();
-  const usedAmount = Number(creditCard.usedAmount ?? creditCard.currentInvoiceAmount ?? 0);
-  const usagePercentage = Number.isFinite(Number(creditCard.usagePercentage))
-    ? Number(creditCard.usagePercentage)
-    : creditCard.limitAmount > 0
-      ? (usedAmount / creditCard.limitAmount) * 100
-      : 0;
+  const usagePercentage = getCreditCardUsagePercentage(creditCard);
 
   return (
     <Card
@@ -71,14 +67,10 @@ function CreditCardCard({ creditCard, onEdit, onDelete, loading }) {
           </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <p className="text-xs uppercase tracking-[0.22em] text-white/60">Limite total</p>
             <p className="mt-2 text-lg font-semibold">{formatCurrencyPrivacy(creditCard.limitAmount)}</p>
-          </div>
-          <div>
-            <p className="text-xs uppercase tracking-[0.22em] text-white/60">Usado no mes</p>
-            <p className="mt-2 text-lg font-semibold">{formatCurrencyPrivacy(creditCard.currentInvoiceAmount)}</p>
           </div>
           <div>
             <p className="text-xs uppercase tracking-[0.22em] text-white/60">Disponivel</p>

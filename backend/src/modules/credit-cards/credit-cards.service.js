@@ -1,10 +1,6 @@
 const prisma = require('../../config/prisma');
 const AppError = require('../../utils/app-error');
-const {
-  buildCreditCardExpenseWhere,
-  getCreditCardExpenseAmountMap
-} = require('../../utils/credit-card-limit');
-const { calculateCreditCardBillingPeriod, calculateInvoiceAmountForCards } = require('../../utils/credit-card-invoice');
+const { getCreditCardExpenseAmountMap } = require('../../utils/credit-card-limit');
 const planService = require('../plans/plan.service');
 
 function toDecimalString(value) {
@@ -13,18 +9,6 @@ function toDecimalString(value) {
 
 function toNumber(value) {
   return Number(value || 0);
-}
-
-function buildCardRanges(creditCards) {
-  const now = new Date();
-  const ranges = new Map();
-
-  creditCards.forEach((card) => {
-    const period = calculateCreditCardBillingPeriod(card.closing_day, now);
-    ranges.set(card.id, { start: period.startDate, end: period.endDate });
-  });
-
-  return ranges;
 }
 
 async function findAccountByTenant(accountId, tenantId) {
@@ -60,13 +44,15 @@ async function findCreditCardByTenant(creditCardId, tenantId) {
 }
 
 function getAvailableLimit(limitAmount, usedAmount) {
-  return Math.max(limitAmount - usedAmount, 0);
+  const limitInCents = Math.round((limitAmount + Number.EPSILON) * 100);
+  const usedInCents = Math.max(Math.round((usedAmount + Number.EPSILON) * 100), 0);
+
+  return Math.min(Math.max(limitInCents - usedInCents, 0), limitInCents) / 100;
 }
 
 function toCreditCardResponse(creditCard, summary = {}) {
   const limitAmount = toNumber(creditCard.limit_amount);
-  const currentInvoiceAmount = toNumber(summary.currentInvoiceAmount);
-  const usedAmount = toNumber(summary.usedAmount);
+  const usedAmount = Math.max(toNumber(summary.usedAmount), 0);
   const usagePercentage = limitAmount > 0 ? Number(((usedAmount / limitAmount) * 100).toFixed(2)) : 0;
 
   return {
@@ -82,11 +68,9 @@ function toCreditCardResponse(creditCard, summary = {}) {
       id: creditCard.account.id,
       name: creditCard.account.name
     } : null,
-    currentInvoiceAmount,
     usedAmount,
     availableLimit: getAvailableLimit(limitAmount, usedAmount),
     usagePercentage,
-    expenseCountCurrentMonth: summary.expenseCountCurrentMonth ?? 0,
     createdAt: creditCard.created_at.toISOString(),
     updatedAt: creditCard.updated_at.toISOString()
   };
@@ -132,15 +116,12 @@ async function listCreditCards(tenantId) {
     return [];
   }
 
-  const cardRanges = buildCardRanges(creditCards);
   const creditCardIds = creditCards.map((creditCard) => creditCard.id);
-  const [invoiceAmountMap, usedAmountMap] = await Promise.all([
-    calculateInvoiceAmountForCards(prisma, tenantId, creditCardIds, cardRanges),
-    getCreditCardExpenseAmountMap(prisma, tenantId, creditCardIds, { cardRanges, excludePaidInvoices: true })
-  ]);
+  const usedAmountMap = await getCreditCardExpenseAmountMap(prisma, tenantId, creditCardIds, {
+    excludePaidInvoices: true
+  });
 
   return creditCards.map((creditCard) => toCreditCardResponse(creditCard, {
-    currentInvoiceAmount: invoiceAmountMap.get(creditCard.id) || 0,
     usedAmount: usedAmountMap.get(creditCard.id) || 0
   }));
 }
@@ -152,20 +133,12 @@ async function getCreditCardById(creditCardId, tenantId) {
     throw new AppError('Cartao nao encontrado', 404);
   }
 
-  const cardPeriod = calculateCreditCardBillingPeriod(creditCard.closing_day, new Date());
-  const cardRange = { start: cardPeriod.startDate, end: cardPeriod.endDate };
-  const [invoiceAmountMap, usedAmountMap, expenseCountCurrentMonth] = await Promise.all([
-    calculateInvoiceAmountForCards(prisma, tenantId, creditCard.id, { range: cardRange }),
-    getCreditCardExpenseAmountMap(prisma, tenantId, creditCard.id, { range: cardRange, excludePaidInvoices: true }),
-    prisma.transaction.count({
-      where: buildCreditCardExpenseWhere(tenantId, creditCard.id, cardRange)
-    })
-  ]);
+  const usedAmountMap = await getCreditCardExpenseAmountMap(prisma, tenantId, creditCard.id, {
+    excludePaidInvoices: true
+  });
 
   return toCreditCardResponse(creditCard, {
-    currentInvoiceAmount: invoiceAmountMap.get(creditCard.id) || 0,
-    usedAmount: usedAmountMap.get(creditCard.id) || 0,
-    expenseCountCurrentMonth
+    usedAmount: usedAmountMap.get(creditCard.id) || 0
   });
 }
 
@@ -257,15 +230,11 @@ async function updateCreditCard(creditCardId, tenantId, data) {
     }
   });
 
-  const updatedPeriod = calculateCreditCardBillingPeriod(creditCard.closing_day, new Date());
-  const updatedRange = { start: updatedPeriod.startDate, end: updatedPeriod.endDate };
-  const [invoiceAmountMap, usedAmountMap] = await Promise.all([
-    getCreditCardExpenseAmountMap(prisma, tenantId, creditCard.id, { range: updatedRange }),
-    getCreditCardExpenseAmountMap(prisma, tenantId, creditCard.id, { range: updatedRange, excludePaidInvoices: true })
-  ]);
+  const usedAmountMap = await getCreditCardExpenseAmountMap(prisma, tenantId, creditCard.id, {
+    excludePaidInvoices: true
+  });
 
   return toCreditCardResponse(creditCard, {
-    currentInvoiceAmount: invoiceAmountMap.get(creditCard.id) || 0,
     usedAmount: usedAmountMap.get(creditCard.id) || 0
   });
 }

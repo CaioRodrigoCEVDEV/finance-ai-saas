@@ -1,32 +1,22 @@
-import { CreditCard, Layers3, TrendingUp, Wallet } from 'lucide-react';
+import { CreditCard, Layers3, Wallet } from 'lucide-react';
 
 import Card from '../ui/Card';
 import { usePrivacy } from '../../contexts/PrivacyContext';
+import { getCreditCardSummary } from '../../utils/creditCardMetrics';
 
 function CreditCardSummary({ cards }) {
   const { formatCurrencyPrivacy } = usePrivacy();
 
-  const totals = cards.reduce((accumulator, card) => ({
-    limitAmount: accumulator.limitAmount + Number(card.limitAmount || 0),
-    currentInvoiceAmount: accumulator.currentInvoiceAmount + Number(card.currentInvoiceAmount || 0),
-    availableLimit: accumulator.availableLimit + Number(card.availableLimit || 0),
-    activeCards: accumulator.activeCards + (card.isActive ? 1 : 0)
-  }), {
-    limitAmount: 0,
-    currentInvoiceAmount: 0,
-    availableLimit: 0,
-    activeCards: 0
-  });
+  const totals = getCreditCardSummary(cards);
 
   const items = [
     { label: 'Total de limite', value: formatCurrencyPrivacy(totals.limitAmount), icon: Wallet },
-    { label: 'Total utilizado no mes', value: formatCurrencyPrivacy(totals.currentInvoiceAmount), icon: TrendingUp },
     { label: 'Limite disponivel', value: formatCurrencyPrivacy(totals.availableLimit), icon: Layers3 },
     { label: 'Cartoes ativos', value: String(totals.activeCards), icon: CreditCard }
   ];
 
   return (
-    <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+    <div className="grid gap-5 md:grid-cols-3">
       {items.map((item) => {
         const Icon = item.icon;
 

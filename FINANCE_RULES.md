@@ -58,19 +58,21 @@ WHERE status = 'CONFIRMED'
 const LIMIT_IMPACTING_STATUSES = ['CONFIRMED', 'PENDING'];
 ```
 
-- `usedAmount` = soma de todas as despesas **PENDING + CONFIRMED** vinculadas ao cartão **MENOS** a soma de todas as receitas (estornos/reembolsos) **PENDING + CONFIRMED** vinculadas ao cartão.
+- `usedAmount` = soma de todas as despesas **PENDING + CONFIRMED** vinculadas ao cartão **MENOS** a soma de todas as receitas (estornos/reembolsos) **PENDING + CONFIRMED** vinculadas ao cartão, sem limitar por mês ou ciclo de fatura.
 - `usedAmount = SUM(EXPENSE) - SUM(INCOME)` para transações PENDING e CONFIRMED.
-- `availableLimit = max(limitAmount - usedAmount, 0)`.
+- Parcelas futuras já lançadas consomem o limite imediatamente e cada transação é contada uma única vez.
+- O valor comprometido mínimo é zero e `availableLimit = clamp(limitAmount - usedAmount, 0, limitAmount)`.
 - **CANCELED não impacta** limite.
 
 ### Exclusão de faturas pagas
 - Quando `excludePaidInvoices = true` (usado no cálculo de `usedAmount`):
-  - Transações cuja `transaction_date` cai dentro do período de uma fatura PAID são **excluídas** do cálculo.
+  - Transações cuja `transaction_date` cai dentro do período de uma fatura PAID e que já existiam no momento do pagamento são **excluídas** do cálculo.
+  - Lançamentos retroativos criados depois do pagamento continuam comprometendo o limite.
   - Isso evita dupla contagem: a despesa já foi paga via fatura, então não deve mais "consumir" limite.
-- `currentInvoiceAmount` (usado para exibição) **inclui** transações de faturas pagas.
+- `currentInvoiceAmount`, quando exibido nas telas de fatura e dashboard, **inclui** transações de faturas pagas e não define o limite disponível.
 
-### Limite mínimo
-- O limite disponível nunca fica negativo: `Math.max(limitAmount - usedAmount, 0)`.
+### Limites mínimo e máximo
+- O limite disponível nunca fica negativo nem ultrapassa o limite total: `clamp(limitAmount - usedAmount, 0, limitAmount)`.
 
 ### Período de fatura por ciclo de fechamento
 - `buildInvoicePeriod()` em `credit-card-invoice.js` é a função canônica para calcular o período da fatura com base no dia de fechamento do cartão, não no mês calendário.
@@ -79,8 +81,8 @@ const LIMIT_IMPACTING_STATUSES = ['CONFIRMED', 'PENDING'];
   - Se `referenceDate <= closingDay` do mês: período = (fechamento anterior + 1 dia) até (fechamento deste mês).
   - Se `referenceDate > closingDay` do mês: período = (fechamento deste mês + 1 dia) até (fechamento do próximo mês).
 - `safeDay()` ajusta o dia de fechamento para o último dia do mês quando o dia não existe (ex.: 31/fev → 28/fev).
-- Usado por: `credit-cards.service.js` (list, getById, update), `dashboard-service.js` (overview, alerts), `credit-card-invoice.js` (cálculo de fatura).
-- **Nunca use mês calendário para filtrar transações de cartão.** Todo cálculo de fatura/limite deve usar o ciclo de fechamento.
+- Usado por: `dashboard-service.js` (fatura atual) e `credit-card-invoice.js` (cálculo de fatura). A tela de cartões calcula o limite total comprometido sem faixa de ciclo.
+- **Nunca use mês calendário para filtrar transações de cartão.** A fatura atual usa o ciclo de fechamento; o limite total comprometido não usa faixa de data e inclui parcelas futuras.
 - A lista de faturas (InvoicesPage) exibe por padrão as faturas **atuais** (ciclo vigente via `getCurrentInvoices()`). A filtragem por mês calendário só ocorre quando o usuário navega explicitamente para outro mês.
 
 ---
@@ -111,8 +113,8 @@ const LIMIT_IMPACTING_STATUSES = ['CONFIRMED', 'PENDING'];
 - **Todas as transações** no período da fatura entram no cálculo (EXPENSE soma, INCOME subtrai), independente do status.
 - O período da fatura é definido pelo **ciclo de fechamento** do cartão (`calculateCreditCardBillingPeriod`), não pelo mês calendário.
 - `currentInvoiceAmount` no dashboard e resumo de cartões reflete o período do ciclo, não o mês civil.
-- `usedAmount` (limite utilizado) também considera INCOME como redutor: `usedAmount = SUM(EXPENSE) - SUM(INCOME)`.
-- `availableLimit = max(limitAmount - usedAmount, 0)`.
+- `usedAmount` (limite utilizado) também considera INCOME como redutor: `usedAmount = max(SUM(EXPENSE) - SUM(INCOME), 0)`.
+- `availableLimit = clamp(limitAmount - usedAmount, 0, limitAmount)`.
 
 ### Compras parceladas no cartão
 - O valor informado representa o total da compra. O backend é responsável por criar uma transação para cada parcela em uma única transação de banco de dados.

@@ -2,35 +2,34 @@ const { INVOICE_IMPACTING_STATUSES } = require('./credit-card-invoice');
 
 const LIMIT_IMPACTING_STATUSES = INVOICE_IMPACTING_STATUSES;
 
-function toNumber(value) {
-  return Number(value || 0);
+function toCents(value) {
+  const normalizedValue = String(value || 0);
+  const match = normalizedValue.match(/^(-?)(\d+)(?:\.(\d+))?$/);
+
+  if (!match) {
+    return BigInt(Math.round((Number(value || 0) + Number.EPSILON) * 100));
+  }
+
+  const sign = match[1] === '-' ? -1n : 1n;
+  const whole = BigInt(match[2]);
+  const fraction = BigInt((match[3] || '').padEnd(2, '0').slice(0, 2));
+
+  return sign * ((whole * 100n) + fraction);
+}
+
+function centsToNumber(value) {
+  const maximumSafeCents = BigInt(Number.MAX_SAFE_INTEGER);
+  const safeValue = value > maximumSafeCents
+    ? maximumSafeCents
+    : value < -maximumSafeCents
+      ? -maximumSafeCents
+      : value;
+
+  return Number(safeValue) / 100;
 }
 
 function normalizeCreditCardIds(creditCardIds) {
   return Array.isArray(creditCardIds) ? creditCardIds : [creditCardIds];
-}
-
-function buildCreditCardExpenseWhere(tenantId, creditCardIds, range) {
-  const ids = normalizeCreditCardIds(creditCardIds);
-  const where = {
-    tenant_id: tenantId,
-    deleted_at: null,
-    status: {
-      in: LIMIT_IMPACTING_STATUSES
-    },
-    type: 'EXPENSE',
-    credit_card_id: ids.length === 1 ? ids[0] : { in: ids },
-    source: { not: 'CREDIT_CARD_PAYMENT' }
-  };
-
-  if (range) {
-    where.transaction_date = {
-      gte: range.start,
-      lte: range.end
-    };
-  }
-
-  return where;
 }
 
 function buildCreditCardNetWhere(tenantId, creditCardIds, range) {
@@ -75,6 +74,7 @@ function isTransactionInPaidInvoice(transaction, paidInvoicesByCard) {
   return paidInvoices.some((invoice) => (
     transactionDate >= invoice.periodStart.getTime()
     && transactionDate <= invoice.periodEnd.getTime()
+    && (!invoice.paidAt || !transaction.created_at || transaction.created_at <= invoice.paidAt)
   ));
 }
 
@@ -88,7 +88,8 @@ async function queryCardExpenses(prisma, tenantId, ids, range, excludePaidInvoic
         credit_card_id: true,
         amount: true,
         type: true,
-        transaction_date: true
+        transaction_date: true,
+        created_at: true
       }
     }),
     excludePaidInvoices
@@ -102,7 +103,8 @@ async function queryCardExpenses(prisma, tenantId, ids, range, excludePaidInvoic
         select: {
           creditCardId: true,
           periodStart: true,
-          periodEnd: true
+          periodEnd: true,
+          paidAt: true
         }
       })
       : Promise.resolve([])
@@ -110,21 +112,25 @@ async function queryCardExpenses(prisma, tenantId, ids, range, excludePaidInvoic
 
   const paidInvoicesByCard = groupPaidInvoicesByCard(paidInvoices);
 
-  return transactions.reduce((accumulator, transaction) => {
+  const amountsInCents = transactions.reduce((accumulator, transaction) => {
     if (excludePaidInvoices && isTransactionInPaidInvoice(transaction, paidInvoicesByCard)) {
       return accumulator;
     }
 
-    const amount = toNumber(transaction.amount);
-    const netAmount = transaction.type === 'INCOME' ? -amount : amount;
+    const amountInCents = toCents(transaction.amount);
+    const netAmountInCents = transaction.type === 'INCOME' ? -amountInCents : amountInCents;
 
     accumulator.set(
       transaction.credit_card_id,
-      (accumulator.get(transaction.credit_card_id) || 0) + netAmount
+      (accumulator.get(transaction.credit_card_id) || 0n) + netAmountInCents
     );
 
     return accumulator;
   }, new Map());
+
+  return new Map(Array.from(amountsInCents, ([creditCardId, amountInCents]) => (
+    [creditCardId, centsToNumber(amountInCents)]
+  )));
 }
 
 async function getCreditCardExpenseAmountMap(prisma, tenantId, creditCardIds, { range, excludePaidInvoices = false, cardRanges } = {}) {
@@ -154,7 +160,6 @@ async function getCreditCardExpenseAmountMap(prisma, tenantId, creditCardIds, { 
 }
 
 module.exports = {
-  buildCreditCardExpenseWhere,
   buildCreditCardNetWhere,
   getCreditCardExpenseAmountMap
 };
