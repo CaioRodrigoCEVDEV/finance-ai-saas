@@ -1,4 +1,5 @@
 const prisma = require('../config/prisma');
+const AppError = require('./app-error');
 
 const INVOICE_IMPACTING_STATUSES = ['CONFIRMED', 'PENDING'];
 
@@ -108,8 +109,8 @@ function buildInvoiceTransactionWhere(tenantId, creditCardId, periodStart, perio
   };
 }
 
-async function calculateInvoiceAmount(tenantId, creditCardId, periodStart, periodEnd) {
-  const transactions = await prisma.transaction.findMany({
+async function calculateInvoiceAmount(tenantId, creditCardId, periodStart, periodEnd, database = prisma) {
+  const transactions = await database.transaction.findMany({
     where: buildInvoiceTransactionWhere(tenantId, creditCardId, periodStart, periodEnd),
     select: { amount: true, type: true }
   });
@@ -155,7 +156,7 @@ async function recalculateInvoiceTotal(invoice) {
   return { ...invoice, totalAmount };
 }
 
-async function upsertInvoiceForCardPeriod(tenantId, card, referenceMonth, referenceYear) {
+async function upsertInvoiceForCardPeriod(tenantId, card, referenceMonth, referenceYear, database = prisma, options = {}) {
   const period = buildInvoicePeriod({
     referenceMonth,
     referenceYear,
@@ -163,7 +164,7 @@ async function upsertInvoiceForCardPeriod(tenantId, card, referenceMonth, refere
     dueDay: card.due_day
   });
 
-  const existing = await prisma.creditCardInvoice.findFirst({
+  const existing = await database.creditCardInvoice.findFirst({
     where: {
       tenantId,
       creditCardId: card.id,
@@ -174,13 +175,17 @@ async function upsertInvoiceForCardPeriod(tenantId, card, referenceMonth, refere
   });
 
   if (existing && existing.status === 'PAID') {
+    if (options.rejectPaidInvoices) {
+      throw new AppError('Nao e possivel criar ou alterar parcelas vinculadas a uma fatura paga', 422);
+    }
+
     return existing;
   }
 
-  const totalAmount = await calculateInvoiceAmount(tenantId, card.id, period.periodStart, period.periodEnd);
+  const totalAmount = await calculateInvoiceAmount(tenantId, card.id, period.periodStart, period.periodEnd, database);
 
   if (existing) {
-    return prisma.creditCardInvoice.update({
+    return database.creditCardInvoice.update({
       where: { id: existing.id },
       data: {
         periodStart: period.periodStart,
@@ -192,7 +197,7 @@ async function upsertInvoiceForCardPeriod(tenantId, card, referenceMonth, refere
     });
   }
 
-  return prisma.creditCardInvoice.create({
+  return database.creditCardInvoice.create({
     data: {
       tenantId,
       creditCardId: card.id,
@@ -208,12 +213,12 @@ async function upsertInvoiceForCardPeriod(tenantId, card, referenceMonth, refere
   });
 }
 
-async function ensureInvoiceForTransaction(tenantId, creditCardId, transactionDate) {
+async function ensureInvoiceForTransaction(tenantId, creditCardId, transactionDate, database = prisma, options = {}) {
   if (!creditCardId || !transactionDate) {
     return null;
   }
 
-  const card = await prisma.creditCard.findFirst({
+  const card = await database.creditCard.findFirst({
     where: { id: creditCardId, tenant_id: tenantId, deleted_at: null }
   });
 
@@ -222,13 +227,13 @@ async function ensureInvoiceForTransaction(tenantId, creditCardId, transactionDa
   }
 
   const reference = getInvoiceReferenceForDate(card.closing_day, transactionDate);
-  return upsertInvoiceForCardPeriod(tenantId, card, reference.referenceMonth, reference.referenceYear);
+  return upsertInvoiceForCardPeriod(tenantId, card, reference.referenceMonth, reference.referenceYear, database, options);
 }
 
-async function syncTransactionInvoiceChanges(tenantId, beforeTransaction, afterTransaction) {
+async function syncTransactionInvoiceChanges(tenantId, beforeTransaction, afterTransaction, database = prisma, options = {}) {
   const targets = new Map();
 
-  [beforeTransaction, afterTransaction].forEach((transaction) => {
+  [beforeTransaction, afterTransaction].flat().filter(Boolean).forEach((transaction) => {
     if (!transaction?.credit_card_id || !transaction?.transaction_date) {
       return;
     }
@@ -242,11 +247,9 @@ async function syncTransactionInvoiceChanges(tenantId, beforeTransaction, afterT
     );
   });
 
-  await Promise.all(
-    Array.from(targets.values()).map((target) => (
-      ensureInvoiceForTransaction(tenantId, target.creditCardId, target.transactionDate)
-    ))
-  );
+  for (const target of targets.values()) {
+    await ensureInvoiceForTransaction(tenantId, target.creditCardId, target.transactionDate, database, options);
+  }
 }
 
 async function calculateInvoiceAmountForCards(prisma, tenantId, cardIds, { cardRanges, range } = {}) {

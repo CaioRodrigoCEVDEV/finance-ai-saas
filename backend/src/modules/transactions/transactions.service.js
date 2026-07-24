@@ -1,7 +1,11 @@
+const { randomUUID } = require('crypto');
+
 const prisma = require('../../config/prisma');
 const AppError = require('../../utils/app-error');
 const { formatDateOnly } = require('../../utils/date-utils');
-const { syncTransactionInvoiceChanges } = require('../../utils/credit-card-invoice');
+const { getInvoiceReferenceForDate, syncTransactionInvoiceChanges } = require('../../utils/credit-card-invoice');
+
+const INSTALLMENT_TRANSACTION_OPTIONS = { timeout: 120000 };
 
 function toDecimalString(value) {
   return Number(value || 0).toFixed(2);
@@ -9,6 +13,46 @@ function toDecimalString(value) {
 
 function toNumber(value) {
   return Number(value || 0);
+}
+
+function toCents(value) {
+  return Math.round((Number(value) + Number.EPSILON) * 100);
+}
+
+function splitAmountInCents(value, installmentTotal) {
+  const totalCents = toCents(value);
+
+  if (totalCents < installmentTotal) {
+    throw new AppError('O valor total deve permitir parcelas de pelo menos R$ 0,01', 400);
+  }
+
+  const baseAmount = Math.floor(totalCents / installmentTotal);
+  const remainder = totalCents % installmentTotal;
+
+  return Array.from({ length: installmentTotal }, (_item, index) => (
+    baseAmount + (index < remainder ? 1 : 0)
+  ));
+}
+
+function addMonthsKeepingDay(date, monthsToAdd) {
+  const sourceDate = new Date(date);
+  const targetMonth = sourceDate.getMonth() + monthsToAdd;
+  const targetYear = sourceDate.getFullYear() + Math.floor(targetMonth / 12);
+  const normalizedMonth = ((targetMonth % 12) + 12) % 12;
+  const lastDay = new Date(targetYear, normalizedMonth + 1, 0).getDate();
+
+  return new Date(targetYear, normalizedMonth, Math.min(sourceDate.getDate(), lastDay), 12, 0, 0, 0);
+}
+
+function removeInstallmentSuffix(description) {
+  return description.replace(/\s+\d+\/\d+$/, '');
+}
+
+function buildInstallmentInvoiceTargets(data) {
+  return Array.from({ length: data.installmentTotal }, (_item, index) => ({
+    credit_card_id: data.creditCardId,
+    transaction_date: addMonthsKeepingDay(data.transactionDate, index)
+  }));
 }
 
 function getStartOfDay(date) {
@@ -73,6 +117,7 @@ function toTransactionResponse(transaction) {
     isInstallment: transaction.is_installment,
     installmentNumber: transaction.installment_number,
     installmentTotal: transaction.installment_total,
+    installmentGroupId: transaction.installment_group_id,
     notes: transaction.notes,
     category: transaction.category ? {
       id: transaction.category.id,
@@ -206,6 +251,55 @@ async function validateRelations(data, tenantId) {
   };
 }
 
+async function assertNoPaidInvoiceTransactions(tenantId, transactions) {
+  const targets = new Map();
+  const cards = new Map();
+
+  for (const transaction of transactions) {
+    if (!transaction.credit_card_id || !transaction.transaction_date) {
+      continue;
+    }
+
+    let card = cards.get(transaction.credit_card_id);
+
+    if (!card) {
+      card = await findCreditCardByTenant(transaction.credit_card_id, tenantId);
+
+      if (card) {
+        cards.set(card.id, card);
+      }
+    }
+
+    if (!card) {
+      continue;
+    }
+
+    const reference = getInvoiceReferenceForDate(card.closing_day, transaction.transaction_date);
+    targets.set(
+      `${card.id}:${reference.referenceMonth}:${reference.referenceYear}`,
+      { card, reference }
+    );
+  }
+
+  for (const { card, reference } of targets.values()) {
+    const paidInvoice = await prisma.creditCardInvoice.findFirst({
+      where: {
+        tenantId,
+        creditCardId: card.id,
+        referenceMonth: reference.referenceMonth,
+        referenceYear: reference.referenceYear,
+        status: 'PAID',
+        deletedAt: null
+      },
+      select: { id: true }
+    });
+
+    if (paidInvoice) {
+      throw new AppError('Nao e possivel criar ou alterar parcelas vinculadas a uma fatura paga', 422);
+    }
+  }
+}
+
 function buildListWhere(tenantId, filters) {
   const where = {
     tenant_id: tenantId,
@@ -284,7 +378,7 @@ function buildListWhere(tenantId, filters) {
   return where;
 }
 
-function buildCreateData(data, tenantId, userId) {
+function buildCreateData(data, tenantId, userId, overrides = {}) {
   const isCreditCardPayment = data.paymentMethod === 'CREDIT_CARD';
 
   return {
@@ -303,8 +397,35 @@ function buildCreateData(data, tenantId, userId) {
     source: 'MANUAL',
     is_installment: data.isInstallment ?? false,
     installment_number: data.isInstallment ? (data.installmentNumber ?? null) : null,
-    installment_total: data.isInstallment ? (data.installmentTotal ?? null) : null
+    installment_total: data.isInstallment ? (data.installmentTotal ?? null) : null,
+    installment_group_id: null,
+    ...overrides
   };
+}
+
+async function createInstallmentTransactions(database, data, tenantId, userId, installmentGroupId) {
+  const installmentTotal = data.installmentTotal;
+  const installmentAmounts = splitAmountInCents(data.amount, installmentTotal);
+  const transactions = [];
+
+  for (let index = 0; index < installmentTotal; index += 1) {
+    const installmentNumber = index + 1;
+    const transaction = await database.transaction.create({
+      data: buildCreateData(data, tenantId, userId, {
+        amount: (installmentAmounts[index] / 100).toFixed(2),
+        description: `${removeInstallmentSuffix(data.description)} ${installmentNumber}/${installmentTotal}`,
+        transaction_date: addMonthsKeepingDay(data.transactionDate, index),
+        installment_number: installmentNumber,
+        installment_total: installmentTotal,
+        installment_group_id: installmentGroupId
+      }),
+      include: getTransactionInclude()
+    });
+
+    transactions.push(transaction);
+  }
+
+  return transactions;
 }
 
 function buildUpdateData(existingTransaction, data) {
@@ -410,11 +531,57 @@ async function getTransactionById(transactionId, tenantId) {
     throw new AppError('Transacao nao encontrada', 404);
   }
 
-  return toTransactionResponse(transaction);
+  if (!transaction.installment_group_id) {
+    return toTransactionResponse(transaction);
+  }
+
+  const installments = await prisma.transaction.findMany({
+    where: {
+      tenant_id: tenantId,
+      installment_group_id: transaction.installment_group_id,
+      deleted_at: null
+    },
+    include: getTransactionInclude(),
+    orderBy: { installment_number: 'asc' }
+  });
+  const firstInstallment = installments[0] || transaction;
+
+  return {
+    ...toTransactionResponse(firstInstallment),
+    id: transactionId,
+    description: removeInstallmentSuffix(firstInstallment.description),
+    amount: installments.reduce((sum, installment) => sum + toNumber(installment.amount), 0)
+  };
 }
 
 async function createTransaction(data, tenantId, userId) {
   await validateRelations(data, tenantId);
+
+  if (data.isInstallment) {
+    await assertNoPaidInvoiceTransactions(tenantId, buildInstallmentInvoiceTargets(data));
+
+    const transactions = await prisma.$transaction(async (database) => {
+      const createdTransactions = await createInstallmentTransactions(
+        database,
+        data,
+        tenantId,
+        userId,
+        randomUUID()
+      );
+
+      await syncTransactionInvoiceChanges(
+        tenantId,
+        null,
+        createdTransactions,
+        database,
+        { rejectPaidInvoices: true }
+      );
+
+      return createdTransactions;
+    }, INSTALLMENT_TRANSACTION_OPTIONS);
+
+    return toTransactionResponse(transactions[0]);
+  }
 
   const transaction = await prisma.transaction.create({
     data: buildCreateData(data, tenantId, userId),
@@ -439,23 +606,97 @@ async function updateTransaction(transactionId, tenantId, data) {
     throw new AppError('Transacao nao encontrada', 404);
   }
 
+  const existingInstallments = existingTransaction.installment_group_id
+    ? await prisma.transaction.findMany({
+      where: {
+        tenant_id: tenantId,
+        installment_group_id: existingTransaction.installment_group_id,
+        deleted_at: null
+      },
+      orderBy: { installment_number: 'asc' }
+    })
+    : [existingTransaction];
+  const firstExistingTransaction = existingInstallments[0] || existingTransaction;
+  const existingAmount = existingTransaction.installment_group_id
+    ? existingInstallments.reduce((sum, installment) => sum + toNumber(installment.amount), 0)
+    : toNumber(existingTransaction.amount);
+
   const mergedData = {
-    description: data.description ?? existingTransaction.description,
-    amount: data.amount ?? toNumber(existingTransaction.amount),
-    type: data.type ?? existingTransaction.type,
-    status: data.status ?? existingTransaction.status,
-    transactionDate: data.transactionDate ?? existingTransaction.transaction_date,
-    paymentMethod: data.paymentMethod ?? existingTransaction.payment_method,
-    accountId: data.accountId !== undefined ? data.accountId : existingTransaction.account_id,
-    creditCardId: data.creditCardId !== undefined ? data.creditCardId : existingTransaction.credit_card_id,
-    categoryId: data.categoryId !== undefined ? data.categoryId : existingTransaction.category_id,
-    notes: data.notes !== undefined ? data.notes : existingTransaction.notes,
+    description: data.description ?? removeInstallmentSuffix(firstExistingTransaction.description),
+    amount: data.amount ?? existingAmount,
+    type: data.type ?? firstExistingTransaction.type,
+    status: data.status ?? firstExistingTransaction.status,
+    transactionDate: data.transactionDate ?? firstExistingTransaction.transaction_date,
+    paymentMethod: data.paymentMethod ?? firstExistingTransaction.payment_method,
+    accountId: data.accountId !== undefined ? data.accountId : firstExistingTransaction.account_id,
+    creditCardId: data.creditCardId !== undefined ? data.creditCardId : firstExistingTransaction.credit_card_id,
+    categoryId: data.categoryId !== undefined ? data.categoryId : firstExistingTransaction.category_id,
+    notes: data.notes !== undefined ? data.notes : firstExistingTransaction.notes,
     isInstallment: data.isInstallment ?? existingTransaction.is_installment,
     installmentNumber: data.installmentNumber !== undefined ? data.installmentNumber : existingTransaction.installment_number,
     installmentTotal: data.installmentTotal !== undefined ? data.installmentTotal : existingTransaction.installment_total
   };
 
   await validateRelations(mergedData, tenantId);
+
+  if (existingTransaction.is_installment || mergedData.isInstallment) {
+    await assertNoPaidInvoiceTransactions(tenantId, existingInstallments);
+
+    if (mergedData.isInstallment) {
+      await assertNoPaidInvoiceTransactions(tenantId, buildInstallmentInvoiceTargets(mergedData));
+    }
+
+    const transaction = await prisma.$transaction(async (database) => {
+      await database.transaction.updateMany({
+        where: existingTransaction.installment_group_id
+          ? {
+            tenant_id: tenantId,
+            installment_group_id: existingTransaction.installment_group_id,
+            deleted_at: null
+          }
+          : {
+            id: existingTransaction.id,
+            tenant_id: tenantId,
+            deleted_at: null
+          },
+        data: { deleted_at: new Date() }
+      });
+
+      let updatedTransactions;
+
+      if (mergedData.isInstallment) {
+        updatedTransactions = await createInstallmentTransactions(
+          database,
+          mergedData,
+          tenantId,
+          existingTransaction.user_id,
+          existingTransaction.installment_group_id || randomUUID()
+        );
+      } else {
+        updatedTransactions = [await database.transaction.create({
+          data: buildCreateData({
+            ...mergedData,
+            isInstallment: false,
+            installmentNumber: null,
+            installmentTotal: null
+          }, tenantId, existingTransaction.user_id),
+          include: getTransactionInclude()
+        })];
+      }
+
+      await syncTransactionInvoiceChanges(
+        tenantId,
+        existingInstallments,
+        updatedTransactions,
+        database,
+        { rejectPaidInvoices: true }
+      );
+
+      return updatedTransactions[0];
+    }, INSTALLMENT_TRANSACTION_OPTIONS);
+
+    return toTransactionResponse(transaction);
+  }
 
   const transaction = await prisma.transaction.update({
     where: {
@@ -514,6 +755,49 @@ async function deleteTransaction(transactionId, tenantId) {
 
   if (!existingTransaction) {
     throw new AppError('Transacao nao encontrada', 404);
+  }
+
+  if (existingTransaction.is_installment) {
+    const installments = existingTransaction.installment_group_id
+      ? await prisma.transaction.findMany({
+        where: {
+          tenant_id: tenantId,
+          installment_group_id: existingTransaction.installment_group_id,
+          deleted_at: null
+        }
+      })
+      : [existingTransaction];
+
+    await assertNoPaidInvoiceTransactions(tenantId, installments);
+
+    await prisma.$transaction(async (database) => {
+      await database.transaction.updateMany({
+        where: existingTransaction.installment_group_id
+          ? {
+            tenant_id: tenantId,
+            installment_group_id: existingTransaction.installment_group_id,
+            deleted_at: null
+          }
+          : {
+            id: existingTransaction.id,
+            tenant_id: tenantId,
+            deleted_at: null
+          },
+        data: { deleted_at: new Date() }
+      });
+
+      await syncTransactionInvoiceChanges(
+        tenantId,
+        installments,
+        null,
+        database,
+        { rejectPaidInvoices: true }
+      );
+    }, INSTALLMENT_TRANSACTION_OPTIONS);
+
+    return {
+      message: 'Transacao excluida com sucesso'
+    };
   }
 
   await prisma.transaction.update({

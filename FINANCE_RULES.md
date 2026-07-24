@@ -114,6 +114,15 @@ const LIMIT_IMPACTING_STATUSES = ['CONFIRMED', 'PENDING'];
 - `usedAmount` (limite utilizado) também considera INCOME como redutor: `usedAmount = SUM(EXPENSE) - SUM(INCOME)`.
 - `availableLimit = max(limitAmount - usedAmount, 0)`.
 
+### Compras parceladas no cartão
+- O valor informado representa o total da compra. O backend é responsável por criar uma transação para cada parcela em uma única transação de banco de dados.
+- Cada registro usa `installment_number` de 1 até `installment_total` e compartilha o mesmo `installment_group_id`.
+- A divisão é feita em centavos: calcula-se o valor-base inteiro e os centavos restantes são distribuídos, um por parcela, a partir da primeira.
+- A primeira parcela usa a data da compra. As demais usam meses consecutivos, preservando o dia original quando existir ou usando o último dia do mês.
+- Cada parcela entra na fatura determinada pela função canônica `getInvoiceReferenceForDate()` a partir de sua própria `transaction_date`.
+- Ao editar um grupo, todos os registros ativos anteriores recebem soft delete e o grupo completo é recriado atomicamente. Registros legados parcelados sem grupo são substituídos da mesma forma.
+- A edição ou exclusão do grupo é bloqueada se alguma parcela pertencer a uma fatura `PAID`. Ao excluir uma parcela, todo o grupo recebe soft delete atomicamente para não deixar parcelas órfãs.
+
 ---
 
 ## 5. Como Receitas Impactam Valores

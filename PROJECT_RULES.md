@@ -102,7 +102,7 @@ Este documento define regras obrigatórias para qualquer IA ou desenvolvedor que
 - **Transferência:** `category_id` DEVE ser `null`. Tipo DEVE ser `TRANSFER`.
 - **Categoria:** O tipo da categoria DEVE ser compatível com o tipo da transação (INCOME/EXPENSE/TRANSFER/INVESTMENT).
 - **Valor:** DEVE ser positivo. Use `z.number().positive()`.
-- **Parcelamento:** Se `isInstallment === true`, `installmentNumber` e `installmentTotal` são obrigatórios. `installmentNumber` DEVE estar entre 1 e `installmentTotal`. Se `isInstallment === false`, os campos de parcela DEVEM ser rejeitados.
+- **Parcelamento:** Na criação/edição manual, se `isInstallment === true`, `installmentTotal` DEVE estar entre 2 e 360 e a transação DEVE ser uma despesa no cartão de crédito. O backend divide o total em centavos e gera atomicamente os registros com `installmentNumber` de 1 a `installmentTotal`, todos vinculados pelo mesmo `installment_group_id`. Se `isInstallment === false`, os campos de parcela DEVEM ser rejeitados.
 - **Status padrão para nova transação:** `CONFIRMED`. Somente importações podem criar como `PENDING`.
 
 ### Faturas

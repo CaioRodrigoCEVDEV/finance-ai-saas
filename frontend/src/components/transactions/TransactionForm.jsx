@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import Input from '../ui/Input';
 import Select from '../ui/Select';
 import { formatCurrencyBRL } from '../../utils/formatters';
+import { buildTransactionPayload, getInstallmentAmount } from '../../utils/transactionPayload';
 
 const TYPE_OPTIONS = [
   { value: 'INCOME', label: 'Receita' },
@@ -39,7 +40,7 @@ const initialFormValues = {
   categoryId: '',
   notes: '',
   isInstallment: false,
-  installmentNumber: ''
+  installmentTotal: ''
 };
 
 function buildFormValues(transaction) {
@@ -59,13 +60,14 @@ function buildFormValues(transaction) {
     categoryId: transaction.category?.id || '',
     notes: transaction.notes || '',
     isInstallment: transaction.isInstallment ?? false,
-    installmentNumber: transaction.installmentNumber ? String(transaction.installmentNumber) : ''
+    installmentTotal: transaction.installmentTotal ? String(transaction.installmentTotal) : ''
   };
 }
 
 function TransactionForm({ transaction, accounts, categories, creditCards, onSubmit, serverError, formId = 'transaction-form' }) {
   const formRef = useRef(null);
   const amountRef = useRef(null);
+  const submittingRef = useRef(false);
   const [formValues, setFormValues] = useState(initialFormValues);
   const [displayAmount, setDisplayAmount] = useState('');
   const [errors, setErrors] = useState({});
@@ -124,11 +126,19 @@ function TransactionForm({ transaction, accounts, categories, creditCards, onSub
         }
       }
 
+      const nextPaymentMethod = name === 'paymentMethod' ? nextValue : nextValues.paymentMethod;
+      const nextType = name === 'type' ? nextValue : nextValues.type;
+
+      if (nextPaymentMethod !== 'CREDIT_CARD' || nextType !== 'EXPENSE') {
+        nextValues.isInstallment = false;
+        nextValues.installmentTotal = '';
+      }
+
       if (name === 'isInstallment') {
         if (checked) {
-          nextValues.installmentNumber = '2';
+          nextValues.installmentTotal = '2';
         } else {
-          nextValues.installmentNumber = '';
+          nextValues.installmentTotal = '';
         }
       }
 
@@ -151,6 +161,10 @@ function TransactionForm({ transaction, accounts, categories, creditCards, onSub
 
   async function handleSubmit(event) {
     event.preventDefault();
+
+    if (submittingRef.current) {
+      return;
+    }
 
     const nextErrors = {};
 
@@ -177,12 +191,14 @@ function TransactionForm({ transaction, accounts, categories, creditCards, onSub
     }
 
     if (formValues.isInstallment) {
-      const quantity = Number(formValues.installmentNumber);
+      const quantity = Number(formValues.installmentTotal);
 
       if (!Number.isInteger(quantity) || quantity < 2) {
-        nextErrors.installmentNumber = 'Mínimo de 2 parcelas.';
+        nextErrors.installmentTotal = 'Mínimo de 2 parcelas.';
       } else if (quantity > 360) {
-        nextErrors.installmentNumber = 'Máximo de 360 parcelas.';
+        nextErrors.installmentTotal = 'Máximo de 360 parcelas.';
+      } else if (Math.round((amount + Number.EPSILON) * 100) < quantity) {
+        nextErrors.installmentTotal = 'O valor deve permitir parcelas de pelo menos R$ 0,01.';
       }
     }
 
@@ -193,23 +209,13 @@ function TransactionForm({ transaction, accounts, categories, creditCards, onSub
       return;
     }
 
-    const payload = {
-      description: formValues.description.trim(),
-      amount,
-      type: formValues.type,
-      status: formValues.status,
-      transactionDate: formValues.transactionDate,
-      paymentMethod: formValues.paymentMethod,
-      accountId: isCreditCardPayment ? null : (formValues.accountId || null),
-      creditCardId: isCreditCardPayment ? (formValues.creditCardId || null) : null,
-      categoryId: formValues.type === 'TRANSFER' ? (formValues.categoryId || null) : (formValues.categoryId || null),
-      notes: formValues.notes.trim() || null,
-      isInstallment: formValues.isInstallment,
-      installmentNumber: formValues.isInstallment ? Number(formValues.installmentNumber) : null,
-      installmentTotal: formValues.isInstallment ? Number(formValues.installmentNumber) : null
-    };
+    submittingRef.current = true;
 
-    await onSubmit(payload);
+    try {
+      await onSubmit(buildTransactionPayload(formValues));
+    } finally {
+      submittingRef.current = false;
+    }
   }
 
   return (
@@ -339,6 +345,7 @@ function TransactionForm({ transaction, accounts, categories, creditCards, onSub
         </div>
 
         {/* Parcelamento - abaixo do grid */}
+        {isCreditCardPayment && formValues.type === 'EXPENSE' ? (
         <div className="border-t border-slate-200 pt-5 dark:border-slate-700">
           <label className="flex cursor-pointer items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 transition-colors hover:border-slate-300 dark:border-slate-600/70 dark:bg-slate-700/30 dark:text-slate-300 dark:hover:border-slate-500/70">
             <input name="isInstallment" type="checkbox" checked={formValues.isInstallment} onChange={handleChange} className="h-4 w-4 rounded border-slate-300 text-emerald-600 transition-colors dark:border-slate-500 dark:bg-slate-700" />
@@ -353,25 +360,25 @@ function TransactionForm({ transaction, accounts, categories, creditCards, onSub
             <div className="space-y-4">
               <Input
                 label="Quantidade de parcelas"
-                name="installmentNumber"
+                name="installmentTotal"
                 type="number"
                 min="2"
                 max="360"
-                error={errors.installmentNumber}
-                value={formValues.installmentNumber}
+                error={errors.installmentTotal}
+                value={formValues.installmentTotal}
                 onChange={handleChange}
                 className={fieldClassName}
               />
 
               {(() => {
-                const qty = Number(formValues.installmentNumber);
+                const qty = Number(formValues.installmentTotal);
                 const amt = Number(formValues.amount);
 
                 if (!formValues.isInstallment || !Number.isInteger(qty) || qty < 2 || qty > 360 || !amt || amt <= 0) {
                   return null;
                 }
 
-                const parcelValue = amt / qty;
+                const parcelValue = getInstallmentAmount(amt, qty);
 
                 return (
                   <div className="flex items-center justify-between rounded-2xl border border-emerald-200 bg-emerald-50/70 px-4 py-3 text-sm dark:border-emerald-600/50 dark:bg-emerald-950/25">
@@ -385,6 +392,7 @@ function TransactionForm({ transaction, accounts, categories, creditCards, onSub
             </div>
           </div>
         </div>
+        ) : null}
 
         <p className="text-xs text-slate-400 dark:text-slate-500">Para lançamentos recorrentes, use a tela <strong className="text-slate-500 dark:text-slate-400">Recorrências</strong>.</p>
       </form>

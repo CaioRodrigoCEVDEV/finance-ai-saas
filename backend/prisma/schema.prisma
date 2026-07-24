@@ -420,6 +420,7 @@ model Transaction {
   is_installment     Boolean            @default(false)
   installment_number Int?
   installment_total  Int?
+  installment_group_id String?          @db.Uuid
   recurrence_id      String?            @db.Uuid
   recurrence_occurrence_date DateTime?  @map("recurrence_occurrence_date")
   transfer_id        String?            @db.Uuid
@@ -446,6 +447,7 @@ model Transaction {
   @@index([external_id])
   @@index([recurrence_id])
   @@index([transfer_id])
+  @@index([installment_group_id])
   @@map("transactions")
 }
 

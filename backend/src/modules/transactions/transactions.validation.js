@@ -121,7 +121,12 @@ function normalizeOptionalBoolean(value) {
 
 const transactionBodyFields = {
   description: z.string().trim().min(2, 'Descricao deve ter no minimo 2 caracteres'),
-  amount: z.preprocess(normalizeOptionalNumber, z.number().positive('Valor deve ser positivo')),
+  amount: z.preprocess(
+    normalizeOptionalNumber,
+    z.number()
+      .positive('Valor deve ser positivo')
+      .max(Number.MAX_SAFE_INTEGER / 100, 'Valor excede o limite monetario permitido')
+  ),
   type: z.enum(TRANSACTION_TYPES),
   status: z.enum(TRANSACTION_STATUSES).optional(),
   transactionDate: z.preprocess(normalizeOptionalDate, z.date({ message: 'Data da transacao invalida' })),
@@ -137,9 +142,9 @@ const transactionBodyFields = {
 
 function withInstallmentValidation(schema) {
   return schema.superRefine((data, context) => {
-  const isInstallment = data.isInstallment ?? false;
+  const isInstallment = data.isInstallment;
 
-  if (!isInstallment && (data.installmentNumber !== undefined || data.installmentTotal !== undefined)) {
+  if (isInstallment === false && (data.installmentNumber !== undefined || data.installmentTotal !== undefined)) {
     context.addIssue({
       code: z.ZodIssueCode.custom,
       path: ['installmentNumber'],
@@ -147,31 +152,21 @@ function withInstallmentValidation(schema) {
     });
   }
 
-  if (isInstallment) {
-    if (!data.installmentTotal || data.installmentTotal <= 1) {
+  if (isInstallment === true) {
+    if (!data.installmentTotal || data.installmentTotal <= 1 || data.installmentTotal > 360) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['installmentTotal'],
-        message: 'Total de parcelas deve ser maior que 1'
+        message: 'Total de parcelas deve estar entre 2 e 360'
       });
     }
 
-    if (!data.installmentNumber) {
+    if (data.paymentMethod !== 'CREDIT_CARD' || data.type !== 'EXPENSE') {
       context.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ['installmentNumber'],
-        message: 'Numero da parcela e obrigatorio para transacoes parceladas'
+        path: ['isInstallment'],
+        message: 'Parcelamento esta disponivel apenas para despesas no cartao de credito'
       });
-    }
-
-    if (data.installmentNumber && data.installmentTotal) {
-      if (data.installmentNumber < 1 || data.installmentNumber > data.installmentTotal) {
-        context.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ['installmentNumber'],
-          message: 'Numero da parcela deve estar entre 1 e o total de parcelas'
-        });
-      }
     }
   }
   });
