@@ -30,7 +30,7 @@ import {
   getTransactions,
   updateTransaction
 } from '../services/transactionService';
-import { useDataInvalidation } from '../utils/dataInvalidation';
+import { DATA_MUTATIONS, publishDataMutation, useDataInvalidation } from '../utils/dataInvalidation';
 import {
   getTransfer,
   createTransfer,
@@ -313,10 +313,7 @@ function Transactions() {
       await confirmTransaction(confirmTarget.id);
       setConfirmTarget(null);
       toast.success('Transação confirmada com sucesso.');
-      await Promise.all([
-        loadTransactionsData(filters, page),
-        loadSummary()
-      ]);
+      publishDataMutation(DATA_MUTATIONS.TRANSACTION_CHANGED);
     } catch (requestError) {
       setError(requestError.response?.data?.message || 'Não foi possível confirmar a transação.');
       toast.error(requestError.response?.data?.message || 'Erro ao confirmar transação.');
@@ -336,13 +333,11 @@ function Transactions() {
         await createTransaction(payload);
       }
 
+      publishDataMutation(DATA_MUTATIONS.TRANSACTION_CHANGED);
+
       setFormVisible(false);
       setSelectedTransaction(null);
       setFormError('');
-      await Promise.all([
-        loadTransactionsData(filters, page),
-        loadSummary()
-      ]);
     } catch (requestError) {
       setFormError(requestError.response?.data?.message || 'Nao foi possivel salvar a transacao.');
     } finally {
@@ -399,6 +394,7 @@ function Transactions() {
         await deleteTransfer(transferId);
       } else {
         await deleteTransaction(deleteTarget.id);
+        publishDataMutation(DATA_MUTATIONS.TRANSACTION_CHANGED);
       }
 
       if (selectedTransaction?.id === deleteTarget.id) {
@@ -413,10 +409,12 @@ function Transactions() {
 
       setDeleteTarget(null);
       toast.success('Transacao excluida com sucesso.');
-      await Promise.all([
-        loadTransactionsData(filters, page),
-        loadSummary()
-      ]);
+      if (deleteTarget.type === 'TRANSFER') {
+        await Promise.all([
+          loadTransactionsData(filters, page),
+          loadSummary()
+        ]);
+      }
     } catch (requestError) {
       setError(requestError.response?.data?.message || 'Não foi possível excluir a transação.');
       toast.error(requestError.response?.data?.message || 'Erro ao excluir transação.');

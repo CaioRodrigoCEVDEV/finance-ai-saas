@@ -64,6 +64,24 @@ describe('limite comprometido do cartao', () => {
     expect(result.get(CARD_ID)).toBe(349.9);
   });
 
+  it('mantem fatura fechada ainda nao paga comprometendo o limite', async () => {
+    const prisma = database([
+      transaction('250.00', new Date('2026-06-10T12:00:00Z'))
+    ]);
+
+    const result = await getCreditCardExpenseAmountMap(prisma, TENANT_ID, CARD_ID, {
+      excludePaidInvoices: true
+    });
+
+    expect(result.get(CARD_ID)).toBe(250);
+    expect(prisma.creditCardInvoice.findMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({
+        tenantId: TENANT_ID,
+        status: 'PAID'
+      })
+    }));
+  });
+
   it('libera somente as transacoes da fatura integralmente paga', async () => {
     const currentInstallmentDate = new Date('2026-07-10T12:00:00Z');
     const futureInstallmentDate = new Date('2026-08-10T12:00:00Z');

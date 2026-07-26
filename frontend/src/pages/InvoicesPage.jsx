@@ -25,7 +25,7 @@ import * as invoiceService from '../services/invoiceService';
 import { getCreditCards } from '../services/creditCardService';
 import { getAccounts } from '../services/accountService';
 import { formatDateBR } from '../utils/formatters';
-import { useDataInvalidation } from '../utils/dataInvalidation';
+import { DATA_MUTATIONS, publishDataMutation, useDataInvalidation } from '../utils/dataInvalidation';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
@@ -654,12 +654,7 @@ function InvoicesPage() {
   async function handleCancelPayment(invoiceId) {
     try {
       await invoiceService.cancelInvoicePayment(invoiceId);
-      if (isCurrentView) {
-        await loadCurrentInvoices();
-      } else {
-        await loadInvoices();
-      }
-      await loadSummary();
+      publishDataMutation(DATA_MUTATIONS.INVOICE_PAYMENT_CHANGED);
     } catch (err) {
       setError(err?.response?.data?.message || 'Erro ao cancelar pagamento');
     }
@@ -681,12 +676,7 @@ function InvoicesPage() {
   }
 
   function handlePaid() {
-    if (isCurrentView) {
-      loadCurrentInvoices();
-    } else {
-      loadInvoices();
-    }
-    loadSummary();
+    publishDataMutation(DATA_MUTATIONS.INVOICE_PAYMENT_CHANGED);
   }
 
   function prevMonth() {

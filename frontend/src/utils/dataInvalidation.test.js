@@ -21,10 +21,23 @@ test('mapeia cada mutacao para os dominios afetados', () => {
     'calendar',
     'reports'
   ]);
+  assert.deepEqual(
+    getMutationDomains(DATA_MUTATIONS.TRANSACTION_CHANGED),
+    getMutationDomains(DATA_MUTATIONS.TRANSACTION_CREATED)
+  );
   assert.deepEqual(getMutationDomains(DATA_MUTATIONS.TRANSFER_CREATED), [
     'dashboard',
     'transactions',
     'accounts',
+    'calendar',
+    'reports'
+  ]);
+  assert.deepEqual(getMutationDomains(DATA_MUTATIONS.INVOICE_PAYMENT_CHANGED), [
+    'dashboard',
+    'transactions',
+    'accounts',
+    'creditCards',
+    'invoices',
     'calendar',
     'reports'
   ]);
@@ -122,4 +135,38 @@ test('paginas principais preservam o estado atual ao recarregar', () => {
   assert.match(dashboardSource, /\[period, refreshVersion\]/);
   assert.match(transactionsSource, /loadTransactionsData\(filters, page\)/);
   assert.match(invoicesSource, /isCurrentView \? loadCurrentInvoices\(\) : loadInvoices\(\)/);
+});
+
+test('mutacoes financeiras publicam invalidacao somente depois da API', () => {
+  const transactionsSource = readFileSync(new URL('../pages/Transactions.jsx', import.meta.url), 'utf8');
+  const invoicesSource = readFileSync(new URL('../pages/InvoicesPage.jsx', import.meta.url), 'utf8');
+
+  [
+    'await confirmTransaction(confirmTarget.id)',
+    'await updateTransaction(selectedTransaction.id, payload)',
+    'await createTransaction(payload)',
+    'await deleteTransaction(deleteTarget.id)'
+  ].forEach((apiCall) => {
+    const apiIndex = transactionsSource.indexOf(apiCall);
+    const publishIndex = transactionsSource.indexOf(
+      'publishDataMutation(DATA_MUTATIONS.TRANSACTION_CHANGED)',
+      apiIndex
+    );
+
+    assert.ok(apiIndex >= 0, `${apiCall} deve existir`);
+    assert.ok(publishIndex > apiIndex, `${apiCall} deve publicar depois da API`);
+  });
+
+  const cancelIndex = invoicesSource.indexOf('await invoiceService.cancelInvoicePayment(invoiceId)');
+  const invoicePublishIndex = invoicesSource.indexOf(
+    'publishDataMutation(DATA_MUTATIONS.INVOICE_PAYMENT_CHANGED)',
+    cancelIndex
+  );
+
+  assert.ok(cancelIndex >= 0);
+  assert.ok(invoicePublishIndex > cancelIndex);
+  assert.match(
+    invoicesSource,
+    /function handlePaid\(\) \{\s*publishDataMutation\(DATA_MUTATIONS\.INVOICE_PAYMENT_CHANGED\)/
+  );
 });

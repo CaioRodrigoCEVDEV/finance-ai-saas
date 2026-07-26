@@ -4,14 +4,46 @@ const {
   getLastMonths,
   resolveDashboardPeriod
 } = require('./dashboard-date-helper');
-const { getCreditCardExpenseAmountMap } = require('../../utils/credit-card-limit');
-const { calculateCreditCardBillingPeriod, calculateInvoiceAmountForCards } = require('../../utils/credit-card-invoice');
 const { formatDateOnly } = require('../../utils/date-utils');
+const creditCardsService = require('../credit-cards/credit-cards.service');
+const invoicesService = require('../invoices/invoices.service');
 
 const UNCATEGORIZED_LABEL = 'Sem categoria';
 
 function toNumber(value) {
   return Number(value || 0);
+}
+
+function sumMoney(values) {
+  return values.reduce(
+    (totalInCents, value) => totalInCents + Math.round((toNumber(value) + Number.EPSILON) * 100),
+    0
+  ) / 100;
+}
+
+async function getCreditCardOverview(tenantId) {
+  const [creditCards, currentInvoices] = await Promise.all([
+    creditCardsService.listCreditCards(tenantId),
+    invoicesService.getCurrentInvoices(tenantId)
+  ]);
+
+  const totalLimit = sumMoney(creditCards.map((creditCard) => creditCard.limitAmount));
+  const usedLimitAmount = sumMoney(creditCards.map((creditCard) => creditCard.usedAmount));
+  const availableLimit = sumMoney(creditCards.map((creditCard) => creditCard.availableLimit));
+  const currentInvoiceAmount = sumMoney(currentInvoices.map((invoice) => invoice.totalAmount));
+  const usagePercentage = totalLimit > 0
+    ? Number(((usedLimitAmount / totalLimit) * 100).toFixed(2))
+    : 0;
+
+  return {
+    totalCards: creditCards.length,
+    activeCards: creditCards.filter((creditCard) => creditCard.isActive).length,
+    totalLimit,
+    usedLimitAmount,
+    currentInvoiceAmount,
+    availableLimit,
+    usagePercentage
+  };
 }
 
 function buildCashFlowExpenseWhere(baseWhere) {
@@ -436,40 +468,7 @@ async function getOverview(tenantId, periodInput = {}) {
 
   const totalBalanceAccounts = summaryData.summary.totalBalance;
 
-  const creditCards = await prisma.creditCard.findMany({
-    where: {
-      tenant_id: tenantId,
-      deleted_at: null,
-      created_at: { lte: range.end }
-    },
-    select: { id: true, name: true, limit_amount: true, is_active: true, closing_day: true }
-  });
-
-  const creditCardIds = creditCards.map((c) => c.id);
-  let currentInvoiceMap = new Map();
-  let usedLimitMap = new Map();
-
-  if (creditCardIds.length > 0) {
-    const cardRanges = new Map();
-
-    creditCards.forEach((c) => {
-      const period = calculateCreditCardBillingPeriod(c.closing_day, new Date());
-      cardRanges.set(c.id, { start: period.startDate, end: period.endDate });
-    });
-
-    [currentInvoiceMap, usedLimitMap] = await Promise.all([
-      calculateInvoiceAmountForCards(prisma, tenantId, creditCardIds, cardRanges),
-      getCreditCardExpenseAmountMap(prisma, tenantId, creditCardIds, { cardRanges, excludePaidInvoices: true })
-    ]);
-  }
-
-  const totalCards = creditCards.length;
-  const activeCards = creditCards.filter((c) => c.is_active).length;
-  const totalLimit = creditCards.reduce((sum, c) => sum + toNumber(c.limit_amount), 0);
-  const currentInvoiceAmount = creditCards.reduce((sum, c) => sum + (currentInvoiceMap.get(c.id) || 0), 0);
-  const usedLimitAmount = creditCards.reduce((sum, c) => sum + (usedLimitMap.get(c.id) || 0), 0);
-  const availableLimit = Math.max(totalLimit - usedLimitAmount, 0);
-  const usagePercentage = totalLimit > 0 ? Number(((usedLimitAmount / totalLimit) * 100).toFixed(2)) : 0;
+  const creditCardOverview = await getCreditCardOverview(tenantId);
 
   const budgetsList = await prisma.budget.findMany({
     where: {
@@ -585,14 +584,7 @@ async function getOverview(tenantId, periodInput = {}) {
       activeAccounts,
       totalBalance: totalBalanceAccounts
     },
-    creditCards: {
-      totalCards,
-      activeCards,
-      totalLimit,
-      currentInvoiceAmount,
-      availableLimit,
-      usagePercentage
-    },
+    creditCards: creditCardOverview,
     budgets: {
       totalBudget,
       totalUsed,
@@ -947,6 +939,7 @@ async function getGoalsProgress(tenantId, periodInput = {}) {
 
 module.exports = {
   computeTotalBalance,
+  getCreditCardOverview,
   getExpensesByCategory,
   getMonthlyFlow,
   getRecentTransactions,

@@ -4,7 +4,9 @@ const EVENT_NAME = 'finance-ai:data-invalidated';
 
 export const DATA_MUTATIONS = Object.freeze({
   TRANSACTION_CREATED: 'TRANSACTION_CREATED',
+  TRANSACTION_CHANGED: 'TRANSACTION_CHANGED',
   TRANSFER_CREATED: 'TRANSFER_CREATED',
+  INVOICE_PAYMENT_CHANGED: 'INVOICE_PAYMENT_CHANGED',
   RECURRENCE_CREATED: 'RECURRENCE_CREATED',
   GOAL_CREATED: 'GOAL_CREATED',
   IMPORT_CONFIRMED: 'IMPORT_CONFIRMED'
@@ -12,7 +14,9 @@ export const DATA_MUTATIONS = Object.freeze({
 
 const MUTATION_DOMAINS = Object.freeze({
   [DATA_MUTATIONS.TRANSACTION_CREATED]: ['dashboard', 'transactions', 'accounts', 'creditCards', 'invoices', 'budgets', 'calendar', 'reports'],
+  [DATA_MUTATIONS.TRANSACTION_CHANGED]: ['dashboard', 'transactions', 'accounts', 'creditCards', 'invoices', 'budgets', 'calendar', 'reports'],
   [DATA_MUTATIONS.TRANSFER_CREATED]: ['dashboard', 'transactions', 'accounts', 'calendar', 'reports'],
+  [DATA_MUTATIONS.INVOICE_PAYMENT_CHANGED]: ['dashboard', 'transactions', 'accounts', 'creditCards', 'invoices', 'calendar', 'reports'],
   [DATA_MUTATIONS.RECURRENCE_CREATED]: ['recurrences', 'calendar'],
   [DATA_MUTATIONS.GOAL_CREATED]: ['goals', 'dashboard'],
   [DATA_MUTATIONS.IMPORT_CONFIRMED]: ['dashboard', 'transactions', 'accounts', 'creditCards', 'invoices', 'budgets', 'calendar', 'reports']
