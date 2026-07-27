@@ -19,8 +19,8 @@ function MainLayout({ children }) {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
-      <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-6 py-8 lg:px-10">
+    <div className="min-h-[100dvh] text-slate-100">
+      <div className="mx-auto flex min-h-[100dvh] w-full max-w-7xl flex-col px-6 py-8 lg:px-10">
         <nav className="mb-8 flex flex-col gap-4 rounded-[28px] border border-slate-800 bg-slate-900/75 px-5 py-4 backdrop-blur-sm lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap items-center gap-3">
             <Link to="/dashboard" className="mr-2 text-lg font-semibold tracking-tight text-white">

@@ -198,7 +198,7 @@ function Dashboard() {
 
   return (
     <AppLayout>
-      <div className="space-y-7 pb-8 bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-slate-950 dark:to-slate-900/50">
+      <div className="flex flex-col gap-6 pb-8 lg:gap-7">
         <DashboardPeriodHeader
           period={period}
           loading={loading}
@@ -210,23 +210,23 @@ function Dashboard() {
         />
 
         {loading ? (
-          <section className="space-y-7">
-            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          <section className="flex flex-col gap-6 lg:gap-7">
+            <div className="grid gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-4">
               {[1, 2, 3, 4].map((item) => (
                 <LoadingSkeleton key={item} variant="shimmer" className="h-44 rounded-[28px]" />
               ))}
             </div>
-            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-4">
               {[1, 2, 3, 4].map((item) => (
                 <LoadingSkeleton key={item} variant="shimmer" className="h-64 rounded-[28px]" />
               ))}
             </div>
-            <div className="grid gap-5 xl:grid-cols-2">
+            <div className="grid gap-4 sm:gap-5 xl:grid-cols-2">
               {[1, 2].map((item) => (
                 <LoadingSkeleton key={item} variant="shimmer" className="h-80 rounded-[28px]" />
               ))}
             </div>
-            <div className="grid gap-5 xl:grid-cols-2">
+            <div className="grid gap-4 sm:gap-5 xl:grid-cols-2">
               {[1, 2].map((item) => (
                 <LoadingSkeleton key={item} variant="shimmer" className="h-80 rounded-[28px]" />
               ))}
@@ -255,7 +255,7 @@ function Dashboard() {
         ) : null}
 
         {!loading && !error ? (
-          <div className="space-y-7">
+          <div className="flex flex-col gap-6 lg:gap-7">
             <DashboardOverviewCards
               comparison={data.overview?.comparison}
               data={data.overview?.summary}
@@ -263,22 +263,22 @@ function Dashboard() {
               tenantName={tenant?.name}
             />
 
-            <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+            <section className="grid gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-4">
               <CreditCardWidget data={data.overview?.creditCards} />
               <BudgetStatusWidget data={data.overview?.budgets} />
               <GoalsProgressWidget data={data.overview?.goals} />
               <FinancialTasksWidget data={data.financialTasks} />
             </section>
 
-            <section className="flex flex-col gap-5 xl:flex-row">
-              <div className="flex flex-col gap-5 xl:w-1/2">
+            <section className="flex flex-col gap-4 sm:gap-5 xl:flex-row">
+              <div className="flex flex-col gap-4 sm:gap-5 xl:w-1/2">
                 <ExpensesByCategory
                   items={data.expensesByCategory}
                   periodLabel={selectedPeriodLabel}
                   collapseKey="expenses-by-category"
                 />
               </div>
-              <div className="flex flex-col gap-5 xl:w-1/2">
+              <div className="flex flex-col gap-4 sm:gap-5 xl:w-1/2">
                 <TopExpensesWidget
                   expenses={data.topExpenses}
                   collapseKey="top-expenses"
@@ -286,8 +286,8 @@ function Dashboard() {
               </div>
             </section>
 
-            <section className="flex flex-col gap-5 xl:flex-row">
-              <div className="flex flex-col gap-5 xl:w-1/2">
+            <section className="flex flex-col gap-4 sm:gap-5 xl:flex-row">
+              <div className="flex flex-col gap-4 sm:gap-5 xl:w-1/2">
                 <DashboardCard
                   icon={BarChart3}
                   title="Orçamentos do período"
@@ -298,7 +298,7 @@ function Dashboard() {
                   <BudgetList items={data.budgetStatus} />
                 </DashboardCard>
               </div>
-              <div className="flex flex-col gap-5 xl:w-1/2">
+              <div className="flex flex-col gap-4 sm:gap-5 xl:w-1/2">
                 <DashboardCard
                   icon={TrendingUp}
                   title="Metas do período"
@@ -311,8 +311,8 @@ function Dashboard() {
               </div>
             </section>
 
-            <section className="flex flex-col gap-5 xl:flex-row">
-              <div className="flex flex-col gap-5 xl:w-1/2">
+            <section className="flex flex-col gap-4 sm:gap-5 xl:flex-row">
+              <div className="flex flex-col gap-4 sm:gap-5 xl:w-1/2">
                 <DashboardCard
                   icon={Clock}
                   title="Transações do período"
@@ -323,7 +323,7 @@ function Dashboard() {
                   <RecentTransactions transactions={data.recentTransactions} />
                 </DashboardCard>
               </div>
-              <div className="flex flex-col gap-5 xl:w-1/2">
+              <div className="flex flex-col gap-4 sm:gap-5 xl:w-1/2">
                 <DashboardCard
                   icon={Activity}
                   title="Fluxo mensal selecionado"

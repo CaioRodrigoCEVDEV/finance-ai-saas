@@ -101,7 +101,7 @@ function Login() {
   }
 
   return (
-    <div className="relative flex h-screen h-[100dvh] items-stretch justify-stretch overflow-y-auto bg-slate-50 p-0 dark:bg-slate-950 sm:min-h-screen sm:h-auto sm:items-center sm:justify-center sm:px-6 sm:py-8 lg:px-8">
+    <div className="relative flex min-h-[100dvh] items-stretch justify-stretch p-0 sm:items-center sm:justify-center sm:px-6 sm:py-8 lg:px-8">
       <div className="grid min-h-full w-full max-w-none overflow-hidden rounded-none bg-white shadow-none sm:min-h-0 sm:max-w-5xl sm:rounded-[36px] sm:shadow-glow lg:grid-cols-[1fr_1.08fr] dark:bg-slate-800 dark:sm:shadow-[0_18px_40px_rgba(0,0,0,0.4)]">
         {/* ── Left: institutional panel ── */}
         <div className="relative hidden flex-col justify-between bg-gradient-to-br from-emerald-600 via-emerald-700 to-slate-800 p-8 text-white sm:p-10 lg:flex lg:p-12">

@@ -204,15 +204,7 @@ function PrivacyPolicy() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors">
-      {/* Background Glows */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
-        <div className="absolute -top-40 -left-20 w-[700px] h-[700px] rounded-full bg-emerald-500/15 blur-3xl animate-glow-1" />
-        <div className="absolute top-[8%] right-[5%] w-[550px] h-[550px] rounded-full bg-emerald-400/15 blur-3xl animate-glow-2 hidden md:block" />
-        <div className="absolute bottom-0 left-1/3 w-[800px] h-[800px] rounded-full bg-cyan-500/10 blur-3xl animate-glow-3" />
-        <div className="absolute top-1/2 left-0 w-[400px] h-[400px] rounded-full bg-teal-400/10 blur-3xl animate-glow-4 hidden md:block" />
-      </div>
-
+    <div className="min-h-screen min-h-[100dvh] transition-colors">
       {/* Sticky Header */}
       <header className="fixed top-0 left-0 right-0 z-[100] bg-white/90 backdrop-blur-md dark:bg-slate-950/90 border-b border-slate-200/80 dark:border-slate-800">
         <div className="mx-auto flex h-16 max-w-content items-center justify-between px-4 sm:px-6 lg:px-8">

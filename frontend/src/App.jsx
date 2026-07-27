@@ -31,7 +31,9 @@ function App() {
       <PrivacyProvider>
         <ToastProvider>
           <PushInitializer />
-          <AppRoutes />
+          <div className="relative z-10">
+            <AppRoutes />
+          </div>
         </ToastProvider>
       </PrivacyProvider>
     </AuthProvider>

@@ -2,7 +2,6 @@ import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
 
 import AdminSidebar from '../../components/admin/AdminSidebar';
-import AnimatedBackground from '../../components/ui/AnimatedBackground';
 import Button from '../../components/ui/Button';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -11,14 +10,13 @@ function AdminLayout({ children }) {
   const { user } = useAuth();
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-slate-50 dark:bg-slate-950 transition-colors">
-      <AnimatedBackground />
-      <div className="mx-auto flex min-h-screen w-full max-w-content flex-col gap-4 px-4 py-4 sm:px-6 lg:h-screen lg:flex-row lg:overflow-hidden lg:px-8">
+    <div className="min-h-screen min-h-[100dvh] transition-colors">
+      <div className="mx-auto flex min-h-[100dvh] w-full max-w-content flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:px-8">
         <div className="relative z-10 hidden w-72 shrink-0 lg:block lg:self-stretch">
           <AdminSidebar />
         </div>
 
-        <div className="relative z-10 flex min-w-0 flex-1 flex-col gap-4 lg:min-h-0 lg:overflow-hidden lg:py-4">
+        <div className="relative z-10 flex min-w-0 flex-1 flex-col gap-4 lg:py-4">
           <header className="flex items-center justify-between rounded-[28px] border border-amber-200 bg-white px-4 py-4 shadow-soft dark:border-amber-800 dark:bg-slate-800">
             <div className="flex items-center gap-3">
               <button
@@ -38,7 +36,7 @@ function AdminLayout({ children }) {
             </div>
           </header>
 
-          <main className="flex-1 min-w-0 lg:min-h-0 lg:overflow-y-auto">{children}</main>
+          <main className="min-w-0">{children}</main>
         </div>
       </div>
 

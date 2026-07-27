@@ -33,7 +33,7 @@ function ForgotPassword() {
 
   if (sent) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-8 dark:bg-slate-950">
+      <div className="flex min-h-[100dvh] items-center justify-center px-4 py-8">
         <div className="w-full max-w-md">
           <Card className="p-8 sm:p-10">
             <div className="text-center">
@@ -64,7 +64,7 @@ function ForgotPassword() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-8 dark:bg-slate-950">
+    <div className="flex min-h-[100dvh] items-center justify-center px-4 py-8">
       <div className="w-full max-w-md">
         <Card className="p-8 sm:p-10">
           <div className="text-center">

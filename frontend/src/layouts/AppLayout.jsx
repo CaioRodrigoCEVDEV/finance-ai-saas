@@ -29,7 +29,6 @@ import BottomNavigation from '../components/layout/BottomNavigation';
 import MobileTopbar from '../components/layout/MobileTopbar';
 import Sidebar from '../components/layout/Sidebar';
 import Topbar from '../components/layout/Topbar';
-import AnimatedBackground from '../components/ui/AnimatedBackground';
 import QuickAddHub from '../components/quickadd/QuickAddHub';
 import { useAuth } from '../contexts/AuthContext';
 import { cn } from '../utils/cn';
@@ -116,28 +115,27 @@ function AppLayout({ children }) {
   }
 
   return (
-    <div className="h-screen overflow-hidden bg-slate-50 dark:bg-slate-950 transition-colors">
-      <AnimatedBackground />
-      <div className="mx-auto flex h-full w-full max-w-content gap-5 overflow-hidden px-4 py-5 sm:px-6 lg:gap-6 lg:px-6 xl:px-8">
-        <div className="relative z-10 hidden h-full w-72 shrink-0 overflow-hidden lg:block">
+    <div className="min-h-screen min-h-[100dvh] transition-colors">
+      <div className="flex min-h-[100dvh] w-full">
+        <div className="relative z-10 hidden h-[calc(100dvh-2rem)] w-72 shrink-0 self-start overflow-hidden lg:sticky lg:top-4 lg:mx-4 lg:my-4 lg:block">
           <Sidebar />
         </div>
 
-        <section className="relative z-10 min-w-0 flex-1 overflow-hidden">
-          <div className="pointer-events-none absolute left-0 right-0 top-0 z-30 hidden lg:block">
+        <section className="relative z-10 min-w-0 flex-1">
+          <div className="pointer-events-none sticky top-0 z-30 hidden px-4 pb-3 pt-5 sm:px-6 lg:block lg:px-6 xl:px-8">
             <div className="pointer-events-auto">
               <Topbar onMenuClick={() => setMobileMenuOpen(true)} />
             </div>
           </div>
 
-          <div className="pointer-events-none absolute left-0 right-0 top-0 z-30 lg:hidden">
+          <div className="pointer-events-none sticky top-0 z-30 pb-[30px] lg:hidden">
             <div className="pointer-events-auto">
               <MobileTopbar />
             </div>
           </div>
 
-          <main className="scrollbar-none h-full min-w-0 overflow-y-auto overflow-x-hidden">
-            <div className="mx-auto min-w-0 max-w-[1400px] space-y-7 pb-24 pt-[88px] lg:pb-10 lg:pt-[112px]">
+          <main className="min-w-0">
+            <div className="min-w-0 space-y-7 px-4 pb-24 sm:px-6 lg:px-6 lg:pb-10 xl:px-8">
               {children}
             </div>
           </main>
