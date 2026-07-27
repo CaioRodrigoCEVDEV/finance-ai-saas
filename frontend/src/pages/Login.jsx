@@ -101,8 +101,8 @@ function Login() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-slate-50 px-4 py-8 sm:px-6 lg:px-8 dark:bg-slate-950">
-      <div className="grid w-full max-w-5xl overflow-hidden rounded-[36px] bg-white shadow-glow lg:grid-cols-[1fr_1.08fr] dark:bg-slate-800 dark:shadow-[0_18px_40px_rgba(0,0,0,0.4)]">
+    <div className="relative flex h-screen h-[100dvh] items-stretch justify-stretch overflow-y-auto bg-slate-50 p-0 dark:bg-slate-950 sm:min-h-screen sm:h-auto sm:items-center sm:justify-center sm:px-6 sm:py-8 lg:px-8">
+      <div className="grid min-h-full w-full max-w-none overflow-hidden rounded-none bg-white shadow-none sm:min-h-0 sm:max-w-5xl sm:rounded-[36px] sm:shadow-glow lg:grid-cols-[1fr_1.08fr] dark:bg-slate-800 dark:sm:shadow-[0_18px_40px_rgba(0,0,0,0.4)]">
         {/* ── Left: institutional panel ── */}
         <div className="relative hidden flex-col justify-between bg-gradient-to-br from-emerald-600 via-emerald-700 to-slate-800 p-8 text-white sm:p-10 lg:flex lg:p-12">
           {/* subtle texture overlay */}
@@ -146,7 +146,7 @@ function Login() {
         </div>
 
         {/* ── Right: login form ── */}
-        <div className="flex items-center px-6 py-10 sm:px-10 sm:py-12 lg:px-12">
+        <div className="flex items-center pl-[calc(1.5rem+env(safe-area-inset-left))] pr-[calc(1.5rem+env(safe-area-inset-right))] pt-[calc(2.5rem+env(safe-area-inset-top))] pb-[calc(2.5rem+env(safe-area-inset-bottom))] sm:px-10 sm:py-12 lg:px-12">
           <div className="w-full">
             {/* mobile-only brand */}
             <div className="mb-8 lg:hidden">
