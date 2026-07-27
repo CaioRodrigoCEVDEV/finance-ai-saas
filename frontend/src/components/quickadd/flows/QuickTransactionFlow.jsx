@@ -108,6 +108,8 @@ function QuickTransactionFlow({ flowId, onBack, onClose }) {
       title={config.title}
       onClose={onBack}
       maxWidth="max-w-4xl"
+      className="sm:max-w-4xl"
+      fullScreenOnMobile
       footer={(
         <>
           <Button type="button" variant="secondary" onClick={onBack} disabled={saving}>

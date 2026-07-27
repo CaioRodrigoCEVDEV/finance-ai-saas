@@ -86,6 +86,8 @@ function QuickTransferFlow({ onBack, onClose }) {
       title="Transferencia entre contas"
       onClose={onBack}
       maxWidth="max-w-2xl"
+      className="sm:max-w-2xl"
+      fullScreenOnMobile
       footer={(
         <>
           <Button type="button" variant="secondary" onClick={onBack} disabled={saving}>
