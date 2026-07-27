@@ -211,12 +211,12 @@ function Dashboard() {
 
         {loading ? (
           <section className="flex flex-col gap-6 lg:gap-7">
-            <div className="grid gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-4 sm:gap-5 md:grid-cols-2 min-[1521px]:grid-cols-4">
               {[1, 2, 3, 4].map((item) => (
                 <LoadingSkeleton key={item} variant="shimmer" className="h-44 rounded-[28px]" />
               ))}
             </div>
-            <div className="grid gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-4 sm:gap-5 md:grid-cols-2 min-[1521px]:grid-cols-4">
               {[1, 2, 3, 4].map((item) => (
                 <LoadingSkeleton key={item} variant="shimmer" className="h-64 rounded-[28px]" />
               ))}
@@ -263,7 +263,7 @@ function Dashboard() {
               tenantName={tenant?.name}
             />
 
-            <section className="grid gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-4">
+            <section className="grid gap-4 sm:gap-5 md:grid-cols-2 min-[1521px]:grid-cols-4">
               <CreditCardWidget data={data.overview?.creditCards} />
               <BudgetStatusWidget data={data.overview?.budgets} />
               <GoalsProgressWidget data={data.overview?.goals} />

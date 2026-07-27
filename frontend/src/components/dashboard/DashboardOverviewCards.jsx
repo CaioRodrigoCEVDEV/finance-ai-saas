@@ -54,7 +54,7 @@ function DashboardOverviewCards({ data, tenantName, periodLabel, comparison }) {
   ];
 
   return (
-    <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+    <section className="grid gap-4 sm:gap-5 md:grid-cols-2 min-[1521px]:grid-cols-4">
       {cards.map((card) => (
         <SummaryCard key={card.title} {...card} />
       ))}
