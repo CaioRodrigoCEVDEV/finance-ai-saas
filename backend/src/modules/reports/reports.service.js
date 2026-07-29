@@ -1,17 +1,18 @@
 const prisma = require('../../config/prisma');
+const { parseLocalDate } = require('../../utils/date-utils');
 
 function toNumber(value) {
   return Number(value || 0);
 }
 
 function getStartOfDay(date) {
-  const normalizedDate = new Date(date);
+  const normalizedDate = parseLocalDate(date);
   normalizedDate.setHours(0, 0, 0, 0);
   return normalizedDate;
 }
 
 function getEndOfDay(date) {
-  const normalizedDate = new Date(date);
+  const normalizedDate = parseLocalDate(date);
   normalizedDate.setHours(23, 59, 59, 999);
   return normalizedDate;
 }
