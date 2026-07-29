@@ -23,7 +23,7 @@ function FinancialSummaryReport({ data, loading }) {
 
   if (loading) {
     return (
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 min-[1521px]:grid-cols-4">
         {[1, 2, 3, 4].map((i) => (
           <LoadingSkeleton key={i} className="h-24 rounded-[28px]" />
         ))}
@@ -36,7 +36,7 @@ function FinancialSummaryReport({ data, loading }) {
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <div className="grid gap-4 md:grid-cols-2 min-[1521px]:grid-cols-4">
       <SummaryCard
         icon={TrendingUp}
         label="Receitas"

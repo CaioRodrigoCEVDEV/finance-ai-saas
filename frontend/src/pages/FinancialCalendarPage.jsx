@@ -262,12 +262,12 @@ export default function FinancialCalendarPage() {
         />
 
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
+          <div className="flex w-full items-center gap-1 sm:w-auto sm:gap-2">
             <Button variant="secondary" size="sm" className="h-10 w-10 p-0" onClick={goToPrevMonth} disabled={loading}>
               <ChevronLeft className="h-4 w-4" />
             </Button>
 
-            <h2 className="min-w-[180px] text-center text-lg font-semibold capitalize text-slate-900 dark:text-slate-100">
+            <h2 className="min-w-0 flex-1 text-center text-base font-semibold capitalize text-content-primary sm:min-w-[180px] sm:text-lg">
               {getMonthName(currentYear, currentMonth)}
             </h2>
 
@@ -290,7 +290,7 @@ export default function FinancialCalendarPage() {
         </div>
 
         {loading ? (
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-5 md:grid-cols-2 min-[1521px]:grid-cols-4">
             {[1, 2, 3, 4].map((i) => (
               <LoadingSkeleton key={i} className="h-28 rounded-[28px]" />
             ))}
@@ -329,7 +329,7 @@ export default function FinancialCalendarPage() {
           />
         ) : (
           <>
-            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-5 md:grid-cols-2 min-[1521px]:grid-cols-4">
               <MetricCard
                 title="Receitas do mes"
                 value={formatCurrencyPrivacy(summary.totalIncome)}

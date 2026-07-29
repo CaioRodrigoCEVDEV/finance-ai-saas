@@ -1,11 +1,15 @@
 import { cn } from '../../utils/cn';
 
 function Card({ as: Component = 'div', className = '', children, ...props }) {
+  const hasPaddingOverride = /(^|\s)!?p(?:[trblxy])?-(?:\[[^\]]+\]|[^\s]+)/.test(className);
+  const hasBackgroundOverride = /(^|\s)!?bg-(?:\[[^\]]+\]|[^\s]+)/.test(className);
+
   return (
     <Component
       className={cn(
-        'rounded-[28px] border border-slate-200 bg-white p-6 shadow-soft w-full max-w-full',
-        'dark:border-slate-700 dark:bg-slate-800 dark:shadow-soft-dark',
+        'w-full max-w-full !rounded-[22px] border border-border-soft text-content-primary shadow-card transition-colors',
+        hasBackgroundOverride ? '' : 'bg-surface',
+        hasPaddingOverride ? '' : 'p-6',
         className
       )}
       {...props}

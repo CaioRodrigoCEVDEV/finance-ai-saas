@@ -4,24 +4,89 @@
 
 :root {
   font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  color: #0f172a;
+  color-scheme: light;
+  --background: 244 250 247;
+  --background-elevated: 249 252 250;
+  --surface: 255 255 255;
+  --surface-secondary: 244 248 246;
+  --surface-hover: 237 246 242;
+  --sidebar: 8 109 79;
+  --sidebar-hover: 255 255 255;
+  --sidebar-active: 255 255 255;
+  --border: 220 231 226;
+  --border-soft: 232 239 235;
+  --text-primary: 21 33 40;
+  --text-secondary: 78 95 104;
+  --text-muted: 126 140 146;
+  --primary: 12 154 108;
+  --primary-hover: 7 126 87;
+  --success: 16 185 129;
+  --danger: 238 91 85;
+  --warning: 245 158 11;
+  --info: 59 130 246;
+  --purple: 139 92 246;
+  --shadow-card: 0 14px 34px rgba(22, 82, 60, 0.08);
+  --shadow-floating: 0 18px 48px rgba(17, 62, 47, 0.14);
+  color: rgb(var(--text-primary));
 }
 
-html { min-height: 100%; scrollbar-gutter: stable; }
+html.dark {
+  color-scheme: dark;
+  --background: 29 31 31;
+  --background-elevated: 35 38 37;
+  --surface: 43 45 46;
+  --surface-secondary: 50 53 53;
+  --surface-hover: 57 61 60;
+  --sidebar: 7 101 73;
+  --sidebar-hover: 255 255 255;
+  --sidebar-active: 255 255 255;
+  --border: 61 65 65;
+  --border-soft: 52 56 55;
+  --text-primary: 246 248 247;
+  --text-secondary: 190 200 196;
+  --text-muted: 145 157 152;
+  --primary: 43 190 130;
+  --primary-hover: 52 211 153;
+  --success: 74 222 158;
+  --danger: 255 126 117;
+  --warning: 251 181 61;
+  --info: 113 164 255;
+  --purple: 174 135 255;
+  --shadow-card: 0 12px 30px rgba(0, 0, 0, 0.12);
+  --shadow-floating: 0 20px 50px rgba(0, 0, 0, 0.24);
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+html {
+  scrollbar-gutter: stable;
+}
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100dvh;
-  background: linear-gradient(120deg, #f8fafc 0%, #f3faf7 48%, #f5f9fc 100%);
-  background-size: 200% 200%;
-  color: #0f172a;
+  background:
+    radial-gradient(circle at 10% 12%, rgb(209 250 229 / 0.5), transparent 30%),
+    radial-gradient(circle at 88% 84%, rgb(204 251 241 / 0.32), transparent 34%),
+    linear-gradient(125deg, rgb(var(--background)) 0%, rgb(var(--background-elevated)) 52%, rgb(var(--background)) 100%);
+  background-attachment: fixed;
+  background-size: 140% 140%, 150% 150%, 180% 180%;
+  color: rgb(var(--text-primary));
   overflow-x: clip;
+  overflow-y: auto;
 }
 
 html.dark body {
-  background: linear-gradient(120deg, #0f172a 0%, #10241f 48%, #101f2b 100%);
-  color: #e2e8f0;
+  background:
+    radial-gradient(circle at 8% 12%, rgb(13 95 69 / 0.18), transparent 32%),
+    radial-gradient(circle at 90% 82%, rgb(15 118 85 / 0.1), transparent 36%),
+    linear-gradient(125deg, rgb(var(--background)) 0%, rgb(var(--background-elevated)) 52%, rgb(var(--background)) 100%);
+  color: rgb(var(--text-primary));
 }
 
 * { box-sizing: border-box; }
@@ -39,21 +104,24 @@ html.dark body {
 button, input, select, textarea { font: inherit; }
 ::selection { background: rgba(16, 185, 129, 0.18); }
 
+:focus-visible {
+  outline: 2px solid rgb(var(--primary));
+  outline-offset: 3px;
+}
+
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-html.dark ::-webkit-scrollbar-thumb { background: #334155; }
-html.dark ::-webkit-scrollbar-thumb:hover { background: #475569; }
+::-webkit-scrollbar-thumb { background: rgb(var(--text-muted) / 0.5); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: rgb(var(--text-secondary) / 0.7); }
 
 @media (prefers-reduced-motion: no-preference) {
   @keyframes global-background-drift {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
+    0%, 100% { background-position: 0% 20%, 100% 80%, 0% 50%; }
+    50% { background-position: 12% 28%, 88% 72%, 100% 50%; }
   }
 
   body {
-    animation: global-background-drift 30s ease-in-out infinite alternate;
+    animation: global-background-drift 42s ease-in-out infinite;
   }
 
   @keyframes fade-in-up {

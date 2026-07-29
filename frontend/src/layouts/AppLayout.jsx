@@ -1,29 +1,5 @@
-import {
-  BadgeDollarSign,
-  BarChart3,
-  Bell,
-  CalendarDays,
-  CheckSquare,
-  CircleUser,
-  CreditCard,
-  Crown,
-  FileUp,
-  FolderKanban,
-  Landmark,
-  LayoutDashboard,
-  LogOut,
-  Receipt,
-  Repeat,
-  Settings,
-  Share2,
-  Sparkles,
-  Target,
-  WalletCards,
-  Wand2,
-  X
-} from 'lucide-react';
-import { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 import BottomNavigation from '../components/layout/BottomNavigation';
 import MobileTopbar from '../components/layout/MobileTopbar';
@@ -33,195 +9,145 @@ import QuickAddHub from '../components/quickadd/QuickAddHub';
 import { useAuth } from '../contexts/AuthContext';
 import { cn } from '../utils/cn';
 
-const drawerGroups = [
-  {
-    title: 'Visão Geral',
-    items: [
-      { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-      { to: '/calendar', label: 'Calendário', icon: CalendarDays },
-      { to: '/notifications', label: 'Notificações', icon: Bell }
-    ]
-  },
-  {
-    title: 'Financeiro',
-    items: [
-      { to: '/transactions', label: 'Transações', icon: Receipt },
-      { to: '/accounts', label: 'Contas', icon: Landmark },
-      { to: '/credit-cards', label: 'Cartões', icon: CreditCard },
-      { to: '/invoices', label: 'Faturas', icon: WalletCards },
-      { to: '/categories', label: 'Categorias', icon: FolderKanban }
-    ]
-  },
-  {
-    title: 'Planejamento',
-    items: [
-      { to: '/budgets', label: 'Orçamentos', icon: BadgeDollarSign },
-      { to: '/goals', label: 'Metas', icon: Target },
-      { to: '/recurrences', label: 'Recorrências', icon: Repeat },
-      { to: '/financial-tasks', label: 'Tarefas', icon: CheckSquare }
-    ]
-  },
-  {
-    title: 'Automação',
-    items: [
-      { to: '/imports', label: 'Importar', icon: FileUp },
-      { to: '/categorization-rules', label: 'Regras', icon: Wand2 }
-    ]
-  },
-  {
-    title: 'Análises',
-    items: [
-      { to: '/reports', label: 'Relatórios', icon: BarChart3 }
-    ]
-  },
-  {
-    title: 'Conta',
-    items: [
-      { to: '/invites', label: 'Convites', icon: Share2 },
-      { to: '/plans', label: 'Plano / Assinatura', icon: Crown }
-    ]
-  },
-  {
-    title: 'Configurações',
-    items: [
-      { to: '/profile', label: 'Perfil', icon: CircleUser },
-      { to: '/settings', label: 'Configurações', icon: Settings }
-    ]
-  }
-];
-
-function linkClass(active) {
-  return cn(
-    'flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition',
-    active
-      ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:ring-emerald-800'
-      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200'
-  );
-}
-
-const sectionTitleClass =
-  'px-3 pt-5 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500';
-
 function AppLayout({ children }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [quickAddOpen, setQuickAddOpen] = useState(false);
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { logout } = useAuth();
+  const [quickAddAction, setQuickAddAction] = useState(null);
+  const { tenant } = useAuth();
+  const canWrite = tenant?.role !== 'READONLY';
+  const drawerRef = useRef(null);
+  const previousFocusRef = useRef(null);
 
-  async function handleLogout() {
-    await logout();
-    navigate('/login', { replace: true });
+  useEffect(() => {
+    if (!mobileMenuOpen) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    previousFocusRef.current = document.activeElement;
+    document.body.style.overflow = 'hidden';
+    const frame = window.requestAnimationFrame(() => drawerRef.current?.focus());
+
+    function handleKeyDown(event) {
+      if (event.key === 'Escape') {
+        setMobileMenuOpen(false);
+        return;
+      }
+
+      if (event.key === 'Tab') {
+        const focusable = drawerRef.current?.querySelectorAll('button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])');
+        if (!focusable?.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (document.activeElement === drawerRef.current) {
+          event.preventDefault();
+          (event.shiftKey ? last : first).focus();
+        } else if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+      previousFocusRef.current?.focus?.();
+    };
+  }, [mobileMenuOpen]);
+
+  function openQuickAdd(action = null) {
+    if (!canWrite) return;
+    setQuickAddAction(action);
+    setQuickAddOpen(true);
+  }
+
+  function handleQuickAddOpenChange(open) {
+    setQuickAddOpen(open);
+    if (!open) setQuickAddAction(null);
   }
 
   return (
-    <div className="min-h-screen min-h-[100dvh] transition-colors">
-      <div className="flex min-h-[100dvh] w-full">
-        <div className="relative z-10 hidden h-[calc(100dvh-2rem)] w-72 shrink-0 self-start overflow-hidden lg:sticky lg:top-4 lg:mx-4 lg:my-4 lg:block">
+    <div className="min-h-[100dvh] text-content-primary transition-colors">
+      <div className="w-full lg:grid lg:grid-cols-[240px_minmax(0,1fr)] lg:items-start lg:gap-7 lg:p-4 xl:grid-cols-[244px_minmax(0,1fr)] xl:gap-8">
+        <div className="relative z-20 hidden h-[calc(100dvh-2rem)] min-h-[620px] overflow-hidden lg:sticky lg:top-4 lg:block">
           <Sidebar />
         </div>
 
-        <section className="relative z-10 min-w-0 flex-1">
-          <div className="pointer-events-none sticky top-0 z-30 hidden px-4 pb-3 pt-5 sm:px-6 lg:block lg:px-6 xl:px-8">
+        <section className="relative z-10 min-w-0">
+          <div className="pointer-events-none sticky top-0 z-30 hidden pb-4 pt-1 lg:block">
             <div className="pointer-events-auto">
-              <Topbar onMenuClick={() => setMobileMenuOpen(true)} />
+              <Topbar />
             </div>
           </div>
 
-          <div className="pointer-events-none sticky top-0 z-30 pb-[30px] lg:hidden">
+          <div className="pointer-events-none sticky top-0 z-30 px-3 pb-4 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-5 lg:hidden">
             <div className="pointer-events-auto">
               <MobileTopbar />
             </div>
           </div>
 
           <main className="min-w-0">
-            <div className="min-w-0 space-y-7 px-4 pb-24 sm:px-6 lg:px-6 lg:pb-10 xl:px-8">
-              {children}
+            <div className="min-w-0 space-y-6 px-3 pb-[calc(4rem+env(safe-area-inset-bottom))] sm:px-5 lg:px-0 lg:pb-8">
+              {typeof children === 'function' ? children({ openQuickAdd }) : children}
             </div>
           </main>
         </section>
       </div>
 
-      <QuickAddHub open={quickAddOpen} onOpenChange={setQuickAddOpen} />
+      {canWrite ? (
+        <QuickAddHub
+          open={quickAddOpen}
+          initialAction={quickAddAction}
+          onOpenChange={handleQuickAddOpenChange}
+        />
+      ) : null}
       <BottomNavigation
         onMoreClick={() => setMobileMenuOpen(true)}
-        onQuickAdd={() => setQuickAddOpen(true)}
+        onQuickAdd={() => openQuickAdd()}
+        canQuickAdd={canWrite}
       />
 
       <div
         className={cn(
-          'fixed inset-0 z-40 transition-opacity duration-200 lg:hidden',
+          'fixed inset-0 z-40 lg:hidden',
           mobileMenuOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
         )}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Menu principal"
+        aria-hidden={!mobileMenuOpen}
+        inert={mobileMenuOpen ? undefined : ''}
       >
-        <div
-          className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm"
+        <button
+          type="button"
+          className="absolute inset-0 h-full w-full bg-slate-950/40 backdrop-blur-sm transition-opacity"
           onClick={() => setMobileMenuOpen(false)}
+          aria-label="Fechar menu"
         />
 
         <div
+          ref={drawerRef}
+          tabIndex={-1}
           className={cn(
-            'absolute inset-0 flex flex-col bg-white transition-transform duration-200 dark:bg-slate-900',
-            mobileMenuOpen ? 'translate-y-0' : 'translate-y-full'
+            'absolute inset-0 w-full outline-none transition-transform duration-300 ease-out',
+            mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
           )}
           onClick={(event) => event.stopPropagation()}
         >
-          <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-slate-700">
-            <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-600 text-white">
-                <Sparkles className="h-5 w-5" />
-              </span>
-              <span>
-                <span className="block text-base font-semibold tracking-tight text-slate-900 dark:text-slate-100">Finance AI</span>
-                <span className="block text-[10px] uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Personal Finance</span>
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex h-9 w-9 items-center justify-center rounded-2xl text-slate-500 transition hover:bg-slate-50 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200"
-              aria-label="Fechar menu"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-
-          <nav className="flex-1 overflow-y-auto overscroll-contain px-4 pb-4">
-            {drawerGroups.map((group) => (
-              <div key={group.title}>
-                <h3 className={sectionTitleClass}>{group.title}</h3>
-                <div className="space-y-1">
-                  {group.items.map((item) => {
-                    const isActive = location.pathname === item.to;
-                    const Icon = item.icon;
-
-                    return (
-                      <Link
-                        key={item.to}
-                        to={item.to}
-                        onClick={() => setMobileMenuOpen(false)}
-                        className={linkClass(isActive)}
-                      >
-                        <Icon className="h-4 w-4" />
-                        {item.label}
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </nav>
-
-          <div className="shrink-0 border-t border-slate-200 px-5 py-4 dark:border-slate-700">
-            <button
-              type="button"
-              onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
-              className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-slate-600 transition hover:bg-rose-50 hover:text-rose-700 dark:text-slate-400 dark:hover:bg-rose-900/20 dark:hover:text-rose-400"
-            >
-              <LogOut className="h-4 w-4" />
-              Sair
-            </button>
-          </div>
+          <Sidebar mobile onNavigate={() => setMobileMenuOpen(false)} />
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(false)}
+            className="absolute right-5 top-[calc(1.25rem+env(safe-area-inset-top))] flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-white transition hover:bg-white/25"
+            aria-label="Fechar menu"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
       </div>
     </div>

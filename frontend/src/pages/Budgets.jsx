@@ -258,7 +258,7 @@ function Budgets() {
         />
 
         {summaryLoading ? (
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-5 md:grid-cols-2 min-[1521px]:grid-cols-4">
             {[1, 2, 3, 4].map((item) => <LoadingSkeleton key={item} className="h-36 rounded-[28px]" />)}
           </div>
         ) : (

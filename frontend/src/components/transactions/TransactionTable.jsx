@@ -43,9 +43,9 @@ function TransactionTable({ transactions, pagination, loading, onEdit, onDelete,
   const { formatCurrencyPrivacy } = usePrivacy();
 
   return (
-    <Card className="hidden overflow-hidden rounded-[28px] p-0 lg:block">
-      <div className="w-full overflow-hidden">
-        <table className="w-full divide-y divide-slate-200 dark:divide-slate-700">
+    <Card className="hidden overflow-hidden p-0 min-[1521px]:block">
+      <div className="w-full overflow-x-auto">
+        <table className="w-full min-w-[980px] divide-y divide-slate-200 dark:divide-slate-700">
           <thead className="bg-slate-50 dark:bg-slate-800/50">
             <tr className="text-left text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
               <th className="w-[95px] px-3 py-3 whitespace-nowrap">Data</th>
@@ -109,7 +109,7 @@ function TransactionTable({ transactions, pagination, loading, onEdit, onDelete,
         </table>
       </div>
 
-      <div className="flex items-center justify-between border-t border-slate-200 px-4 py-3 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
+      <div className="flex flex-col gap-3 border-t border-border-soft px-4 py-3 text-sm text-content-secondary sm:flex-row sm:items-center sm:justify-between">
         <span>Página {pagination.page} de {pagination.totalPages} • {pagination.total} registros</span>
         <div className="flex gap-3">
           <Button variant="secondary" size="sm" onClick={() => onPageChange(pagination.page - 1)} disabled={loading || pagination.page <= 1}>Anterior</Button>

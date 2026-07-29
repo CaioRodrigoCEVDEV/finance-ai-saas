@@ -49,7 +49,7 @@ function TransactionMobileCard({ transaction, loading, onEdit, onDelete, onConfi
   const amountPrefix = isTransferIn ? '+' : isNegativeValue ? '-' : '+';
 
   return (
-    <Card className="rounded-[28px] p-5 lg:hidden">
+    <Card className="p-5">
       <div className="flex items-center justify-between gap-4">
         <p className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">{formatDateBR(transaction.transactionDate)}</p>
         <p className={`shrink-0 whitespace-nowrap text-right text-base font-semibold ${amountColor}`}>

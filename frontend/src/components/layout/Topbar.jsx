@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { ChevronDown, CircleUser, Eye, EyeOff, LogOut, Menu, MessageSquareText, Settings, Shield } from 'lucide-react';
+import { ChevronDown, CircleUser, Eye, EyeOff, LogOut, MessageSquareText, Settings, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { useAuth } from '../../contexts/AuthContext';
@@ -23,7 +23,9 @@ function getInitials(name) {
     .join('');
 }
 
-function Topbar({ onMenuClick }) {
+const actionClass = 'flex h-11 w-11 items-center justify-center rounded-full border border-border-soft bg-surface text-content-secondary shadow-card transition hover:-translate-y-0.5 hover:bg-surface-hover hover:text-content-primary';
+
+function Topbar() {
   const navigate = useNavigate();
   const { logout, tenant, user, isSuperAdmin } = useAuth();
   const { hideValues, toggleHideValues } = usePrivacy();
@@ -66,51 +68,34 @@ function Topbar({ onMenuClick }) {
   }
 
   return (
-    <header className="hidden items-center justify-between gap-2 rounded-[28px] border border-slate-200/80 bg-white/85 px-4 py-4 shadow-soft backdrop-blur-xl dark:border-slate-700/80 dark:bg-slate-800/80 lg:flex">
-      <div className="flex min-w-0 items-center gap-2">
-        {onMenuClick ? (
-          <button
-            type="button"
-            onClick={onMenuClick}
-            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-2xl border border-slate-200 text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 lg:hidden dark:border-slate-600 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200"
-            aria-label="Abrir menu"
-          >
-            <Menu className="h-4 w-4" />
-          </button>
-        ) : null}
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-[11px] uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">Workspace</p>
-          <p className="mt-1 truncate text-sm font-semibold text-slate-900 dark:text-slate-100">{tenant?.name || 'Finance AI'}</p>
+    <header className="flex h-[60px] items-center justify-end gap-4">
+      <div className="flex flex-shrink-0 items-center gap-2">
+        <PwaInstallButton compact />
+        <ThemeToggle />
+        <div className="flex h-11 w-11 items-center justify-center rounded-full border border-border-soft bg-surface shadow-card">
+          <NotificationBell />
         </div>
-      </div>
-
-      <div className="flex flex-shrink-0 items-center gap-1.5">
-        <div className="hidden sm:contents">
-          <ThemeToggle />
-        </div>
-        <PwaInstallButton />
-        <button
-          type="button"
-          onClick={() => setFeedbackOpen(true)}
-          className="relative flex h-9 w-9 items-center justify-center rounded-2xl transition hover:bg-slate-50 dark:hover:bg-slate-700/50"
-          aria-label="Enviar feedback"
-          title="Enviar feedback"
-        >
-          <MessageSquareText className="h-5 w-5 text-slate-500 dark:text-slate-400" />
-        </button>
-        <NotificationBell />
         <button
           type="button"
           onClick={toggleHideValues}
-          className="relative flex h-9 w-9 items-center justify-center rounded-2xl transition hover:bg-slate-50 dark:hover:bg-slate-700/50"
+          className={actionClass}
           aria-label={hideValues ? 'Exibir valores' : 'Ocultar valores'}
           title={hideValues ? 'Exibir valores' : 'Ocultar valores'}
         >
           {hideValues ? (
-            <EyeOff className="h-5 w-5 text-slate-500 dark:text-slate-400" />
+            <EyeOff className="h-[18px] w-[18px]" />
           ) : (
-            <Eye className="h-5 w-5 text-slate-500 dark:text-slate-400" />
+            <Eye className="h-[18px] w-[18px]" />
           )}
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate('/settings')}
+          className={actionClass}
+          aria-label="Configurações"
+          title="Configurações"
+        >
+          <Settings className="h-[18px] w-[18px]" />
         </button>
 
         <div className="relative" ref={containerRef}>
@@ -118,19 +103,14 @@ function Topbar({ onMenuClick }) {
             type="button"
             onClick={() => setOpen((prev) => !prev)}
             className={cn(
-              'flex items-center gap-2.5 rounded-2xl p-2 transition',
-              'hover:bg-slate-50 dark:hover:bg-slate-700/50',
-              open && 'bg-slate-50 dark:bg-slate-700/50'
+              'flex h-12 items-center gap-2 rounded-full border border-border-soft bg-surface p-1.5 pr-3 shadow-card transition hover:-translate-y-0.5 hover:bg-surface-hover',
+              open && 'bg-surface-hover'
             )}
             aria-label="Menu do usuário"
             aria-expanded={open}
             aria-haspopup="true"
           >
-            <div className="hidden text-right sm:block">
-              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{user?.name || 'Usuário autenticado'}</p>
-              <p className="text-sm text-slate-500 dark:text-slate-400">{user?.email || tenant?.plan || 'Conta ativa'}</p>
-            </div>
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-emerald-50 text-sm font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 overflow-hidden">
+            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-sm font-semibold text-white">
               {user?.avatar_url ? (
                 <img
                   src={`${import.meta.env.VITE_API_URL}${user.avatar_url}`}
@@ -141,21 +121,26 @@ function Topbar({ onMenuClick }) {
                 getInitials(user?.name)
               )}
             </div>
-            <ChevronDown className={cn('hidden h-4 w-4 text-slate-400 transition sm:block', open && 'rotate-180')} />
+            <p className="hidden max-w-40 truncate text-sm font-semibold text-content-primary xl:block">
+              {user?.name || 'Usuário'}
+            </p>
+            <ChevronDown className={cn('h-4 w-4 text-content-muted transition', open && 'rotate-180')} />
           </button>
 
           {open && (
             <div
               className={cn(
-                'absolute right-0 top-full z-50 mt-2 w-56 rounded-2xl border p-1.5 shadow-lg',
-                'border-slate-200 bg-white',
-                'dark:border-slate-600 dark:bg-slate-800'
+                'absolute right-0 top-full z-50 mt-2 w-64 rounded-2xl border border-border-ui bg-surface p-2 shadow-floating'
               )}
             >
+              <div className="border-b border-border-soft px-3 pb-3 pt-2">
+                <p className="truncate text-sm font-semibold text-content-primary">{user?.name || 'Usuário autenticado'}</p>
+                <p className="mt-0.5 truncate text-xs text-content-muted">{user?.email || tenant?.name || 'Conta ativa'}</p>
+              </div>
               <button
                 type="button"
                 onClick={() => handleNavigate('/profile')}
-                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50"
+                className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-content-secondary transition hover:bg-surface-hover hover:text-content-primary"
               >
                 <CircleUser className="h-4 w-4" />
                 Minha conta
@@ -163,26 +148,34 @@ function Topbar({ onMenuClick }) {
               <button
                 type="button"
                 onClick={() => handleNavigate('/settings')}
-                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50"
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-content-secondary transition hover:bg-surface-hover hover:text-content-primary"
               >
                 <Settings className="h-4 w-4" />
                 Configurações
+              </button>
+              <button
+                type="button"
+                onClick={() => { setOpen(false); setFeedbackOpen(true); }}
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-content-secondary transition hover:bg-surface-hover hover:text-content-primary"
+              >
+                <MessageSquareText className="h-4 w-4" />
+                Enviar feedback
               </button>
               {isSuperAdmin ? (
                 <button
                   type="button"
                   onClick={() => handleNavigate('/admin/dashboard')}
-                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-amber-50 hover:text-amber-700 dark:text-slate-400 dark:hover:bg-amber-900/20 dark:hover:text-amber-400"
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-content-secondary transition hover:bg-amber-50 hover:text-amber-700 dark:hover:bg-amber-900/20 dark:hover:text-amber-400"
                 >
                   <Shield className="h-4 w-4" />
                   Admin SaaS
                 </button>
               ) : null}
-              <div className="my-1 border-t border-slate-200 dark:border-slate-600" />
+              <div className="my-1 border-t border-border-soft" />
               <button
                 type="button"
                 onClick={handleLogout}
-                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-rose-50 hover:text-rose-700 dark:text-slate-400 dark:hover:bg-rose-900/20 dark:hover:text-rose-400"
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-content-secondary transition hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-900/20 dark:hover:text-rose-400"
               >
                 <LogOut className="h-4 w-4" />
                 Sair

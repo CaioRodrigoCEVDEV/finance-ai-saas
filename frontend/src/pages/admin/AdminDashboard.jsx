@@ -86,7 +86,7 @@ function AdminDashboard() {
       <AdminLayout>
         <div className="space-y-8 pb-8">
           <LoadingSkeleton className="h-48 rounded-[28px]" />
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-5 md:grid-cols-2 min-[1521px]:grid-cols-4">
             {Array.from({ length: 7 }, (_, i) => (
               <LoadingSkeleton key={i} className="h-[140px] rounded-[28px]" />
             ))}
@@ -130,7 +130,7 @@ function AdminDashboard() {
           <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">Visão geral do SaaS</p>
         </Card>
 
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-5 md:grid-cols-2 min-[1521px]:grid-cols-4">
           <MetricCard
             title="Total Workspaces"
             value={data.totalTenants}

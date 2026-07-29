@@ -13,8 +13,13 @@ function useCountUp(end, duration = 1200) {
     }
 
     const target = Number(end);
-    if (isNaN(target)) {
+    if (Number.isNaN(target)) {
       setValue(0);
+      return;
+    }
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setValue(target);
       return;
     }
 
@@ -25,7 +30,7 @@ function useCountUp(end, duration = 1200) {
       const elapsed = timestamp - startTimeRef.current;
       const progress = Math.min(elapsed / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 3);
-      setValue(Math.round(target * eased));
+      setValue(Math.round(target * eased * 100) / 100);
 
       if (progress < 1) {
         rafRef.current = requestAnimationFrame(animate);

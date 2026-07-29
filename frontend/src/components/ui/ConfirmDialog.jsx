@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { AlertTriangle, X } from 'lucide-react';
 
@@ -15,42 +15,86 @@ function ConfirmDialog({
   variant = 'danger',
   loading = false
 }) {
+  const titleId = useId();
+  const messageId = useId();
+  const dialogRef = useRef(null);
+  const previousFocusRef = useRef(null);
+  const onCancelRef = useRef(onCancel);
+  onCancelRef.current = onCancel;
+
   useEffect(() => {
     if (!open) return undefined;
 
+    previousFocusRef.current = document.activeElement;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const frame = window.requestAnimationFrame(() => {
+      if (!dialogRef.current?.contains(document.activeElement)) dialogRef.current?.focus();
+    });
+
     function handleKeyDown(event) {
       if (event.key === 'Escape') {
-        onCancel();
+        onCancelRef.current();
+        return;
+      }
+
+      if (event.key === 'Tab') {
+        const focusable = dialogRef.current?.querySelectorAll('button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])');
+        if (!focusable?.length) return;
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (document.activeElement === dialogRef.current) {
+          event.preventDefault();
+          (event.shiftKey ? last : first).focus();
+        } else if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
       }
     }
 
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [open, onCancel]);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+      previousFocusRef.current?.focus?.();
+    };
+  }, [open]);
 
   if (!open) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm" onClick={onCancel}>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+      <button type="button" className="absolute inset-0 h-full w-full bg-slate-950/40 backdrop-blur-sm" onClick={onCancel} aria-label="Cancelar" />
       <div
-        className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-700 dark:bg-slate-800"
-        onClick={(event) => event.stopPropagation()}
+        ref={dialogRef}
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={messageId}
+        tabIndex={-1}
+        className="relative w-full max-w-md rounded-[22px] border border-border-ui bg-surface p-6 shadow-floating outline-none"
       >
         <div className="flex items-start justify-between gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-danger/10 text-danger">
             <AlertTriangle className="h-5 w-5" />
           </div>
-          <Button variant="ghost" size="sm" onClick={onCancel} aria-label="Fechar" className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100">
+          <Button variant="ghost" size="sm" onClick={onCancel} aria-label="Fechar" className="h-9 w-9 rounded-full p-0 text-content-secondary hover:text-content-primary">
             <X className="h-4 w-4" />
           </Button>
         </div>
 
         <div className="mt-4">
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{title}</h3>
-          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">{message}</p>
+          <h3 id={titleId} className="text-lg font-semibold text-content-primary">{title}</h3>
+          <p id={messageId} className="mt-2 text-sm text-content-secondary">{message}</p>
         </div>
 
-        <div className="mt-6 flex justify-end gap-3">
+        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <Button variant="secondary" onClick={onCancel} disabled={loading}>{cancelText}</Button>
           <Button variant={variant} onClick={onConfirm} disabled={loading}>{loading ? 'Aguarde...' : confirmText}</Button>
         </div>

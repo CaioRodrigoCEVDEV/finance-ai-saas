@@ -1,26 +1,33 @@
 import { cn } from '../../utils/cn';
 
 const variantStyles = {
-  primary: 'bg-emerald-600 text-white hover:bg-emerald-700 focus-visible:ring-emerald-200',
-  secondary: 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 focus-visible:ring-slate-200',
-  danger: 'bg-rose-600 text-white hover:bg-rose-700 focus-visible:ring-rose-200',
-  ghost: 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200 focus-visible:ring-slate-200',
-  lightOnBrand: 'bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50 focus-visible:ring-emerald-200 dark:bg-white/10 dark:text-white dark:border-white/20 dark:hover:bg-white/15'
+  primary: 'bg-primary text-white shadow-sm hover:-translate-y-0.5 hover:bg-primary-hover focus-visible:ring-primary/20',
+  secondary: 'border border-border-ui bg-surface text-content-secondary shadow-sm hover:bg-surface-hover hover:text-content-primary focus-visible:ring-content-muted/20',
+  danger: 'bg-danger text-white shadow-sm hover:-translate-y-0.5 hover:bg-danger/90 focus-visible:ring-danger/20',
+  ghost: 'text-content-secondary hover:bg-surface-hover hover:text-content-primary focus-visible:ring-content-muted/20',
+  lightOnBrand: 'border border-white/30 bg-white text-emerald-800 hover:bg-emerald-50 focus-visible:ring-white/30 dark:bg-white/[0.12] dark:text-white dark:hover:bg-white/[0.18]'
 };
 
 const sizeStyles = {
-  sm: 'h-9 px-4 text-sm',
-  md: 'h-11 px-5 text-sm',
-  lg: 'h-12 px-6 text-base'
+  sm: { height: 'h-9', padding: 'px-3.5', text: 'text-xs' },
+  md: { height: 'h-11', padding: 'px-5', text: 'text-sm' },
+  lg: { height: 'h-12', padding: 'px-6', text: 'text-sm' }
 };
 
 function Button({ as: Component = 'button', variant = 'primary', size = 'md', className = '', type, children, ...props }) {
+  const sizeStyle = sizeStyles[size] || sizeStyles.md;
+  const hasHeightOverride = /(^|\s)(?:[^\s:]+:)*!?h-/.test(className);
+  const hasPaddingOverride = /(^|\s)(?:[^\s:]+:)*!?p(?:[xytrbl])?-/.test(className);
+  const hasTextSizeOverride = /(^|\s)(?:[^\s:]+:)*!?text-(?:xs|sm|base|lg|xl|2xl|3xl|\[)/.test(className);
+
   return (
     <Component
       className={cn(
-        'inline-flex items-center justify-center gap-2 rounded-2xl font-semibold transition focus-visible:outline-none focus-visible:ring-4 disabled:cursor-not-allowed disabled:opacity-60',
+        'inline-flex items-center justify-center gap-2 rounded-[14px] font-semibold transition duration-200 focus-visible:outline-none focus-visible:ring-4 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0',
         variantStyles[variant] || variantStyles.primary,
-        sizeStyles[size] || sizeStyles.md,
+        hasHeightOverride ? '' : sizeStyle.height,
+        hasPaddingOverride ? '' : sizeStyle.padding,
+        hasTextSizeOverride ? '' : sizeStyle.text,
         className
       )}
       type={Component === 'button' ? type || 'button' : undefined}

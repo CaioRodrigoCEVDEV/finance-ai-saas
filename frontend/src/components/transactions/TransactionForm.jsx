@@ -337,7 +337,7 @@ function TransactionForm({ transaction, accounts, categories, creditCards, onSub
                 name="notes"
                 value={formValues.notes}
                 onChange={handleChange}
-                className="h-20 w-full resize-none rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-slate-600 dark:bg-slate-700/40 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30"
+                className="h-20 w-full resize-none rounded-2xl border border-slate-300 bg-white px-4 py-3 !text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-slate-600 dark:bg-slate-700/40 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30 sm:!text-sm"
                 placeholder="Adicionar observação"
               />
             </label>

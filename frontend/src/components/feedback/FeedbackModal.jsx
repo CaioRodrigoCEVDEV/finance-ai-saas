@@ -86,7 +86,7 @@ function FeedbackModal({ isOpen, onClose }) {
                 placeholder="Digite seu feedback..."
                 maxLength={MAX_LENGTH}
                 disabled={sending}
-                className="block w-full min-h-[140px] resize-none rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 disabled:opacity-60 dark:border-slate-600 dark:bg-slate-700/40 dark:text-slate-100 dark:placeholder-slate-400 dark:focus:border-emerald-400 dark:focus:ring-emerald-900/30"
+                className="block min-h-[140px] w-full resize-none rounded-2xl border border-slate-300 bg-white px-4 py-3 !text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 disabled:opacity-60 dark:border-slate-600 dark:bg-slate-700/40 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:border-emerald-400 dark:focus:ring-emerald-900/30 sm:!text-sm"
               />
               <div className="mt-1 flex items-center justify-between">
                 <span className="text-xs text-slate-400">

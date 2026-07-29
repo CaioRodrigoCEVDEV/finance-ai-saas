@@ -201,14 +201,14 @@ function NotificationBell() {
         ref={bellRef}
         type="button"
         onClick={handleToggle}
-        className="relative flex h-9 w-9 items-center justify-center rounded-2xl text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 sm:h-10 sm:w-10 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200"
+        className="relative flex h-10 w-10 items-center justify-center rounded-full text-content-secondary transition hover:bg-surface-hover hover:text-content-primary"
         aria-label="Notificações"
         aria-expanded={open}
         aria-haspopup="true"
       >
         <Bell className="h-5 w-5" />
         {unreadCount > 0 && (
-          <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1 text-[11px] font-bold text-white ring-2 ring-white dark:ring-slate-800">
+          <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-danger px-1 text-[11px] font-bold text-white ring-2 ring-surface">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
@@ -217,10 +217,10 @@ function NotificationBell() {
       {open && (
         <div
           ref={dropdownRef}
-          className="fixed left-4 right-4 top-24 z-[60] max-w-[calc(100vw-2rem)] origin-top rounded-2xl border border-slate-200/80 bg-white shadow-2xl shadow-slate-900/10 dark:border-slate-700/80 dark:bg-slate-800 dark:shadow-black/40 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-3 sm:w-96 sm:origin-top-right"
+          className="fixed left-4 right-4 top-[calc(5rem+env(safe-area-inset-top))] z-[60] max-w-[calc(100vw-2rem)] origin-top rounded-[20px] border border-border-ui bg-surface shadow-floating sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-3 sm:w-96 sm:origin-top-right"
         >
           <div className="flex items-center justify-between px-5 pt-5 pb-3">
-            <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">
+            <h3 className="text-base font-semibold text-content-primary">
               Notificações
             </h3>
             {unreadCount > 0 && (
@@ -234,12 +234,12 @@ function NotificationBell() {
           <div className="max-h-80 overflow-y-auto px-2 pb-2">
             {loading ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
+                <Loader2 className="h-5 w-5 animate-spin text-content-muted" />
               </div>
             ) : notifications.length === 0 ? (
               <div className="flex flex-col items-center px-4 py-8 text-center">
-                <Bell className="h-8 w-8 text-slate-300 dark:text-slate-600" />
-                <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
+                <Bell className="h-8 w-8 text-content-muted/60" />
+                <p className="mt-3 text-sm text-content-secondary">
                   Nenhuma notificação
                 </p>
               </div>
@@ -253,7 +253,7 @@ function NotificationBell() {
           </div>
 
           {notifications.length > 0 && (
-            <div className="border-t border-slate-200 px-5 py-3 dark:border-slate-700">
+            <div className="border-t border-border-soft px-5 py-3">
               <Button
                 variant="ghost"
                 size="sm"

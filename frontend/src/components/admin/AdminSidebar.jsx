@@ -10,7 +10,6 @@ import {
   Shield,
   ArrowLeft,
   LogOut,
-  Sparkles
 } from 'lucide-react';
 
 import { useAuth } from '../../contexts/AuthContext';
@@ -41,35 +40,39 @@ function AdminSidebar({ mobile = false, onNavigate }) {
     cn(
       'flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition',
       active
-        ? 'bg-amber-50 text-amber-700 ring-1 ring-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:ring-amber-800'
-        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200'
+        ? 'bg-white/[0.16] text-white ring-1 ring-inset ring-white/10'
+        : 'text-white/80 hover:bg-white/10 hover:text-white'
     );
 
   return (
     <aside
       className={cn(
-        'flex h-screen max-h-screen flex-col overflow-hidden',
-        mobile ? 'h-full w-full max-h-full' : 'w-full'
+        'flex h-full max-h-full flex-col overflow-hidden',
+        mobile ? 'w-full' : 'w-full'
       )}
     >
       <div
         className={cn(
-          'flex h-full min-h-0 flex-col overflow-hidden rounded-[28px] border border-amber-200 bg-white shadow-soft dark:border-amber-800 dark:bg-slate-800'
+          'flex h-full min-h-0 flex-col overflow-hidden bg-gradient-to-b from-emerald-800 via-emerald-800 to-emerald-900 text-white',
+          mobile ? 'rounded-none border-0 shadow-none' : 'rounded-[26px] border border-white/10 shadow-floating'
         )}
       >
-        <div className="shrink-0 border-b border-amber-100 p-5 dark:border-amber-800">
+        <div className={cn(
+          'shrink-0 border-b border-white/15 px-5 pb-5',
+          mobile ? 'pr-14 pt-[calc(1.25rem+env(safe-area-inset-top))]' : 'pt-5'
+        )}>
           <Link to="/admin/dashboard" className="flex items-center gap-3" onClick={onNavigate}>
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-600 text-white">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-emerald-800">
               <Shield className="h-5 w-5" />
             </span>
             <span>
-              <span className="block text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-100">Admin SaaS</span>
-              <span className="block text-xs font-medium uppercase tracking-[0.24em] text-amber-600 dark:text-amber-400">Finance AI</span>
+              <span className="block text-lg font-bold tracking-[-0.03em] text-white">Admin SaaS</span>
+              <span className="block text-[9px] font-medium uppercase tracking-[0.2em] text-emerald-100/70">FinanceAI</span>
             </span>
           </Link>
         </div>
 
-        <nav className="flex-1 overflow-y-auto overscroll-contain p-5">
+        <nav className="scrollbar-none flex-1 overflow-y-auto overscroll-contain p-3 pt-4">
           <div className="space-y-1">
             {adminNavigation.map((item) => {
               const isActive = location.pathname === item.to || location.pathname.startsWith(item.to + '/');
@@ -81,6 +84,7 @@ function AdminSidebar({ mobile = false, onNavigate }) {
                   to={item.to}
                   onClick={onNavigate}
                   className={linkClass(isActive)}
+                  aria-current={isActive ? 'page' : undefined}
                 >
                   <Icon className="h-4 w-4" />
                   {item.label}
@@ -90,11 +94,14 @@ function AdminSidebar({ mobile = false, onNavigate }) {
           </div>
         </nav>
 
-        <div className="shrink-0 border-t border-amber-100 p-5 dark:border-amber-800">
+        <div className={cn(
+          'shrink-0 border-t border-white/15 px-3 pt-3',
+          mobile ? 'pb-[calc(0.75rem+env(safe-area-inset-bottom))]' : 'pb-3'
+        )}>
           <Link
             to="/dashboard"
             onClick={onNavigate}
-            className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-slate-600 transition hover:bg-emerald-50 hover:text-emerald-700 dark:text-slate-400 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-400"
+            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" />
             Voltar ao App
@@ -102,7 +109,7 @@ function AdminSidebar({ mobile = false, onNavigate }) {
           <button
             type="button"
             onClick={handleLogout}
-            className="mt-1 flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-slate-600 transition hover:bg-rose-50 hover:text-rose-700 dark:text-slate-400 dark:hover:bg-rose-900/20 dark:hover:text-rose-400"
+            className="mt-1 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white"
           >
             <LogOut className="h-4 w-4" />
             Sair

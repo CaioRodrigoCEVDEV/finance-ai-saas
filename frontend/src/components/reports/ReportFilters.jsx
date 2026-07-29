@@ -15,7 +15,7 @@ function ReportFilters({
 }) {
   return (
     <Card className="p-5">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 min-[1521px]:grid-cols-4">
         <div className="space-y-2">
           <label className="text-sm font-medium text-slate-700 dark:text-slate-300" htmlFor="startDate">Data inicial</label>
           <input
@@ -24,7 +24,7 @@ function ReportFilters({
             type="date"
             value={filters.startDate}
             onChange={onChange}
-            className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30"
+            className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 !text-base text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30 sm:!text-sm"
           />
         </div>
 
@@ -36,13 +36,13 @@ function ReportFilters({
             type="date"
             value={filters.endDate}
             onChange={onChange}
-            className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30"
+            className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 !text-base text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30 sm:!text-sm"
           />
         </div>
 
         <div>
           <Select
-            className="h-11 py-0 text-sm"
+            className="h-11 !py-0"
             id="accountId"
             label="Conta"
             name="accountId"
@@ -58,7 +58,7 @@ function ReportFilters({
 
         <div>
           <Select
-            className="h-11 py-0 text-sm"
+            className="h-11 !py-0"
             id="creditCardId"
             label="Cartao"
             name="creditCardId"
@@ -74,7 +74,7 @@ function ReportFilters({
 
         <div>
           <Select
-            className="h-11 py-0 text-sm"
+            className="h-11 !py-0"
             id="categoryId"
             label="Categoria"
             name="categoryId"
@@ -90,7 +90,7 @@ function ReportFilters({
 
         <div>
           <Select
-            className="h-11 py-0 text-sm"
+            className="h-11 !py-0"
             id="type"
             label="Tipo"
             name="type"

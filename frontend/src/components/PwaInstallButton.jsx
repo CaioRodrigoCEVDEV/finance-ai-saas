@@ -10,7 +10,7 @@ function isRunningStandalone() {
   return false;
 }
 
-function PwaInstallButton() {
+function PwaInstallButton({ compact = false }) {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showButton, setShowButton] = useState(false);
 
@@ -52,9 +52,16 @@ function PwaInstallButton() {
   if (!showButton) return null;
 
   return (
-    <Button variant="secondary" size="sm" onClick={handleInstallClick} className="gap-2">
+    <Button
+      variant="secondary"
+      size="sm"
+      onClick={handleInstallClick}
+      className={compact ? 'h-11 w-11 rounded-full px-0' : 'gap-2'}
+      aria-label="Instalar aplicativo"
+      title="Instalar aplicativo"
+    >
       <Download className="h-4 w-4" />
-      <span className="hidden sm:inline">Instalar app</span>
+      {compact ? null : <span className="hidden sm:inline">Instalar app</span>}
     </Button>
   );
 }

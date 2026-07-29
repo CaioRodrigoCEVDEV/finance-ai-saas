@@ -16,21 +16,15 @@ function CreditCardWidget({ data }) {
   const statusLabel = usagePercentage > 80 ? 'Crítico' : usagePercentage > 60 ? 'Atenção' : 'Saudável';
 
   return (
-    <Card className="rounded-[28px] border-white/10 bg-gradient-to-br from-white to-white/80 p-6
-      dark:from-slate-800 dark:to-slate-800/80
-      transition-all duration-300 ease-out
-      hover:-translate-y-1 hover:scale-[1.01]
-      hover:shadow-glow dark:hover:shadow-glow-dark hover:border-indigo-200
-      dark:hover:border-indigo-800
-      group">
+    <Card className="p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-accent-purple/25 hover:shadow-floating sm:p-6">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3.5">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 dark:bg-indigo-900/40 transition-shadow duration-300 group-hover:shadow-md">
-            <CreditCard className="h-5 w-5 text-indigo-600 dark:text-indigo-400" aria-hidden="true" />
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-accent-purple/10 text-accent-purple">
+            <CreditCard className="h-5 w-5" aria-hidden="true" />
           </div>
           <div>
-            <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Cartões de crédito</h3>
-            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Resumo dos cartões cadastrados</p>
+            <h3 className="text-base font-semibold text-content-primary">Cartões de crédito</h3>
+            <p className="mt-0.5 text-xs text-content-muted">Resumo dos cartões cadastrados</p>
           </div>
         </div>
         <StatusBadge status={usageStatus} label={statusLabel} />
@@ -38,26 +32,26 @@ function CreditCardWidget({ data }) {
 
       <div className="mt-5 space-y-3">
         <div className="flex items-center justify-between text-sm">
-          <span className="text-slate-500 dark:text-slate-400">Cartões ativos</span>
-          <span className="font-semibold text-slate-900 dark:text-slate-100">{activeCards} de {totalCards}</span>
+          <span className="text-content-secondary">Cartões ativos</span>
+          <span className="font-semibold text-content-primary">{activeCards} de {totalCards}</span>
         </div>
         <div className="flex items-center justify-between text-sm">
-          <span className="text-slate-500 dark:text-slate-400">Limite total</span>
-          <span className="font-semibold text-slate-900 dark:text-slate-100">{formatCurrencyPrivacy(totalLimit)}</span>
+          <span className="text-content-secondary">Limite total</span>
+          <span className="font-semibold text-content-primary">{formatCurrencyPrivacy(totalLimit)}</span>
         </div>
         <div className="flex items-center justify-between text-sm">
-          <span className="text-slate-500 dark:text-slate-400">Fatura atual</span>
-          <span className="font-semibold text-rose-600 dark:text-rose-400">{formatCurrencyPrivacy(currentInvoiceAmount)}</span>
+          <span className="text-content-secondary">Fatura atual</span>
+          <span className="font-semibold text-danger">{formatCurrencyPrivacy(currentInvoiceAmount)}</span>
         </div>
         <div className="flex items-center justify-between text-sm">
-          <span className="text-slate-500 dark:text-slate-400">Limite disponível</span>
-          <span className="font-semibold text-emerald-600 dark:text-emerald-400">{formatCurrencyPrivacy(availableLimit)}</span>
+          <span className="text-content-secondary">Limite disponível</span>
+          <span className="font-semibold text-success">{formatCurrencyPrivacy(availableLimit)}</span>
         </div>
       </div>
 
-      <div className="mt-5 border-t border-slate-100 pt-4 dark:border-slate-700/50">
+      <div className="mt-5 border-t border-border-soft pt-4">
         <Tooltip content="Uso do limite disponível">
-          <div className="mb-2 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+          <div className="mb-2 flex items-center justify-between text-xs text-content-secondary">
             <span>Uso do limite</span>
             <span className="font-medium">{usagePercentage.toFixed(1)}%</span>
           </div>

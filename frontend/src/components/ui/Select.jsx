@@ -41,11 +41,13 @@ function Select({
   disabled = false,
   id,
   placeholder = 'Selecione',
+  'aria-label': ariaLabel,
   ...props
 }) {
   const generatedId = useId();
   const buttonId = id || `${generatedId}-select`;
   const listboxId = `${buttonId}-listbox`;
+  const errorId = error ? `${buttonId}-error` : undefined;
   const options = useMemo(() => getOptions(children), [children]);
   const [internalValue, setInternalValue] = useState(defaultValue === undefined ? undefined : String(defaultValue));
   const [open, setOpen] = useState(false);
@@ -185,10 +187,11 @@ function Select({
         setOpen(false);
       }}
     >
-      {label ? <span className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">{label}</span> : null}
+      {label ? <span className="mb-2 block text-sm font-medium text-content-secondary">{label}</span> : null}
       <span className="relative block">
         <select
           aria-hidden="true"
+          aria-label={ariaLabel}
           className="hidden"
           disabled={disabled}
           id={`${buttonId}-native`}
@@ -202,15 +205,18 @@ function Select({
         </select>
         <button
           aria-activedescendant={open ? `${listboxId}-option-${activeIndex}` : undefined}
+          aria-label={ariaLabel || label}
           aria-controls={listboxId}
+          aria-describedby={errorId}
           aria-disabled={disabled}
           aria-expanded={open}
           aria-haspopup="listbox"
+          aria-invalid={error ? 'true' : undefined}
           className={cn(
-            'flex w-full min-w-0 items-center justify-between gap-3 rounded-2xl border bg-white px-4 py-3 pr-10 text-left text-slate-900 outline-none transition focus:ring-4 dark:bg-slate-800/80 dark:text-slate-100',
-            'disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400 disabled:opacity-70 dark:disabled:bg-slate-800/50 dark:disabled:text-slate-500',
-            error ? 'border-rose-300 focus:border-rose-400 focus:ring-rose-100 dark:border-rose-600 dark:focus:border-rose-500 dark:focus:ring-rose-900/30' : 'border-slate-300 hover:border-emerald-400 focus:border-emerald-500 focus:ring-emerald-100 dark:border-slate-600 dark:hover:border-emerald-500/70 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30',
-            open && !error ? 'border-emerald-500 ring-4 ring-emerald-100 dark:ring-emerald-900/30' : '',
+            'flex w-full min-w-0 items-center justify-between gap-3 rounded-[14px] border bg-surface px-4 py-3 pr-10 text-left !text-base text-content-primary outline-none transition focus:ring-4 sm:!text-sm',
+            'disabled:cursor-not-allowed disabled:bg-surface-secondary disabled:text-content-muted disabled:opacity-70',
+            error ? 'border-danger/50 focus:border-danger focus:ring-danger/10' : 'border-border-ui hover:border-primary/40 focus:border-primary focus:ring-primary/10',
+            open && !error ? 'border-primary ring-4 ring-primary/10' : '',
             className
           )}
           disabled={disabled}
@@ -221,17 +227,17 @@ function Select({
           role="combobox"
           type="button"
         >
-          <span className={cn('block min-w-0 flex-1 truncate', hasSelection ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400 dark:text-slate-400')}>
+          <span className={cn('block min-w-0 flex-1 truncate', hasSelection ? 'text-content-primary' : 'text-content-muted')}>
             {displayValue}
           </span>
         </button>
-        <ChevronDown className={cn('pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 transition text-slate-400 dark:text-slate-500', open ? 'rotate-180 text-emerald-500 dark:text-emerald-400' : '')} />
+        <ChevronDown className={cn('pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-content-muted transition', open ? 'rotate-180 text-primary' : '')} />
       </span>
 
       {open ? createPortal(
         <div
           ref={menuRef}
-          className="fixed z-50 min-w-0 overflow-y-auto overflow-x-hidden rounded-2xl border border-slate-200 bg-white p-1.5 shadow-2xl shadow-slate-900/10 ring-1 ring-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/30 dark:ring-white/10"
+          className="fixed z-50 min-w-0 overflow-y-auto overflow-x-hidden rounded-[14px] border border-border-ui bg-surface p-1.5 shadow-floating"
           id={listboxId}
           role="listbox"
           style={menuStyle}
@@ -246,9 +252,9 @@ function Select({
                 aria-selected={selected}
                 className={cn(
                   'flex w-full min-w-0 items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition',
-                  selected ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-100' : 'text-slate-700 dark:text-slate-200',
-                  active && !option.disabled ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-100' : '',
-                  option.disabled ? 'cursor-not-allowed text-slate-400 opacity-60 dark:text-slate-600' : 'hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-500/15 dark:hover:text-emerald-100'
+                  selected ? 'bg-primary/10 text-primary' : 'text-content-secondary',
+                  active && !option.disabled ? 'bg-primary/10 text-primary' : '',
+                  option.disabled ? 'cursor-not-allowed text-content-muted opacity-60' : 'hover:bg-primary/10 hover:text-primary'
                 )}
                 disabled={option.disabled}
                 id={`${listboxId}-option-${index}`}
@@ -260,14 +266,14 @@ function Select({
                 type="button"
               >
                 <span className="min-w-0 flex-1 break-words">{option.label}</span>
-                {selected ? <Check className="h-4 w-4 shrink-0 text-emerald-500 dark:text-emerald-300" /> : null}
+                {selected ? <Check className="h-4 w-4 shrink-0 text-primary" /> : null}
               </button>
             );
           })}
         </div>,
         document.body
       ) : null}
-      {error ? <span className="mt-2 block text-sm text-rose-600">{error}</span> : null}
+      {error ? <span id={errorId} className="mt-2 block text-sm text-danger">{error}</span> : null}
     </label>
   );
 }

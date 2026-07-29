@@ -9,14 +9,15 @@ import QuickTransactionFlow from './flows/QuickTransactionFlow';
 import QuickTransferFlow from './flows/QuickTransferFlow';
 import QuickGoalFlow from './flows/QuickGoalFlow';
 import QuickRecurrenceFlow from './flows/QuickRecurrenceFlow';
+import QuickAccountFlow from './flows/QuickAccountFlow';
 
-function QuickAddHub({ open, onOpenChange }) {
+function QuickAddHub({ open, onOpenChange, initialAction = null }) {
   const [activeFlow, setActiveFlow] = useState(null);
   const isMobile = useMediaQuery('(max-width: 1023px)');
 
   useEffect(() => {
-    if (open) setActiveFlow(null);
-  }, [open]);
+    if (open) setActiveFlow(initialAction);
+  }, [initialAction, open]);
 
   const handleOpen = useCallback(() => {
     onOpenChange(true);
@@ -64,6 +65,13 @@ function QuickAddHub({ open, onOpenChange }) {
       case 'GOAL':
         return (
           <QuickGoalFlow
+            onBack={handleBack}
+            onClose={handleClose}
+          />
+        );
+      case 'ACCOUNT':
+        return (
+          <QuickAccountFlow
             onBack={handleBack}
             onClose={handleClose}
           />

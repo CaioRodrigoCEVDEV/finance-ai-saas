@@ -20,7 +20,7 @@ function SummaryItem({ label, value, loading, variant = '' }) {
 
 function FinancialTaskSummary({ summary, loading }) {
   return (
-    <div className="grid gap-5 w-full max-w-full md:grid-cols-2 xl:grid-cols-4">
+    <div className="grid w-full max-w-full gap-5 md:grid-cols-2 min-[1521px]:grid-cols-4">
       <SummaryItem label="Pendentes" value={summary.pending} loading={loading} />
       <SummaryItem label="Atrasadas" value={summary.overdue} loading={loading} variant="text-rose-600 dark:text-rose-400" />
       <SummaryItem label="Hoje" value={summary.today || 0} loading={loading} variant="text-amber-600 dark:text-amber-400" />

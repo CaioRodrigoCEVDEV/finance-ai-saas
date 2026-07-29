@@ -22,7 +22,7 @@ function DashboardOverviewCards({ data, tenantName, periodLabel, comparison }) {
     {
       title: 'Saldo total',
       value: Number(data.totalBalance) || 0,
-      description: `Posição consolidada das contas de ${tenantName || 'Finance AI'} até ${periodLabel || 'o período selecionado'}.`,
+      description: `Posição atual consolidada das contas consideradas no saldo de ${tenantName || 'FinanceAI'}.`,
       variant: 'highlight',
       cardType: 'balance',
       comparison: formatComparison(comparison?.totalBalance)

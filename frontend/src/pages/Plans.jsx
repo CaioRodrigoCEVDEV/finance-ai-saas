@@ -32,6 +32,7 @@ function Plans() {
 
   const isFree = currentPlan === 'FREE';
   const isPremium = currentPlan === 'PREMIUM';
+  const canManagePlan = tenant?.role === 'OWNER';
   const monthlyPlan = useMemo(() => catalog.plans.find((item) => item.billingCycle === 'MONTHLY'), [catalog.plans]);
   const yearlyPlan = useMemo(() => catalog.plans.find((item) => item.billingCycle === 'YEARLY'), [catalog.plans]);
 
@@ -55,6 +56,11 @@ function Plans() {
   }, [toast, updateTenant]);
 
   async function handleUpgrade() {
+    if (!canManagePlan) {
+      toast.error('Apenas o proprietário pode alterar o plano.');
+      return;
+    }
+
     try {
       setLoading(true);
       const checkout = await createBillingCheckout({
@@ -70,6 +76,11 @@ function Plans() {
   }
 
   async function handlePortal() {
+    if (!canManagePlan) {
+      toast.error('Apenas o proprietário pode gerenciar a assinatura.');
+      return;
+    }
+
     try {
       const portal = await createCustomerPortal();
       if (!portal.available) {
@@ -130,7 +141,7 @@ function Plans() {
           description="Escolha o plano ideal para você e aproveite ao máximo o Finance AI."
         />
 
-        {!isFree ? (
+        {!isFree && canManagePlan ? (
           <Card className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="text-sm font-medium text-slate-900 dark:text-slate-100">Meu plano</p>
@@ -227,7 +238,7 @@ function Plans() {
               </p>
             </div>
 
-            {isFree ? (
+            {isFree && canManagePlan ? (
               <div className="mt-6 grid gap-4 rounded-[24px] border border-emerald-200 bg-white/70 p-4 dark:border-emerald-800 dark:bg-slate-900/20">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
@@ -264,6 +275,10 @@ function Plans() {
               {isPremium ? (
                 <Button disabled size="lg" className="w-full">
                   Plano atual
+                </Button>
+              ) : !canManagePlan ? (
+                <Button disabled size="lg" className="w-full">
+                  Disponível para o proprietário
                 </Button>
               ) : (
                 <Button size="lg" className="w-full" onClick={handleUpgrade} disabled={loading}>

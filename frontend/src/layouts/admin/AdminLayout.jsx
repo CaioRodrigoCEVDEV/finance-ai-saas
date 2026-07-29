@@ -1,66 +1,108 @@
-import { Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 import AdminSidebar from '../../components/admin/AdminSidebar';
-import Button from '../../components/ui/Button';
-import { useAuth } from '../../contexts/AuthContext';
+import MobileTopbar from '../../components/layout/MobileTopbar';
+import Topbar from '../../components/layout/Topbar';
+import { cn } from '../../utils/cn';
 
 function AdminLayout({ children }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { user } = useAuth();
+  const drawerRef = useRef(null);
+  const previousFocusRef = useRef(null);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    previousFocusRef.current = document.activeElement;
+    document.body.style.overflow = 'hidden';
+    const frame = window.requestAnimationFrame(() => drawerRef.current?.focus());
+
+    function handleKeyDown(event) {
+      if (event.key === 'Escape') {
+        setMobileMenuOpen(false);
+        return;
+      }
+
+      if (event.key === 'Tab') {
+        const focusable = drawerRef.current?.querySelectorAll('button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])');
+        if (!focusable?.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (document.activeElement === drawerRef.current) {
+          event.preventDefault();
+          (event.shiftKey ? last : first).focus();
+        } else if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+      previousFocusRef.current?.focus?.();
+    };
+  }, [mobileMenuOpen]);
 
   return (
-    <div className="min-h-screen min-h-[100dvh] transition-colors">
-      <div className="mx-auto flex min-h-[100dvh] w-full max-w-content flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:px-8">
-        <div className="relative z-10 hidden w-72 shrink-0 lg:block lg:self-stretch">
+    <div className="min-h-[100dvh] text-content-primary transition-colors">
+      <div className="w-full lg:grid lg:grid-cols-[240px_minmax(0,1fr)] lg:items-start lg:gap-7 lg:p-4 xl:grid-cols-[244px_minmax(0,1fr)] xl:gap-8">
+        <div className="relative z-20 hidden h-[calc(100dvh-2rem)] min-h-[620px] overflow-hidden lg:sticky lg:top-4 lg:block">
           <AdminSidebar />
         </div>
 
-        <div className="relative z-10 flex min-w-0 flex-1 flex-col gap-4 lg:py-4">
-          <header className="flex items-center justify-between rounded-[28px] border border-amber-200 bg-white px-4 py-4 shadow-soft dark:border-amber-800 dark:bg-slate-800">
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setMobileMenuOpen(true)}
-                className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-2xl border border-slate-200 text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 lg:hidden dark:border-slate-600 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200"
-                aria-label="Abrir menu"
-              >
-                <Menu className="h-4 w-4" />
-              </button>
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-amber-600 dark:text-amber-400">Painel Administrativo</p>
-                <p className="mt-0.5 text-sm font-medium text-slate-600 dark:text-slate-300">
-                  {user?.name ? `Logado como ${user.name}` : 'Super Admin'}
-                </p>
-              </div>
-            </div>
-          </header>
-
-          <main className="min-w-0">{children}</main>
-        </div>
+        <section className="relative z-10 min-w-0 pb-8">
+          <div className="pointer-events-none sticky top-0 z-30 hidden pb-4 pt-1 lg:block">
+            <div className="pointer-events-auto"><Topbar /></div>
+          </div>
+          <div className="pointer-events-none sticky top-0 z-30 px-3 pb-4 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-5 lg:hidden">
+            <div className="pointer-events-auto"><MobileTopbar onMenuClick={() => setMobileMenuOpen(true)} /></div>
+          </div>
+          <main className="min-w-0 space-y-6 px-3 pb-8 sm:px-5 lg:px-0">{children}</main>
+        </section>
       </div>
 
-      {mobileMenuOpen ? (
-        <div
-          className="fixed inset-0 z-40 bg-slate-950/30 backdrop-blur-sm lg:hidden"
+      <div
+        className={cn(
+          'fixed inset-0 z-40 lg:hidden',
+          mobileMenuOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
+        )}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Menu administrativo"
+        aria-hidden={!mobileMenuOpen}
+        inert={mobileMenuOpen ? undefined : ''}
+      >
+        <button
+          type="button"
+          className="absolute inset-0 h-full w-full bg-slate-950/40 backdrop-blur-sm"
           onClick={() => setMobileMenuOpen(false)}
-        >
-          <div
-            className="flex h-full max-w-xs flex-col overflow-hidden p-4"
-            onClick={(event) => event.stopPropagation()}
+          aria-label="Fechar menu"
+        />
+        <div ref={drawerRef} tabIndex={-1} className={cn(
+          'absolute inset-0 w-full outline-none transition-transform duration-300 ease-out',
+          mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        )}>
+          <AdminSidebar mobile onNavigate={() => setMobileMenuOpen(false)} />
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(false)}
+            className="absolute right-5 top-[calc(1.25rem+env(safe-area-inset-top))] flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-white transition hover:bg-white/25"
+            aria-label="Fechar menu"
           >
-            <div className="mb-4 flex shrink-0 justify-end">
-              <Button variant="secondary" size="sm" onClick={() => setMobileMenuOpen(false)}>
-                <X className="h-4 w-4" />
-                Fechar
-              </Button>
-            </div>
-            <div className="min-h-0 flex-1 overflow-hidden">
-              <AdminSidebar mobile onNavigate={() => setMobileMenuOpen(false)} />
-            </div>
-          </div>
+            <X className="h-4 w-4" />
+          </button>
         </div>
-      ) : null}
+      </div>
     </div>
   );
 }

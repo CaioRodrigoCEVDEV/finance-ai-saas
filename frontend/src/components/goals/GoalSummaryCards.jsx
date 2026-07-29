@@ -24,7 +24,7 @@ function SummaryItem({ label, value, prefix, suffix, isCurrency, isPercentage, l
 
 function GoalSummaryCards({ summary, loading }) {
   return (
-    <div className="grid gap-5 w-full max-w-full md:grid-cols-2 xl:grid-cols-4">
+    <div className="grid w-full max-w-full gap-5 md:grid-cols-2 min-[1521px]:grid-cols-4">
       <SummaryItem label="Total de metas" value={summary.totalGoals} loading={loading} />
       <SummaryItem label="Metas ativas" value={summary.activeGoals} loading={loading} />
       <SummaryItem label="Metas concluidas" value={summary.completedGoals} loading={loading} />

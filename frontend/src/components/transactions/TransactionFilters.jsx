@@ -41,7 +41,7 @@ function TransactionFilters({ filters, accounts, categories, creditCards, loadin
 
   return (
     <Card className="rounded-[28px] p-5">
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 min-[1521px]:grid-cols-4">
         <div className="xl:col-span-2">
           <Input label="Busca" name="search" placeholder="Descrição ou observações" value={filters.search} onChange={onChange} />
         </div>

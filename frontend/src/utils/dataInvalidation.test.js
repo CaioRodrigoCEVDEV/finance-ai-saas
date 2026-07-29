@@ -32,6 +32,7 @@ test('mapeia cada mutacao para os dominios afetados', () => {
     'calendar',
     'reports'
   ]);
+  assert.deepEqual(getMutationDomains(DATA_MUTATIONS.ACCOUNT_CREATED), ['dashboard', 'accounts']);
   assert.deepEqual(getMutationDomains(DATA_MUTATIONS.INVOICE_PAYMENT_CHANGED), [
     'dashboard',
     'transactions',
@@ -112,7 +113,8 @@ test('fluxos publicam e fecham somente depois da confirmacao da API', () => {
     ['../components/quickadd/flows/QuickTransactionFlow.jsx', 'await createTransaction(payload)'],
     ['../components/quickadd/flows/QuickTransferFlow.jsx', 'await createTransfer(payload)'],
     ['../components/quickadd/flows/QuickRecurrenceFlow.jsx', 'await createRecurrence(payload)'],
-    ['../components/quickadd/flows/QuickGoalFlow.jsx', 'await createGoal(payload)']
+    ['../components/quickadd/flows/QuickGoalFlow.jsx', 'await createGoal(payload)'],
+    ['../components/quickadd/flows/QuickAccountFlow.jsx', 'await createAccount(payload)']
   ];
 
   flowFiles.forEach(([file, apiCall]) => {

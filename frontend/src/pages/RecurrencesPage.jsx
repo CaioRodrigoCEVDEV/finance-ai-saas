@@ -381,7 +381,7 @@ function RecurrencesPage() {
           </div>
         )}
 
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-5 md:grid-cols-2 min-[1521px]:grid-cols-4">
           <MetricCard title="Recorrências ativas" value={activeCount} description={`${pausedCount} pausadas`} />
           <MetricCard title="Próximos lancamentos" value={nextSevenDaysCount} description="Nos proximos 7 dias" />
           <MetricCard title="Receitas mensais estimadas" value={formatCurrencyPrivacy(monthlyIncomeEstimate)} description="Valor estimado mensal" />
@@ -455,7 +455,7 @@ function RecurrencesPage() {
 
           {!loading && !error && recurrences.length > 0 ? (
             <>
-              <div className="grid gap-4 lg:hidden">
+              <div className="grid gap-4 min-[1521px]:hidden">
                 {recurrences.map((recurrence) => (
                   <RecurrenceMobileCard
                     key={recurrence.id}
@@ -623,9 +623,9 @@ function RecurrenceTable({ recurrences, isReadonly, loading, onGenerate, onEdit,
   const { formatCurrencyPrivacy } = usePrivacy();
 
   return (
-    <Card className="hidden overflow-hidden rounded-[28px] p-0 lg:block">
-      <div className="w-full overflow-hidden">
-        <table className="w-full divide-y divide-slate-200 dark:divide-slate-700">
+    <Card className="hidden overflow-hidden p-0 min-[1521px]:block">
+      <div className="w-full overflow-x-auto">
+        <table className="w-full min-w-[1080px] divide-y divide-slate-200 dark:divide-slate-700">
           <thead className="bg-slate-50 dark:bg-slate-800/50">
             <tr className="text-left text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
               <th className="px-3 py-3">Descrição</th>

@@ -526,7 +526,7 @@ function Transactions() {
         />
 
         {summaryLoading ? (
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-5 md:grid-cols-2 min-[1521px]:grid-cols-4">
             {[1, 2, 3, 4].map((item) => <LoadingSkeleton key={item} className="h-36 rounded-[28px]" />)}
           </div>
         ) : (
@@ -579,13 +579,13 @@ function Transactions() {
 
           {!loading && !error && transactions.length > 0 ? (
             <>
-              <div className="grid gap-4 lg:hidden">
+              <div className="grid gap-4 min-[1521px]:hidden">
                 {transactions.map((transaction) => (
                   <TransactionMobileCard key={transaction.id} transaction={transaction} loading={saving} onEdit={handleEdit} onDelete={handleDeleteClick} onConfirm={handleConfirmClick} />
                 ))}
               </div>
 
-              <div className="lg:hidden">
+              <div className="min-[1521px]:hidden">
                 <Card className="rounded-[28px] p-4">
                   <div className="flex items-center justify-between gap-3 text-sm text-slate-500">
                     <span>Página {pagination.page} de {pagination.totalPages}</span>

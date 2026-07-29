@@ -1,4 +1,4 @@
-import { Camera, Loader2, Save, Shield, Trash2, User, X } from 'lucide-react';
+import { Camera, Loader2, Save, Shield, Trash2, User } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Cropper from 'react-easy-crop';
 
@@ -8,6 +8,7 @@ import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import PageHeader from '../components/ui/PageHeader';
 import LoadingSkeleton from '../components/ui/LoadingSkeleton';
+import Modal from '../components/ui/Modal';
 import { useAuth } from '../contexts/AuthContext';
 import * as profileService from '../services/profileService';
 import * as tenantService from '../services/tenantService';
@@ -69,35 +70,14 @@ function CropModal({ image, open, onClose, onSave }) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
-      <div
-        className="relative w-full max-w-lg rounded-2xl bg-white shadow-xl dark:bg-slate-800"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 dark:border-slate-700">
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Ajustar foto</h3>
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-300"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        <div className="relative h-80 w-full bg-slate-900">
-          <Cropper
-            image={image}
-            crop={crop}
-            zoom={zoom}
-            aspect={1}
-            cropShape="round"
-            showGrid
-            onCropChange={setCrop}
-            onZoomChange={setZoom}
-            onCropComplete={(_, croppedPixels) => setCroppedAreaPixels(croppedPixels)}
-          />
-        </div>
-        <div className="flex items-center justify-end gap-3 border-t border-slate-200 px-6 py-4 dark:border-slate-700">
+    <Modal
+      isOpen
+      title="Ajustar foto"
+      onClose={onClose}
+      className="sm:max-w-lg"
+      bodyClassName="!p-0 md:!p-0"
+      footer={(
+        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <Button type="button" variant="secondary" onClick={onClose}>
             Cancelar
           </Button>
@@ -112,8 +92,22 @@ function CropModal({ image, open, onClose, onSave }) {
             )}
           </Button>
         </div>
+      )}
+    >
+      <div className="relative h-80 min-h-80 w-full bg-slate-900">
+        <Cropper
+          image={image}
+          crop={crop}
+          zoom={zoom}
+          aspect={1}
+          cropShape="round"
+          showGrid
+          onCropChange={setCrop}
+          onZoomChange={setZoom}
+          onCropComplete={(_, croppedPixels) => setCroppedAreaPixels(croppedPixels)}
+        />
       </div>
-    </div>
+    </Modal>
   );
 }
 

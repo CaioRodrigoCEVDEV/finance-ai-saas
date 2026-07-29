@@ -19,6 +19,9 @@ import TopExpensesWidget from '../components/dashboard/TopExpensesWidget';
 import RecentTransactions from '../components/dashboard/RecentTransactions';
 import MonthlyFlow from '../components/dashboard/MonthlyFlow';
 import DashboardPeriodHeader from '../components/dashboard/DashboardPeriodHeader';
+import AccountsBalanceCard from '../components/dashboard/AccountsBalanceCard';
+import MonthlyOverviewCard from '../components/dashboard/MonthlyOverviewCard';
+import { PendingAlertsCard, QuickActionsCard } from '../components/dashboard/DashboardSideCards';
 import {
   formatDashboardPeriodLabel,
   getCurrentDashboardPeriod,
@@ -39,6 +42,9 @@ import {
   getAvailablePeriods
 } from '../services/dashboardService';
 import { getFinancialTaskDashboard } from '../services/financialTaskService';
+import { getAccounts } from '../services/accountService';
+import { getInvoiceSummary } from '../services/invoiceService';
+import { getFinancialSummary } from '../services/reportService';
 import { useDataInvalidation } from '../utils/dataInvalidation';
 
 const initialState = {
@@ -49,8 +55,18 @@ const initialState = {
   goalsProgress: [],
   recentTransactions: [],
   monthlyFlow: [],
-  financialTasks: null
+  financialTasks: null,
+  accounts: [],
+  dailySummary: null,
+  invoiceSummary: null
 };
+
+function getTodayDateKey() {
+  const today = new Date();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${today.getFullYear()}-${month}-${day}`;
+}
 
 function Dashboard() {
   const { tenant } = useAuth();
@@ -111,6 +127,7 @@ function Dashboard() {
         setLoading(true);
         setError('');
 
+        const today = getTodayDateKey();
         const endpoints = [
           { name: 'overview', fn: () => getDashboardOverview(period) },
           { name: 'expensesByCategory', fn: () => getExpensesByCategory(period) },
@@ -119,7 +136,10 @@ function Dashboard() {
           { name: 'goalsProgress', fn: () => getGoalsProgress(period) },
           { name: 'recentTransactions', fn: () => getRecentTransactions(period) },
           { name: 'monthlyFlow', fn: () => getMonthlyFlow(period) },
-          { name: 'financialTasks', fn: () => getFinancialTaskDashboard() }
+          { name: 'financialTasks', fn: () => getFinancialTaskDashboard() },
+          { name: 'accounts', fn: () => getAccounts() },
+          { name: 'dailySummary', fn: () => getFinancialSummary({ startDate: today, endDate: today }) },
+          { name: 'invoiceSummary', fn: () => getInvoiceSummary() }
         ];
 
         const [results] = await Promise.all([
@@ -129,60 +149,34 @@ function Dashboard() {
 
         if (!isMounted) return;
 
-        const failed = [];
-        results.forEach((result, index) => {
-          if (result.status === 'rejected') {
-            const err = result.reason;
-            const status = err?.response?.status || 'Network/CORS';
-            console.error(`Dashboard: falha em ${endpoints[index].name} (${status})`, err);
-            failed.push(`${endpoints[index].name} (${status})`);
-          }
-        });
+        const responses = Object.fromEntries(endpoints.map((endpoint, index) => [
+          endpoint.name,
+          results[index].status === 'fulfilled' ? results[index].value : initialState[endpoint.name]
+        ]));
 
-        if (failed.length > 0) {
-          throw { failedEndpoints: failed, firstError: results.find(r => r.status === 'rejected')?.reason };
-        }
-
-        const [
-          overviewRes,
-          expensesRes,
-          topExpensesRes,
-          budgetStatusRes,
-          goalsProgressRes,
-          transactionsRes,
-          monthlyFlowRes,
-          financialTasksRes
-        ] = results.map(r => r.value);
+        const criticalFailure = results.slice(0, 7).find((result) => result.status === 'rejected');
+        if (criticalFailure) throw criticalFailure.reason;
 
         setData({
-          overview: overviewRes,
-          expensesByCategory: expensesRes,
-          topExpenses: topExpensesRes,
-          budgetStatus: budgetStatusRes,
-          goalsProgress: goalsProgressRes,
-          recentTransactions: transactionsRes,
-          monthlyFlow: monthlyFlowRes,
-          financialTasks: financialTasksRes
+          overview: responses.overview,
+          expensesByCategory: responses.expensesByCategory,
+          topExpenses: responses.topExpenses,
+          budgetStatus: responses.budgetStatus,
+          goalsProgress: responses.goalsProgress,
+          recentTransactions: responses.recentTransactions,
+          monthlyFlow: responses.monthlyFlow,
+          financialTasks: responses.financialTasks,
+          accounts: results[8].status === 'fulfilled' ? responses.accounts : null,
+          dailySummary: responses.dailySummary,
+          invoiceSummary: responses.invoiceSummary
         });
       } catch (requestError) {
         if (!isMounted) return;
 
-        if (requestError.failedEndpoints) {
-          const joined = requestError.failedEndpoints.join(', ');
-          const firstErr = requestError.firstError;
-          const isCors = !firstErr?.response;
-          setError(
-            isCors
-              ? `Bloqueio de CORS detectado — a origem ${window.location.origin} não está autorizada no backend. Verifique ALLOWED_ORIGINS no servidor.`
-              : `Falha nos endpoints: ${joined}. Verifique o console para detalhes.`
-          );
-          return;
-        }
-
         setError(
           requestError.response?.status === 401
             ? 'Sua sessão expirou. Entre novamente para continuar.'
-            : `Erro inesperado: ${requestError.message || 'Verifique se a API backend está ativa.'}`
+            : 'Não foi possível carregar o resumo financeiro agora. Tente novamente em instantes.'
         );
       } finally {
         if (isMounted) setLoading(false);
@@ -198,7 +192,8 @@ function Dashboard() {
 
   return (
     <AppLayout>
-      <div className="flex flex-col gap-6 pb-8 lg:gap-7">
+      {({ openQuickAdd }) => (
+      <div className="flex flex-col gap-5 pb-8">
         <DashboardPeriodHeader
           period={period}
           loading={loading}
@@ -210,43 +205,48 @@ function Dashboard() {
         />
 
         {loading ? (
-          <section className="flex flex-col gap-6 lg:gap-7">
+          <section className="flex flex-col gap-5">
+            <div className="grid gap-4 min-[1200px]:grid-cols-[minmax(0,1.62fr)_minmax(320px,0.95fr)]">
+              <div className="space-y-4">
+                <LoadingSkeleton variant="shimmer" className="h-64" />
+                <LoadingSkeleton variant="shimmer" className="h-56" />
+                <LoadingSkeleton variant="shimmer" className="h-44" />
+              </div>
+              <div className="space-y-4">
+                <LoadingSkeleton variant="shimmer" className="h-80" />
+                <LoadingSkeleton variant="shimmer" className="h-40" />
+              </div>
+            </div>
             <div className="grid gap-4 sm:gap-5 md:grid-cols-2 min-[1521px]:grid-cols-4">
               {[1, 2, 3, 4].map((item) => (
-                <LoadingSkeleton key={item} variant="shimmer" className="h-44 rounded-[28px]" />
+                <LoadingSkeleton key={item} variant="shimmer" className="h-44" />
               ))}
             </div>
             <div className="grid gap-4 sm:gap-5 md:grid-cols-2 min-[1521px]:grid-cols-4">
               {[1, 2, 3, 4].map((item) => (
-                <LoadingSkeleton key={item} variant="shimmer" className="h-64 rounded-[28px]" />
+                <LoadingSkeleton key={item} variant="shimmer" className="h-64" />
               ))}
             </div>
             <div className="grid gap-4 sm:gap-5 xl:grid-cols-2">
               {[1, 2].map((item) => (
-                <LoadingSkeleton key={item} variant="shimmer" className="h-80 rounded-[28px]" />
-              ))}
-            </div>
-            <div className="grid gap-4 sm:gap-5 xl:grid-cols-2">
-              {[1, 2].map((item) => (
-                <LoadingSkeleton key={item} variant="shimmer" className="h-80 rounded-[28px]" />
+                <LoadingSkeleton key={item} variant="shimmer" className="h-80" />
               ))}
             </div>
           </section>
         ) : null}
 
         {!loading && error ? (
-          <Card className="rounded-[28px] border-rose-200 bg-gradient-to-br from-rose-50 to-rose-50/80 p-8
-            dark:border-rose-800 dark:from-rose-900/20 dark:to-rose-900/10">
+          <Card className="border-danger/25 !bg-danger/10 p-6">
             <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-100 text-rose-600 dark:bg-rose-900/40 dark:text-rose-400">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-danger/10 text-danger">
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                 </svg>
               </div>
               <div>
-                <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">Falha ao carregar dados do dashboard</p>
-                <p className="mt-2 text-sm text-rose-700 dark:text-rose-400">{error}</p>
-                <Button variant="secondary" size="sm" className="mt-4" onClick={() => window.location.reload()}>
+                <p className="text-lg font-semibold text-content-primary">Falha ao carregar dados do dashboard</p>
+                <p className="mt-2 text-sm text-danger">{error}</p>
+                <Button variant="secondary" size="sm" className="mt-4" onClick={() => setRefreshVersion((current) => current + 1)}>
                   Tentar novamente
                 </Button>
               </div>
@@ -255,13 +255,44 @@ function Dashboard() {
         ) : null}
 
         {!loading && !error ? (
-          <div className="flex flex-col gap-6 lg:gap-7">
-            <DashboardOverviewCards
-              comparison={data.overview?.comparison}
-              data={data.overview?.summary}
-              periodLabel={selectedPeriodLabel}
-              tenantName={tenant?.name}
-            />
+          <div className="flex flex-col gap-5">
+            <section className="grid items-start gap-4 min-[1200px]:grid-cols-[minmax(0,1.62fr)_minmax(320px,0.95fr)]">
+              <div className="flex min-w-0 flex-col gap-4">
+                <AccountsBalanceCard
+                  accounts={data.accounts}
+                  todayExpense={data.dailySummary?.expense}
+                  totalBalance={data.overview?.summary?.totalBalance}
+                />
+                <MonthlyOverviewCard
+                  periodLabel={selectedPeriodLabel}
+                  summary={data.overview?.summary}
+                />
+              </div>
+              <div className="flex min-w-0 flex-col gap-4">
+                <PendingAlertsCard
+                  financialTasks={data.financialTasks}
+                  invoiceSummary={data.invoiceSummary}
+                  totalBalance={data.overview?.summary?.totalBalance}
+                />
+                <QuickActionsCard onAction={openQuickAdd} />
+              </div>
+            </section>
+
+            <DashboardCard
+              icon={Activity}
+              title="Indicadores comparativos"
+              description="Saldo, receitas, despesas e economia em relação ao mês anterior"
+              color="slate"
+              collapseKey="overview-comparisons"
+              defaultCollapsed
+            >
+              <DashboardOverviewCards
+                comparison={data.overview?.comparison}
+                data={data.overview?.summary}
+                periodLabel={selectedPeriodLabel}
+                tenantName={tenant?.name}
+              />
+            </DashboardCard>
 
             <section className="grid gap-4 sm:gap-5 md:grid-cols-2 min-[1521px]:grid-cols-4">
               <CreditCardWidget data={data.overview?.creditCards} />
@@ -338,7 +369,7 @@ function Dashboard() {
           </div>
         ) : null}
       </div>
-
+      )}
     </AppLayout>
   );
 }

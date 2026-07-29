@@ -75,7 +75,7 @@ function SummaryCards({ summary, loading }) {
 
   if (loading) {
     return (
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 min-[1521px]:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <LoadingSkeleton key={i} className="h-28 rounded-[28px]" />
         ))}
@@ -84,7 +84,7 @@ function SummaryCards({ summary, loading }) {
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 sm:grid-cols-2 min-[1521px]:grid-cols-4">
       <Card className="flex items-center gap-4 p-5">
         <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">
           <DollarSign className="h-5 w-5" />
@@ -509,7 +509,7 @@ function InvoiceRow({ invoice, onView, onRecalculate, onPay, onCancel, canWrite 
               </div>
             </div>
 
-            <div className="mt-3 flex items-center gap-1 border-t border-slate-100 pt-3 dark:border-slate-700/50">
+            <div className="mt-3 flex flex-wrap items-center gap-1 border-t border-slate-100 pt-3 dark:border-slate-700/50">
               <Button variant="ghost" size="sm" onClick={() => onView(invoice.id)}>
                 <FileText className="mr-1 h-4 w-4" />
                 Detalhes
@@ -744,11 +744,11 @@ function InvoicesPage() {
               </Select>
             </div>
 
-            <div className="flex items-end gap-1">
-              <Button variant="ghost" size="sm" onClick={prevMonth}>
+            <div className="grid w-full grid-cols-[36px_minmax(0,1fr)_82px_36px] items-end gap-1 sm:flex sm:w-auto">
+              <Button variant="ghost" size="sm" className="h-10 w-9 px-0" onClick={prevMonth}>
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <div className="w-32">
+              <div className="w-auto sm:w-32">
                 <Select
                   label="Mês"
                   value={month}
@@ -759,7 +759,7 @@ function InvoicesPage() {
                   ))}
                 </Select>
               </div>
-              <div className="w-24">
+              <div className="w-auto sm:w-24">
                 <Input
                   label="Ano"
                   type="number"
@@ -767,7 +767,7 @@ function InvoicesPage() {
                   onChange={(e) => handleYearChange(e.target.value)}
                 />
               </div>
-              <Button variant="ghost" size="sm" onClick={nextMonth}>
+              <Button variant="ghost" size="sm" className="h-10 w-9 px-0" onClick={nextMonth}>
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
@@ -820,7 +820,7 @@ function InvoicesPage() {
           <Card className="overflow-hidden p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
-                <thead>
+                <thead className="hidden sm:table-header-group">
                   <tr className="border-b border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800">
                     <th className="px-4 py-3 font-medium text-slate-600 dark:text-slate-400">Cartão</th>
                     <th className="px-4 py-3 font-medium text-slate-600 dark:text-slate-400">Referência</th>

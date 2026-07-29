@@ -5,6 +5,36 @@ export default {
   theme: {
     extend: {
       colors: {
+        slate: {
+          50: '#f7faf8',
+          100: '#edf3f0',
+          200: '#dde7e2',
+          300: '#c3d0ca',
+          400: '#91a099',
+          500: '#68766f',
+          600: '#525b57',
+          700: '#3c4140',
+          800: '#2b2d2e',
+          900: '#242726',
+          950: '#1d1f1f'
+        },
+        canvas: 'rgb(var(--background) / <alpha-value>)',
+        elevated: 'rgb(var(--background-elevated) / <alpha-value>)',
+        surface: 'rgb(var(--surface) / <alpha-value>)',
+        'surface-secondary': 'rgb(var(--surface-secondary) / <alpha-value>)',
+        'surface-hover': 'rgb(var(--surface-hover) / <alpha-value>)',
+        'border-ui': 'rgb(var(--border) / <alpha-value>)',
+        'border-soft': 'rgb(var(--border-soft) / <alpha-value>)',
+        'content-primary': 'rgb(var(--text-primary) / <alpha-value>)',
+        'content-secondary': 'rgb(var(--text-secondary) / <alpha-value>)',
+        'content-muted': 'rgb(var(--text-muted) / <alpha-value>)',
+        primary: 'rgb(var(--primary) / <alpha-value>)',
+        'primary-hover': 'rgb(var(--primary-hover) / <alpha-value>)',
+        success: 'rgb(var(--success) / <alpha-value>)',
+        danger: 'rgb(var(--danger) / <alpha-value>)',
+        warning: 'rgb(var(--warning) / <alpha-value>)',
+        info: 'rgb(var(--info) / <alpha-value>)',
+        'accent-purple': 'rgb(var(--purple) / <alpha-value>)',
         brand: {
           50: '#ecfdf5',
           100: '#d1fae5',
@@ -16,6 +46,8 @@ export default {
         }
       },
       boxShadow: {
+        card: 'var(--shadow-card)',
+        floating: 'var(--shadow-floating)',
         glow: '0 18px 40px rgba(15, 23, 42, 0.08)',
         'glow-dark': '0 18px 40px rgba(0, 0, 0, 0.3)',
         soft: '0 12px 30px rgba(15, 23, 42, 0.06)',

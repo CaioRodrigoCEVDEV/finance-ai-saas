@@ -79,34 +79,33 @@ function QuickAddMenu({ onSelect }) {
             <button
               key={flow.id}
               type="button"
-              role="option"
               aria-label={flow.label}
               onClick={() => handleClick(flow.id)}
               style={{ animationDelay: `${index * 30}ms` }}
               className={cn(
-                'flex h-[132px] flex-col items-center justify-center gap-2 rounded-2xl border p-4 text-center transition-all duration-200',
-                'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-200',
+                'flex h-[126px] flex-col items-center justify-center gap-2 rounded-[16px] border p-4 text-center transition-all duration-200',
+                'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20',
                 'motion-safe:animate-fade-in-up',
                 flow.highlight
-                  ? 'border-emerald-500/40 bg-emerald-500/10 shadow-[0_0_20px_rgba(16,185,129,0.15)] hover:bg-emerald-500/20 dark:border-emerald-600/40 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20'
-                  : 'border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700/50 dark:hover:border-slate-600'
+                  ? 'border-primary/30 bg-primary/10 hover:-translate-y-0.5 hover:bg-primary/15'
+                  : 'border-border-soft bg-surface hover:-translate-y-0.5 hover:border-primary/20 hover:bg-surface-hover'
               )}
             >
               <div
                 className={cn(
-                  'flex h-10 w-10 items-center justify-center rounded-2xl',
+                  'flex h-10 w-10 items-center justify-center rounded-full',
                   flow.highlight
-                    ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400'
-                    : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
+                    ? 'bg-primary/15 text-primary'
+                    : 'bg-surface-secondary text-content-secondary'
                 )}
               >
                 <Icon className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                <p className="text-sm font-semibold text-content-primary">
                   {flow.label}
                 </p>
-                <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
+                <p className="mt-0.5 text-[11px] text-content-muted">
                   {flow.description}
                 </p>
               </div>

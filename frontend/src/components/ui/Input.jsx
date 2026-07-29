@@ -1,19 +1,27 @@
+import { useId } from 'react';
+
 import { cn } from '../../utils/cn';
 
-function Input({ label, error, className = '', id, ...props }) {
+function Input({ label, error, className = '', id, 'aria-describedby': ariaDescribedBy, ...props }) {
+  const generatedId = useId();
+  const inputId = id || `${generatedId}-input`;
+  const errorId = error ? `${inputId}-error` : undefined;
+
   return (
     <label className="block" data-error={error ? 'true' : undefined}>
-      {label ? <span className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">{label}</span> : null}
+      {label ? <span className="mb-2 block text-sm font-medium text-content-secondary">{label}</span> : null}
       <input
-        id={id}
+        id={inputId}
+        aria-describedby={ariaDescribedBy || errorId}
+        aria-invalid={error ? 'true' : undefined}
         className={cn(
-          'w-full rounded-2xl border bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:ring-4 dark:bg-slate-700/40 dark:text-slate-100 dark:placeholder:text-slate-400',
-          error ? 'border-rose-300 focus:border-rose-400 focus:ring-rose-100 dark:border-rose-600 dark:focus:border-rose-500 dark:focus:ring-rose-900/30' : 'border-slate-300 focus:border-emerald-500 focus:ring-emerald-100 dark:border-slate-600 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30',
+          'w-full rounded-[14px] border bg-surface px-4 py-3 !text-base text-content-primary outline-none transition placeholder:text-content-muted focus:ring-4 disabled:cursor-not-allowed disabled:bg-surface-secondary disabled:text-content-muted sm:!text-sm',
+          error ? 'border-danger/50 focus:border-danger focus:ring-danger/10' : 'border-border-ui hover:border-primary/40 focus:border-primary focus:ring-primary/10',
           className
         )}
         {...props}
       />
-      {error ? <span className="mt-2 block text-sm text-rose-600">{error}</span> : null}
+      {error ? <span id={errorId} className="mt-2 block text-sm text-danger">{error}</span> : null}
     </label>
   );
 }

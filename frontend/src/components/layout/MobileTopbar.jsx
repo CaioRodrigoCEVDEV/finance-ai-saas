@@ -1,10 +1,9 @@
-import { useState } from 'react';
-import { Eye, EyeOff, MessageSquareText } from 'lucide-react';
+import { Eye, EyeOff, Menu } from 'lucide-react';
 
 import { useAuth } from '../../contexts/AuthContext';
 import { usePrivacy } from '../../contexts/PrivacyContext';
-import FeedbackModal from '../feedback/FeedbackModal';
 import NotificationBell from '../notifications/NotificationBell';
+import ThemeToggle from './ThemeToggle';
 
 function getInitials(name) {
   if (!name) return 'FA';
@@ -17,15 +16,48 @@ function getInitials(name) {
     .join('');
 }
 
-function MobileTopbar() {
+function MobileTopbar({ onMenuClick }) {
   const { user } = useAuth();
   const { hideValues, toggleHideValues } = usePrivacy();
-  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   return (
-    <header className="flex items-center justify-between rounded-[28px] border border-slate-200/80 bg-white/85 px-4 py-2 shadow-soft backdrop-blur-xl dark:border-slate-700/80 dark:bg-slate-800/80">
-      <div className="flex items-center gap-2.5">
-        <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-emerald-50 text-sm font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+    <header className="flex h-14 items-center justify-between rounded-[22px] border border-border-soft bg-surface/90 px-2.5 shadow-card backdrop-blur-xl">
+      <div className="flex min-w-0 items-center gap-2">
+        {onMenuClick ? (
+          <button
+            type="button"
+            onClick={onMenuClick}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-content-secondary transition hover:bg-surface-hover hover:text-content-primary"
+            aria-label="Abrir menu administrativo"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+        ) : null}
+        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white">
+          <img src="/favicon.svg" alt="" className="h-8 w-8" />
+        </div>
+        <p className="hidden truncate text-sm font-bold tracking-[-0.02em] text-content-primary min-[390px]:block">
+          FinanceAI
+        </p>
+      </div>
+
+      <div className="flex shrink-0 items-center gap-0.5">
+        <button
+          type="button"
+          onClick={toggleHideValues}
+          className="flex h-10 w-10 items-center justify-center rounded-full text-content-secondary transition hover:bg-surface-hover hover:text-content-primary"
+          aria-label={hideValues ? 'Exibir valores' : 'Ocultar valores'}
+          title={hideValues ? 'Exibir valores' : 'Ocultar valores'}
+        >
+          {hideValues ? (
+            <EyeOff className="h-[18px] w-[18px]" />
+          ) : (
+            <Eye className="h-[18px] w-[18px]" />
+          )}
+        </button>
+        <ThemeToggle />
+        <NotificationBell />
+        <div className="ml-0.5 hidden h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-xs font-semibold text-white min-[430px]:flex">
           {user?.avatar_url ? (
             <img
               src={`${import.meta.env.VITE_API_URL}${user.avatar_url}`}
@@ -36,37 +68,7 @@ function MobileTopbar() {
             getInitials(user?.name)
           )}
         </div>
-        <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
-          {user?.name || 'Finance AI'}
-        </p>
       </div>
-
-      <div className="flex items-center gap-1">
-        <button
-          type="button"
-          onClick={() => setFeedbackOpen(true)}
-          className="flex h-9 w-9 items-center justify-center rounded-2xl transition hover:bg-slate-50 dark:hover:bg-slate-700/50"
-          aria-label="Enviar feedback"
-        >
-          <MessageSquareText className="h-5 w-5 text-slate-500 dark:text-slate-400" />
-        </button>
-        <button
-          type="button"
-          onClick={toggleHideValues}
-          className="flex h-9 w-9 items-center justify-center rounded-2xl transition hover:bg-slate-50 dark:hover:bg-slate-700/50"
-          aria-label={hideValues ? 'Exibir valores' : 'Ocultar valores'}
-          title={hideValues ? 'Exibir valores' : 'Ocultar valores'}
-        >
-          {hideValues ? (
-            <EyeOff className="h-5 w-5 text-slate-500 dark:text-slate-400" />
-          ) : (
-            <Eye className="h-5 w-5 text-slate-500 dark:text-slate-400" />
-          )}
-        </button>
-        <NotificationBell />
-      </div>
-
-      <FeedbackModal isOpen={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
     </header>
   );
 }

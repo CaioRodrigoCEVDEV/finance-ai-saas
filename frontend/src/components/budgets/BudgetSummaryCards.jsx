@@ -15,7 +15,7 @@ function BudgetSummaryCards({ summary }) {
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+    <div className="grid grid-cols-1 gap-5 md:grid-cols-2 min-[1521px]:grid-cols-4">
       {items.map((item) => {
         const Icon = item.icon;
 

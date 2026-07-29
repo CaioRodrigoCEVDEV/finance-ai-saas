@@ -11,7 +11,7 @@ const items = [
   { to: null, label: 'Mais', icon: Menu, isMore: true },
 ];
 
-function BottomNavigation({ onMoreClick, onQuickAdd }) {
+function BottomNavigation({ onMoreClick, onQuickAdd, canQuickAdd = true }) {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -30,32 +30,36 @@ function BottomNavigation({ onMoreClick, onQuickAdd }) {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-30 md:hidden"
+      className="fixed bottom-0 left-0 right-0 z-30 border-t border-border-soft bg-surface/95 backdrop-blur-xl lg:hidden"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      aria-label="Navegação principal"
     >
-      <div className="flex h-[64px] items-stretch border-t border-slate-200/80 bg-white/85 backdrop-blur-xl dark:border-slate-700/80 dark:bg-slate-800/85">
+      <div className="flex h-[64px] items-stretch">
         {items.slice(0, 2).map((item) => (
           <button
+            type="button"
             key={item.label}
             onClick={() => handleClick(item)}
             className={cn(
               'flex flex-1 flex-col items-center justify-center text-[10px] font-medium transition-colors',
               isActive(item.to)
-                ? 'text-emerald-600 dark:text-emerald-400'
-                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                ? 'text-primary'
+                : 'text-content-muted hover:text-content-primary'
             )}
+            aria-current={isActive(item.to) ? 'page' : undefined}
+            aria-label={item.label}
           >
             <item.icon className="h-5 w-5" />
-            <span className="mt-0.5 h-3 leading-3">
-              {isActive(item.to) ? item.label : ''}
-            </span>
+            <span className="mt-1 leading-none">{item.label}</span>
           </button>
         ))}
 
         <div className="relative flex-1">
           <button
+            type="button"
             onClick={onQuickAdd}
-            className="absolute left-1/2 -top-3 -translate-x-1/2 flex h-[52px] w-[52px] items-center justify-center rounded-full bg-emerald-600 text-white shadow-lg shadow-emerald-600/25 transition hover:bg-emerald-700 active:scale-95 dark:bg-emerald-500 dark:shadow-emerald-500/25 dark:hover:bg-emerald-400"
+            disabled={!canQuickAdd}
+            className="absolute left-1/2 -top-3 flex h-[52px] w-[52px] -translate-x-1/2 items-center justify-center rounded-full bg-primary text-white shadow-floating transition hover:-translate-x-1/2 hover:-translate-y-0.5 hover:bg-primary-hover active:scale-95 disabled:cursor-not-allowed disabled:bg-content-muted disabled:opacity-70 disabled:hover:-translate-y-0"
             aria-label="Adicionar lançamento"
           >
             <Plus className="h-5 w-5" />
@@ -64,19 +68,20 @@ function BottomNavigation({ onMoreClick, onQuickAdd }) {
 
         {items.slice(3).map((item) => (
           <button
+            type="button"
             key={item.label}
             onClick={() => handleClick(item)}
             className={cn(
               'flex flex-1 flex-col items-center justify-center text-[10px] font-medium transition-colors',
               isActive(item.to)
-                ? 'text-emerald-600 dark:text-emerald-400'
-                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                ? 'text-primary'
+                : 'text-content-muted hover:text-content-primary'
             )}
+            aria-current={isActive(item.to) ? 'page' : undefined}
+            aria-label={item.label}
           >
             <item.icon className="h-5 w-5" />
-            <span className="mt-0.5 h-3 leading-3">
-              {isActive(item.to) ? item.label : ''}
-            </span>
+            <span className="mt-1 leading-none">{item.label}</span>
           </button>
         ))}
       </div>

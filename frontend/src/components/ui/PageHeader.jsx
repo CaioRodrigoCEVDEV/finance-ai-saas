@@ -1,14 +1,14 @@
 import Card from './Card';
 
-function PageHeader({ title, description, action }) {
+function PageHeader({ title, description, action, eyebrow = 'FinanceAI', className = '' }) {
   return (
-    <Card className="flex flex-col gap-6 p-6 sm:p-8 lg:flex-row lg:items-end lg:justify-between">
-      <div>
-        <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-600">Finance AI</p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">{title}</h1>
-        {description ? <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400 sm:text-base">{description}</p> : null}
+    <Card className={`flex flex-col gap-5 p-5 sm:p-6 lg:flex-row lg:items-end lg:justify-between ${className}`}>
+      <div className="min-w-0">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary">{eyebrow}</p>
+        <h1 className="mt-2 text-2xl font-bold tracking-[-0.03em] text-content-primary sm:text-3xl">{title}</h1>
+        {description ? <p className="mt-2 max-w-2xl text-sm leading-6 text-content-secondary">{description}</p> : null}
       </div>
-      {action ? <div className="flex shrink-0 items-center">{action}</div> : null}
+      {action ? <div className="flex shrink-0 flex-wrap items-center gap-2">{action}</div> : null}
     </Card>
   );
 }
